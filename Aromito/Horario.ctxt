@@ -1,0 +1,10 @@
+#BlueJ class context
+comment0.target=Horario
+comment0.text=\r\n\ Write\ a\ description\ of\ class\ Horario\ here.\r\n\ \r\n\ @author\ Pablo\ Alejandro\ Hamann\ <linkstat@hmu.com.ar>\r\n\ @version\ 20240929\r\n
+comment1.params=horasSemanales
+comment1.target=Horario(int)
+comment1.text=\r\n\ Constructor\ for\ objects\ of\ class\ Horario\r\n
+comment2.params=
+comment2.target=int\ calcularHorasTotales()
+comment2.text=\r\n\ An\ example\ of\ a\ method\ -\ replace\ this\ comment\ with\ your\ own\r\n\ \r\n\ @param\ \ y\ \ \ a\ sample\ parameter\ for\ a\ method\r\n\ @return\ \ \ \ \ the\ sum\ of\ x\ and\ y\ \r\n
+numComments=3
