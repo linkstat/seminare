@@ -1,0 +1,81 @@
+-- Tabla de Empleado
+CREATE TABLE Empleado (
+    idEmpleado INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50),
+    apellido VARCHAR(50),
+    cuil VARCHAR(11),
+    servicio_id INT,
+    horario_id INT,
+    FOREIGN KEY (servicio_id) REFERENCES Servicio(idServicio),
+    FOREIGN KEY (horario_id) REFERENCES Horario(idHorario)
+);
+
+-- Tabla de Servicio
+CREATE TABLE Servicio (
+    idServicio INT AUTO_INCREMENT PRIMARY KEY,
+    nombreServicio VARCHAR(50),
+    agrupacion ENUM('administrativo', 'medico', 'enfermeria', 'tecnica', 'servicio')
+);
+
+-- Tabla de Horario
+CREATE TABLE Horario (
+    idHorario INT AUTO_INCREMENT PRIMARY KEY,
+    tipoHorario ENUM('7horas', '35semanales', 'guardia12hs', 'guardiaFeriantes', 'nocturno', 'abierto'),
+    horasAsignadas INT
+);
+
+-- Tabla de JefaturaDeServicio
+CREATE TABLE JefaturaDeServicio (
+    idJefatura INT AUTO_INCREMENT PRIMARY KEY,
+    idEmpleado INT, -- El jefe de servicio es un empleado
+    servicio_id INT,
+    FOREIGN KEY (idEmpleado) REFERENCES Empleado(idEmpleado),
+    FOREIGN KEY (servicio_id) REFERENCES Servicio(idServicio)
+);
+
+-- Tabla de ParteDiario
+CREATE TABLE ParteDiario (
+    idParte INT AUTO_INCREMENT PRIMARY KEY,
+    fecha DATE,
+    empleado_id INT,
+    modificadoPor INT,
+    FOREIGN KEY (empleado_id) REFERENCES Empleado(idEmpleado),
+    FOREIGN KEY (modificadoPor) REFERENCES OficinaDePersonal(idOficina)
+);
+
+-- Tabla de OficinaDePersonal
+CREATE TABLE OficinaDePersonal (
+    idOficina INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50),
+    jefe_id INT
+);
+
+-- Tabla de HorasExtras
+CREATE TABLE HorasExtras (
+    idHoraExtra INT AUTO_INCREMENT PRIMARY KEY,
+    idEmpleado INT,
+    cantidadHoras INT,
+    fecha DATE,
+    estado ENUM('Pendiente', 'Aprobado', 'Rechazado'),
+    FOREIGN KEY (idEmpleado) REFERENCES Empleado(idEmpleado)
+);
+
+-- Tabla de Novedad
+CREATE TABLE Novedad (
+    idNovedad INT AUTO_INCREMENT PRIMARY KEY,
+    descripcion VARCHAR(255),
+    fecha DATE,
+    empleado_id INT,
+    estado ENUM('pendiente', 'aprobado', 'rechazado'),
+    FOREIGN KEY (empleado_id) REFERENCES Empleado(idEmpleado)
+);
+
+-- Tabla de DiagramaDeServicio
+CREATE TABLE DiagramaDeServicio (
+    idDiagrama INT AUTO_INCREMENT PRIMARY KEY,
+    fechaInicio DATE,
+    fechaFin DATE,
+    estado ENUM('Pendiente', 'Aprobado', 'Rechazado'),
+    servicio_id INT,
+    FOREIGN KEY (servicio_id) REFERENCES Servicio(idServicio)
+);
