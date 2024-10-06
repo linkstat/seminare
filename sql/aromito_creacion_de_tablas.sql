@@ -1,5 +1,5 @@
 /* Definición de funciones personalizadas
- * Dado que se decidió utilizar UUID y almacenarlos en formato binario, contar con una funcion que facilite la insersión y consulta de estos datos, nos facilitará enormemente la vida.
+ * Dado que se decidió utilizar UUID y almacenarlos en formato binario, contar con una función que facilite la inserción y consulta de estos datos, nos facilitará enormemente la vida.
  * Las funciones propuestas (obtenidas desde https://mariadb.com/kb/en/uuid-data-type/ ), usan el enfoque de MySQL 8.0+ (UUID_TO_BIN(uuid, swap_flag=1), donde swap_flag=1 indica que los bytes deben reordenarse para mejorar la localidad de referencia en los índices.
  * Ventajas:
  * Mejora el rendimiento de los índices al ordenar los UUIDs de manera más secuencial.
@@ -8,7 +8,7 @@
  * Los UUIDs almacenados no coincidirán con su representación estándar si se leen directamente desde la BD sin usar las funciones adecuadas.
  * Requiere ser cuidadosos: hay que asegurar que todos los componentes del sistema manejen correctamente el reordenamiento para evitar inconsistencias.
 */
--- Fucncion para convertir (y almacenar) un UUID en un binario de 16 bytes
+-- Función para convertir (y almacenar) un UUID en un binario de 16 bytes
 DELIMITER $$
 CREATE FUNCTION `UUID_TO_BIN`(uuid CHAR(36))
 RETURNS BINARY(16)
@@ -24,7 +24,7 @@ BEGIN
 END$$
 DELIMITER ;
 
--- Fucnción para recuperar y convertir de nuevo a UUID
+-- Función  para recuperar y convertir de nuevo a UUID
 DELIMITER $$
 CREATE FUNCTION `BIN_TO_UUID2`(b BINARY(16))
 RETURNS CHAR(36) CHARSET ascii
@@ -43,7 +43,7 @@ END$$
 DELIMITER ;
 
 
-/* Tabla HorarioBase: para la clase abstracta HorarioBase
+/* Tabla HorarioBase
  * Implementación de la Herencia entre Horarios
  * Utilizamos la estrategia de Tabla por Subclase, donde:
  * HorarioBase es la tabla base que contiene el identificador y el tipo de horario.
@@ -54,7 +54,7 @@ CREATE TABLE HorarioBase (
     tipo VARCHAR(50) NOT NULL -- 'Horario', 'HorarioConFranquicia'
 );
 
-/* Tabla Horario: para la clase Horario
+/* Tabla Horario
  * Agregamos una columna 'modalidad' para identificar el tipo de horario y facilitar consultas:
  * Posibles valores: 'HorarioEstandar', 'HorarioSemanal', 'HorarioNocturno',
  * 'HorarioFeriante', 'HorarioDXI', 'HorarioGuardiaEnfermeria', 'HorarioGuardiaMedica',
@@ -71,7 +71,7 @@ CREATE TABLE Horario (
     modalidad VARCHAR(50) NOT NULL
 );
 
--- Tabla HorarioConFranquicia: para la clase HorarioConFranquicia
+-- Tabla HorarioConFranquicia
 CREATE TABLE HorarioConFranquicia (
     id BINARY(16) PRIMARY KEY,
     fechaIngreso DATETIME NOT NULL,
@@ -166,7 +166,7 @@ CREATE TABLE HorarioAbierto (
 );
 
 
--- Tabla Cargo: representa la clase Cargo
+-- Tabla Cargo
 CREATE TABLE Cargo (
     id BINARY(16) PRIMARY KEY,
     numero INT NOT NULL,
@@ -174,7 +174,7 @@ CREATE TABLE Cargo (
     agrupacion ENUM('ADMINISTRATIVO', 'SERVICIO', 'MEDICO', 'ENFERMERIA', 'TECNICO', 'PLANTA POLITICA') NOT NULL
 );
 
--- Tabla Domicilio -- Representa a la clase Domicilio
+-- Tabla Domicilio
  CREATE TABLE Domicilio (
     id BINARY(16) PRIMARY KEY,
     calle VARCHAR(255) NOT NULL,
@@ -209,14 +209,14 @@ CREATE TABLE Usuario (
     FOREIGN KEY (cargoID) REFERENCES Cargo(id)
 );
 
--- Tabla Direccion: para la clase Direccion; no tiene atributos específicos
+-- Tabla Direccion
 CREATE TABLE Direccion (
     id BINARY(16) PRIMARY KEY,
     FOREIGN KEY (id) REFERENCES Usuario(id)
     -- No tiene atributos adicionales directos
 );
 
--- Tabla Servicio: para la clase Servicio
+-- Tabla Servicio
 CREATE TABLE Servicio (
     id BINARY(16) PRIMARY KEY,
     nombre VARCHAR(255) NOT NULL,
@@ -225,7 +225,7 @@ CREATE TABLE Servicio (
     FOREIGN KEY (direccionID) REFERENCES Direccion(id)
 );
 
--- Tabla JefaturaDeServicio: para la clase JefaturaDeServicio; añadimos los atributos específicos
+-- Tabla JefaturaDeServicio
 CREATE TABLE JefaturaDeServicio (
     id BINARY(16) PRIMARY KEY,
     FOREIGN KEY (id) REFERENCES Usuario(id),
@@ -233,14 +233,14 @@ CREATE TABLE JefaturaDeServicio (
     FOREIGN KEY (servicioID) REFERENCES Servicio(id)
 );
 
--- Tabla OficinaDePersonal: para la clase OficinaDePersonal; añadimos los atributos específicos
+-- Tabla OficinaDePersonal
 CREATE TABLE OficinaDePersonal (
     id BINARY(16) PRIMARY KEY,
     FOREIGN KEY (id) REFERENCES Usuario(id),
     reportesGenerados INT
 );
 
--- Tabla Empleado: para la clase Empelado; añadimos los atributos específicos
+-- Tabla Empleado
 CREATE TABLE Empleado (
     id BINARY(16) PRIMARY KEY,
     FOREIGN KEY (id) REFERENCES Usuario(id),
@@ -269,7 +269,7 @@ ADD CONSTRAINT chk_servicio_consistente CHECK (
     )
 );
  */
- -- Trigger BEFORE INSERT
+-- Trigger BEFORE INSERT
 -- cambiamos el delimitador por defecto para no tener problemas
 DELIMITER $$
 CREATE TRIGGER trg_check_servicio_consistente_before_insert
@@ -336,7 +336,7 @@ END$$
 DELIMITER ;
 
 
--- Tabla Autorizacion: para la clase Autorizacion
+-- Tabla Autorizacion
 CREATE TABLE Autorizacion (
     id BINARY(16) PRIMARY KEY,
     fechaAutorizacion DATETIME NOT NULL,
@@ -345,12 +345,12 @@ CREATE TABLE Autorizacion (
     FOREIGN KEY (autorizadoPorID) REFERENCES Usuario(id)
 );
 
--- Tabla EstadoTramite -- Representa a la clase EstadoTramite
+-- Tabla EstadoTramite
 CREATE TABLE EstadoTramite (
     id BINARY(16) PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL
 );
--- Inicializar Tabla EstadoTramite
+-- Inicializar tabla EstadoTramite
 INSERT INTO EstadoTramite (id, nombre) VALUES
     (UUID_TO_BIN(UUID()), 'BORRADOR'),
     (UUID_TO_BIN(UUID()), 'ENVIADO'),
@@ -363,7 +363,7 @@ INSERT INTO EstadoTramite (id, nombre) VALUES
     (UUID_TO_BIN(UUID()), 'COMPLETADO');
 
 
--- Tabla Novedad -- Representa a la clase Novedad
+-- Tabla Novedad
 CREATE TABLE Novedad (
     id BINARY(16) PRIMARY KEY,
     cod INT NOT NULL,
@@ -378,7 +378,7 @@ CREATE TABLE Novedad (
     FOREIGN KEY (estadoTramiteID) REFERENCES EstadoTramite(id)
 );
 
--- Tabla Intermedia Empleado_Novedad (Por la novead 99, tenemos una relación mucho-a-muchos que salvaguardar)
+-- Tabla Intermedia Empleado_Novedad (Por la novedad 99, tenemos una relación mucho-a-muchos que salvaguardar)
 CREATE TABLE Empleado_Novedad (
     empleadoID BINARY(16) NOT NULL,
     novedadID BINARY(16) NOT NULL,
@@ -387,14 +387,14 @@ CREATE TABLE Empleado_Novedad (
     FOREIGN KEY (novedadID) REFERENCES Novedad(id)
 );
 
--- Tabla JornadaLaboral: de la clase JornadaLaboral
+-- Tabla JornadaLaboral
 CREATE TABLE JornadaLaboral (
     id BINARY(16) PRIMARY KEY,
     fechaIngreso DATETIME NOT NULL,
     fechaEgreso DATETIME NOT NULL
 );
 
--- Tabla DiagramaDeServicio: para la clase DiagramaDeServicio
+-- Tabla DiagramaDeServicio
 CREATE TABLE DiagramaDeServicio (
     id BINARY(16) PRIMARY KEY,
     estado VARCHAR(50) NOT NULL,
@@ -465,7 +465,7 @@ CREATE TABLE Memorandum_Autorizacion (
 );
 
 
--- Tabla FrancoCompensatorio: para la clase FrancoCompensatorio
+-- Tabla FrancoCompensatorio
 CREATE TABLE FrancoCompensatorio (
     id BINARY(16) PRIMARY KEY,
     cantHoras DOUBLE NOT NULL,
@@ -482,7 +482,7 @@ CREATE TABLE FrancoCompensatorio (
     FOREIGN KEY (jefaturaID) REFERENCES JefaturaDeServicio(id)
 );
 
--- Tabla HoraExtra: para clase HoraExtra
+-- Tabla HoraExtra
 CREATE TABLE HoraExtra (
     id BINARY(16) PRIMARY KEY,
     descripcion VARCHAR(255) NOT NULL,
