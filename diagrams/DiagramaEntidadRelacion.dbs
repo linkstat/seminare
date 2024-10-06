@@ -1,0 +1,862 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="MariaDb" database="MariaDb" id="MariaDb-a20" >
+	<schema name="aromito" >
+		<table name="autorizacion" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="fechaAutorizacion" type="DATETIME" jt="93" mandatory="y" />
+			<column name="tipo" type="ENUM" jt="12" mandatory="y" >
+				<enumeration><![CDATA['DIRECCION','JEFATURADESERVICIO','OFICINADEPERSONAL','USUARIO']]></enumeration>
+			</column>
+			<column name="autorizadoPorID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<index name="pk_autorizacion" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="autorizadoPorID" unique="NORMAL" >
+				<column name="autorizadoPorID" />
+			</index>
+			<fk name="autorizacion_ibfk_1" to_schema="aromito" to_table="usuario" options="" >
+				<fk_column name="autorizadoPorID" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="cargo" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="numero" type="INT" length="11" jt="4" mandatory="y" />
+			<column name="descripcion" type="VARCHAR" length="255" jt="12" mandatory="y" />
+			<column name="agrupacion" type="ENUM" jt="12" mandatory="y" >
+				<enumeration><![CDATA['ADMINISTRATIVO','SERVICIO','MEDICO','ENFERMERIA','TECNICO','PLANTA POLITICA']]></enumeration>
+			</column>
+			<index name="pk_cargo" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="diagramadeservicio" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="estado" type="VARCHAR" length="50" jt="12" mandatory="y" />
+			<column name="fechaInicio" type="DATE" jt="91" mandatory="y" />
+			<column name="fechaFin" type="DATE" jt="91" mandatory="y" />
+			<column name="servicioID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<index name="pk_diagramadeservicio" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="servicioID" unique="NORMAL" >
+				<column name="servicioID" />
+			</index>
+			<fk name="diagramadeservicio_ibfk_1" to_schema="aromito" to_table="servicio" options="" >
+				<fk_column name="servicioID" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="direccion" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<index name="pk_direccion" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="direccion_ibfk_1" to_schema="aromito" to_table="usuario" options="" >
+				<fk_column name="id" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="domicilio" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="calle" type="VARCHAR" length="255" jt="12" mandatory="y" />
+			<column name="numeracion" type="INT" length="11" jt="4" />
+			<column name="barrio" type="VARCHAR" length="255" jt="12" />
+			<column name="localidad" type="VARCHAR" length="255" jt="12" />
+			<column name="ciudad" type="VARCHAR" length="255" jt="12" />
+			<column name="provincia" type="VARCHAR" length="255" jt="12" />
+			<index name="pk_domicilio" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="empleado" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="francosCompensatoriosUtilizados" type="INT" length="11" jt="4" />
+			<column name="horarioActualID" type="BINARY" length="16" jt="-2" />
+			<column name="jefaturaID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="servicioID" type="BINARY" length="16" jt="-2" />
+			<index name="pk_empleado" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="horarioActualID" unique="NORMAL" >
+				<column name="horarioActualID" />
+			</index>
+			<index name="servicioID" unique="NORMAL" >
+				<column name="servicioID" />
+			</index>
+			<index name="idx_empleado_jefatura" unique="NORMAL" >
+				<column name="jefaturaID" />
+			</index>
+			<fk name="empleado_ibfk_1" to_schema="aromito" to_table="usuario" options="" >
+				<fk_column name="id" pk="id" />
+			</fk>
+			<fk name="empleado_ibfk_2" to_schema="aromito" to_table="horariobase" options="" >
+				<fk_column name="horarioActualID" pk="id" />
+			</fk>
+			<fk name="empleado_ibfk_3" to_schema="aromito" to_table="jefaturadeservicio" options="" >
+				<fk_column name="jefaturaID" pk="id" />
+			</fk>
+			<fk name="empleado_ibfk_4" to_schema="aromito" to_table="servicio" options="" >
+				<fk_column name="servicioID" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="empleado_novedad" row_count="0" spec="" >
+			<column name="empleadoID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="novedadID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<index name="pk_empleado_novedad" unique="PRIMARY_KEY" >
+				<column name="empleadoID" />
+				<column name="novedadID" />
+			</index>
+			<index name="novedadID" unique="NORMAL" >
+				<column name="novedadID" />
+			</index>
+			<fk name="empleado_novedad_ibfk_1" to_schema="aromito" to_table="empleado" options="" >
+				<fk_column name="empleadoID" pk="id" />
+			</fk>
+			<fk name="empleado_novedad_ibfk_2" to_schema="aromito" to_table="novedad" options="" >
+				<fk_column name="novedadID" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="estadotramite" row_count="9" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="nombre" type="VARCHAR" length="50" jt="12" mandatory="y" />
+			<index name="pk_estadotramite" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="francocompensatorio" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="cantHoras" type="DOUBLE" jt="8" mandatory="y" />
+			<column name="descripcion" type="VARCHAR" length="255" jt="12" mandatory="y" />
+			<column name="fechaAutorizacion" type="DATETIME" jt="93" />
+			<column name="fechaDeAplicacion" type="DATE" jt="91" />
+			<column name="estadoTramiteID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="autorizadaPorID" type="BINARY" length="16" jt="-2" />
+			<column name="empleadoID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="jefaturaID" type="BINARY" length="16" jt="-2" />
+			<index name="pk_francocompensatorio" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="estadoTramiteID" unique="NORMAL" >
+				<column name="estadoTramiteID" />
+			</index>
+			<index name="autorizadaPorID" unique="NORMAL" >
+				<column name="autorizadaPorID" />
+			</index>
+			<index name="empleadoID" unique="NORMAL" >
+				<column name="empleadoID" />
+			</index>
+			<index name="jefaturaID" unique="NORMAL" >
+				<column name="jefaturaID" />
+			</index>
+			<fk name="francocompensatorio_ibfk_1" to_schema="aromito" to_table="estadotramite" options="" >
+				<fk_column name="estadoTramiteID" pk="id" />
+			</fk>
+			<fk name="francocompensatorio_ibfk_2" to_schema="aromito" to_table="usuario" options="" >
+				<fk_column name="autorizadaPorID" pk="id" />
+			</fk>
+			<fk name="francocompensatorio_ibfk_3" to_schema="aromito" to_table="empleado" options="" >
+				<fk_column name="empleadoID" pk="id" />
+			</fk>
+			<fk name="francocompensatorio_ibfk_4" to_schema="aromito" to_table="jefaturadeservicio" options="" >
+				<fk_column name="jefaturaID" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="horaextra" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="descripcion" type="VARCHAR" length="255" jt="12" mandatory="y" />
+			<column name="fechaIngreso" type="DATETIME" jt="93" mandatory="y" />
+			<column name="fechaEgreso" type="DATETIME" jt="93" mandatory="y" />
+			<column name="ponderacion" type="INT" length="11" jt="4" mandatory="y" />
+			<column name="fechaAutorizacion" type="DATETIME" jt="93" />
+			<column name="estadoTramiteID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="autorizadaPorID" type="BINARY" length="16" jt="-2" />
+			<column name="empleadoID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="jefaturaID" type="BINARY" length="16" jt="-2" />
+			<index name="pk_horaextra" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="estadoTramiteID" unique="NORMAL" >
+				<column name="estadoTramiteID" />
+			</index>
+			<index name="autorizadaPorID" unique="NORMAL" >
+				<column name="autorizadaPorID" />
+			</index>
+			<index name="empleadoID" unique="NORMAL" >
+				<column name="empleadoID" />
+			</index>
+			<index name="jefaturaID" unique="NORMAL" >
+				<column name="jefaturaID" />
+			</index>
+			<fk name="horaextra_ibfk_1" to_schema="aromito" to_table="estadotramite" options="" >
+				<fk_column name="estadoTramiteID" pk="id" />
+			</fk>
+			<fk name="horaextra_ibfk_2" to_schema="aromito" to_table="usuario" options="" >
+				<fk_column name="autorizadaPorID" pk="id" />
+			</fk>
+			<fk name="horaextra_ibfk_3" to_schema="aromito" to_table="empleado" options="" >
+				<fk_column name="empleadoID" pk="id" />
+			</fk>
+			<fk name="horaextra_ibfk_4" to_schema="aromito" to_table="jefaturadeservicio" options="" >
+				<fk_column name="jefaturaID" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="horario" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="fechaIngreso" type="DATETIME" jt="93" mandatory="y" />
+			<column name="fechaEgreso" type="DATETIME" jt="93" mandatory="y" />
+			<column name="jornadasPlanificadas" type="INT" length="11" jt="4" />
+			<column name="reglasHorario" type="VARCHAR" length="255" jt="12" />
+			<column name="horarioBaseID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="modalidad" type="VARCHAR" length="50" jt="12" mandatory="y" />
+			<index name="pk_horario" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="horario_ibfk_1" to_schema="aromito" to_table="horariobase" options="" >
+				<fk_column name="id" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="horarioabierto" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="flexibilidadHoraria" type="BOOLEAN" jt="-7" mandatory="y" />
+			<column name="horasSemanales" type="INT" length="11" jt="4" mandatory="y" />
+			<column name="preferenciasHorarias" type="VARCHAR" length="255" jt="12" />
+			<index name="pk_horarioabierto" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="horarioabierto_ibfk_1" to_schema="aromito" to_table="horario" options="" >
+				<fk_column name="id" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="horariobase" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="tipo" type="VARCHAR" length="50" jt="12" mandatory="y" />
+			<index name="pk_horariobase" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="horarioconfranquicia" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="fechaIngreso" type="DATETIME" jt="93" mandatory="y" />
+			<column name="fechaEgreso" type="DATETIME" jt="93" mandatory="y" />
+			<column name="horasFranquicia" type="INT" length="11" jt="4" mandatory="y" />
+			<column name="horarioDecoradoID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<index name="pk_horarioconfranquicia" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="horarioDecoradoID" unique="NORMAL" >
+				<column name="horarioDecoradoID" />
+			</index>
+			<fk name="horarioconfranquicia_ibfk_1" to_schema="aromito" to_table="horariobase" options="" >
+				<fk_column name="id" pk="id" />
+			</fk>
+			<fk name="horarioconfranquicia_ibfk_2" to_schema="aromito" to_table="horario" options="" >
+				<fk_column name="horarioDecoradoID" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="horariodxi" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="distribucionHoraria" type="VARCHAR" length="255" jt="12" mandatory="y" />
+			<column name="horaInicioPorDia" type="VARCHAR" length="255" jt="12" mandatory="y" />
+			<column name="horasSemanales" type="INT" length="11" jt="4" mandatory="y" />
+			<index name="pk_horariodxi" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="horariodxi_ibfk_1" to_schema="aromito" to_table="horario" options="" >
+				<fk_column name="id" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="horarioestandar" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="diasLaborables" type="VARCHAR" length="255" jt="12" mandatory="y" />
+			<column name="horasPorDia" type="INT" length="11" jt="4" mandatory="y" />
+			<index name="pk_horarioestandar" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="horarioestandar_ibfk_1" to_schema="aromito" to_table="horario" options="" >
+				<fk_column name="id" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="horarioferiante" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="diasNoLaborables" type="VARCHAR" length="255" jt="12" mandatory="y" />
+			<column name="duracionGuardiaHoras" type="INT" length="11" jt="4" mandatory="y" />
+			<column name="guardiasProgramadas" type="VARCHAR" length="255" jt="12" mandatory="y" />
+			<column name="horasMinimasMensuales" type="INT" length="11" jt="4" mandatory="y" />
+			<index name="pk_horarioferiante" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="horarioferiante_ibfk_1" to_schema="aromito" to_table="horario" options="" >
+				<fk_column name="id" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="horarioguardiaenfermeria" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="duracionGuardia10Horas" type="INT" length="11" jt="4" mandatory="y" />
+			<column name="duracionGuardia12Horas" type="INT" length="11" jt="4" mandatory="y" />
+			<column name="fechasGuardias" type="VARCHAR" length="255" jt="12" mandatory="y" />
+			<column name="numeroGuardias10Horas" type="INT" length="11" jt="4" mandatory="y" />
+			<column name="numeroGuardias12Horas" type="INT" length="11" jt="4" mandatory="y" />
+			<index name="pk_horarioguardiaenfermeria" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="horarioguardiaenfermeria_ibfk_1" to_schema="aromito" to_table="horario" options="" >
+				<fk_column name="id" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="horarioguardiamedica" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="duracionGuardiaHoras" type="INT" length="11" jt="4" mandatory="y" />
+			<column name="fechasGuardias" type="VARCHAR" length="255" jt="12" mandatory="y" />
+			<column name="numeroGuardiasSemanal" type="INT" length="11" jt="4" mandatory="y" />
+			<column name="permitirGuardiasContinuas" type="BOOLEAN" jt="-7" mandatory="y" />
+			<column name="tiempoDescansoMinimoHoras" type="INT" length="11" jt="4" mandatory="y" />
+			<index name="pk_horarioguardiamedica" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="horarioguardiamedica_ibfk_1" to_schema="aromito" to_table="horario" options="" >
+				<fk_column name="id" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="horariojefeservicioguardiapasiva" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="diasLaborables" type="VARCHAR" length="255" jt="12" mandatory="y" />
+			<column name="horasPorDia" type="INT" length="11" jt="4" mandatory="y" />
+			<index name="pk_horariojefeservicioguardiapasiva" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="horariojefeservicioguardiapasiva_ibfk_1" to_schema="aromito" to_table="horario" options="" >
+				<fk_column name="id" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="horarionocturno" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="diasProgramados" type="VARCHAR" length="255" jt="12" mandatory="y" />
+			<column name="duracionJornadaHoras" type="INT" length="11" jt="4" mandatory="y" />
+			<column name="numeroJornadasMensuales" type="INT" length="11" jt="4" mandatory="y" />
+			<index name="pk_horarionocturno" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="horarionocturno_ibfk_1" to_schema="aromito" to_table="horario" options="" >
+				<fk_column name="id" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="horariosemanal" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="distribucionSemanal" type="VARCHAR" length="255" jt="12" mandatory="y" />
+			<column name="horaInicioPorDia" type="VARCHAR" length="255" jt="12" mandatory="y" />
+			<index name="pk_horariosemanal" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="horariosemanal_ibfk_1" to_schema="aromito" to_table="horario" options="" >
+				<fk_column name="id" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="jefaturadeservicio" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="servicioID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<index name="pk_jefaturadeservicio" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="servicioID" unique="NORMAL" >
+				<column name="servicioID" />
+			</index>
+			<fk name="jefaturadeservicio_ibfk_1" to_schema="aromito" to_table="usuario" options="" >
+				<fk_column name="id" pk="id" />
+			</fk>
+			<fk name="jefaturadeservicio_ibfk_2" to_schema="aromito" to_table="servicio" options="" >
+				<fk_column name="servicioID" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="jornadalaboral" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="fechaIngreso" type="DATETIME" jt="93" mandatory="y" />
+			<column name="fechaEgreso" type="DATETIME" jt="93" mandatory="y" />
+			<index name="pk_jornadalaboral" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="marcacionempleado" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="fechaMarcacion" type="DATETIME" jt="93" mandatory="y" />
+			<column name="observaciones" type="VARCHAR" length="255" jt="12" />
+			<column name="tipoMarcacion" type="ENUM" jt="12" mandatory="y" >
+				<enumeration><![CDATA['INGRESO','EGRESO']]></enumeration>
+			</column>
+			<column name="validada" type="BOOLEAN" jt="-7" mandatory="y" />
+			<column name="empleadoID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<index name="pk_marcacionempleado" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="empleadoID" unique="NORMAL" >
+				<column name="empleadoID" />
+			</index>
+			<fk name="marcacionempleado_ibfk_1" to_schema="aromito" to_table="empleado" options="" >
+				<fk_column name="empleadoID" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="memorandum" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="asunto" type="VARCHAR" length="255" jt="12" mandatory="y" />
+			<column name="contenido" type="TEXT" jt="-1" mandatory="y" />
+			<column name="fechaEnvio" type="DATETIME" jt="93" />
+			<column name="fechaRecepcion" type="DATETIME" jt="93" />
+			<column name="estado" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="remitenteID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<index name="pk_memorandum" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="estado" unique="NORMAL" >
+				<column name="estado" />
+			</index>
+			<index name="remitenteID" unique="NORMAL" >
+				<column name="remitenteID" />
+			</index>
+			<fk name="memorandum_ibfk_1" to_schema="aromito" to_table="estadotramite" options="" >
+				<fk_column name="estado" pk="id" />
+			</fk>
+			<fk name="memorandum_ibfk_2" to_schema="aromito" to_table="usuario" options="" >
+				<fk_column name="remitenteID" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="memorandum_autorizacion" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="memorandumID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="tipoAutorizacionID" type="ENUM" jt="12" mandatory="y" >
+				<enumeration><![CDATA['JefeDeServicio','OficinaDePersonal','Direccion','Usuario']]></enumeration>
+			</column>
+			<column name="autorizadoPorID" type="BINARY" length="16" jt="-2" />
+			<column name="fechaAutorizacion" type="DATETIME" jt="93" />
+			<column name="estado" type="ENUM" jt="12" mandatory="y" >
+				<enumeration><![CDATA['PENDIENTE','AUTORIZADO','RECHAZADO']]></enumeration>
+			</column>
+			<index name="pk_memorandum_autorizacion" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="memorandumID" unique="NORMAL" >
+				<column name="memorandumID" />
+			</index>
+			<index name="autorizadoPorID" unique="NORMAL" >
+				<column name="autorizadoPorID" />
+			</index>
+			<fk name="memorandum_autorizacion_ibfk_1" to_schema="aromito" to_table="memorandum" options="" >
+				<fk_column name="memorandumID" pk="id" />
+			</fk>
+			<fk name="memorandum_autorizacion_ibfk_2" to_schema="aromito" to_table="usuario" options="" >
+				<fk_column name="autorizadoPorID" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="memorandum_destinatario" row_count="0" spec="" >
+			<column name="memorandumID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="usuarioID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="fechaRecepcion" type="DATETIME" jt="93" />
+			<index name="pk_memorandum_destinatario" unique="PRIMARY_KEY" >
+				<column name="memorandumID" />
+				<column name="usuarioID" />
+			</index>
+			<index name="usuarioID" unique="NORMAL" >
+				<column name="usuarioID" />
+			</index>
+			<fk name="memorandum_destinatario_ibfk_1" to_schema="aromito" to_table="memorandum" options="" >
+				<fk_column name="memorandumID" pk="id" />
+			</fk>
+			<fk name="memorandum_destinatario_ibfk_2" to_schema="aromito" to_table="usuario" options="" >
+				<fk_column name="usuarioID" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="memorandum_firmante" row_count="0" spec="" >
+			<column name="memorandumID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="usuarioID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="fechaFirma" type="DATETIME" jt="93" mandatory="y" />
+			<index name="pk_memorandum_firmante" unique="PRIMARY_KEY" >
+				<column name="memorandumID" />
+				<column name="usuarioID" />
+			</index>
+			<index name="usuarioID" unique="NORMAL" >
+				<column name="usuarioID" />
+			</index>
+			<fk name="memorandum_firmante_ibfk_1" to_schema="aromito" to_table="memorandum" options="" >
+				<fk_column name="memorandumID" pk="id" />
+			</fk>
+			<fk name="memorandum_firmante_ibfk_2" to_schema="aromito" to_table="usuario" options="" >
+				<fk_column name="usuarioID" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="novedad" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="cod" type="INT" length="11" jt="4" mandatory="y" />
+			<column name="descripcion" type="VARCHAR" length="255" jt="12" mandatory="y" />
+			<column name="estado" type="VARCHAR" length="50" jt="12" mandatory="y" />
+			<column name="estadoFechaModif" type="TIMESTAMP" jt="93" />
+			<column name="fechaInicio" type="DATE" jt="91" />
+			<column name="fechaFin" type="DATE" jt="91" />
+			<column name="fechaSolicitud" type="DATE" jt="91" />
+			<column name="reqAprobDireccion" type="BOOLEAN" jt="-7" mandatory="y" />
+			<column name="estadoTramiteID" type="BINARY" length="16" jt="-2" />
+			<index name="pk_novedad" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="estadoTramiteID" unique="NORMAL" >
+				<column name="estadoTramiteID" />
+			</index>
+			<fk name="novedad_ibfk_1" to_schema="aromito" to_table="estadotramite" options="" >
+				<fk_column name="estadoTramiteID" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="oficinadepersonal" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="reportesGenerados" type="INT" length="11" jt="4" />
+			<index name="pk_oficinadepersonal" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="oficinadepersonal_ibfk_1" to_schema="aromito" to_table="usuario" options="" >
+				<fk_column name="id" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="partediario" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="fechaDeCierre" type="DATETIME" jt="93" />
+			<column name="periodo" type="VARCHAR" length="50" jt="12" mandatory="y" />
+			<column name="modificadoPorID" type="BINARY" length="16" jt="-2" />
+			<column name="oficinaID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<index name="pk_partediario" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="modificadoPorID" unique="NORMAL" >
+				<column name="modificadoPorID" />
+			</index>
+			<index name="oficinaID" unique="NORMAL" >
+				<column name="oficinaID" />
+			</index>
+			<fk name="partediario_ibfk_1" to_schema="aromito" to_table="usuario" options="" >
+				<fk_column name="modificadoPorID" pk="id" />
+			</fk>
+			<fk name="partediario_ibfk_2" to_schema="aromito" to_table="oficinadepersonal" options="" >
+				<fk_column name="oficinaID" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="partediario_empleado" row_count="0" spec="" >
+			<column name="parteDiarioID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="empleadoID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<index name="pk_partediario_empleado" unique="PRIMARY_KEY" >
+				<column name="parteDiarioID" />
+				<column name="empleadoID" />
+			</index>
+			<index name="empleadoID" unique="NORMAL" >
+				<column name="empleadoID" />
+			</index>
+			<fk name="partediario_empleado_ibfk_1" to_schema="aromito" to_table="partediario" options="" >
+				<fk_column name="parteDiarioID" pk="id" />
+			</fk>
+			<fk name="partediario_empleado_ibfk_2" to_schema="aromito" to_table="empleado" options="" >
+				<fk_column name="empleadoID" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="planificacion" row_count="0" spec="" >
+			<column name="diagramaID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="empleadoID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="jornadaID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<index name="pk_planificacion" unique="PRIMARY_KEY" >
+				<column name="diagramaID" />
+				<column name="empleadoID" />
+				<column name="jornadaID" />
+			</index>
+			<index name="empleadoID" unique="NORMAL" >
+				<column name="empleadoID" />
+			</index>
+			<index name="jornadaID" unique="NORMAL" >
+				<column name="jornadaID" />
+			</index>
+			<fk name="planificacion_ibfk_1" to_schema="aromito" to_table="diagramadeservicio" options="" >
+				<fk_column name="diagramaID" pk="id" />
+			</fk>
+			<fk name="planificacion_ibfk_2" to_schema="aromito" to_table="empleado" options="" >
+				<fk_column name="empleadoID" pk="id" />
+			</fk>
+			<fk name="planificacion_ibfk_3" to_schema="aromito" to_table="jornadalaboral" options="" >
+				<fk_column name="jornadaID" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="registrojornadalaboral" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="fecha" type="DATE" jt="91" mandatory="y" />
+			<column name="empleadoID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="marcacionIngresoID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="marcacionEgresoID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="duracionJornada" type="INT" length="11" jt="4" />
+			<index name="pk_registrojornadalaboral" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="empleadoID" unique="NORMAL" >
+				<column name="empleadoID" />
+			</index>
+			<index name="marcacionIngresoID" unique="NORMAL" >
+				<column name="marcacionIngresoID" />
+			</index>
+			<index name="marcacionEgresoID" unique="NORMAL" >
+				<column name="marcacionEgresoID" />
+			</index>
+			<fk name="registrojornadalaboral_ibfk_1" to_schema="aromito" to_table="empleado" options="" >
+				<fk_column name="empleadoID" pk="id" />
+			</fk>
+			<fk name="registrojornadalaboral_ibfk_2" to_schema="aromito" to_table="marcacionempleado" options="" >
+				<fk_column name="marcacionIngresoID" pk="id" />
+			</fk>
+			<fk name="registrojornadalaboral_ibfk_3" to_schema="aromito" to_table="marcacionempleado" options="" >
+				<fk_column name="marcacionEgresoID" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="servicio" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="nombre" type="VARCHAR" length="255" jt="12" mandatory="y" />
+			<column name="agrupacion" type="ENUM" jt="12" mandatory="y" >
+				<enumeration><![CDATA['ADMINISTRATIVO','SERVICIO','MEDICO','ENFERMERIA','TECNICO','PLANTA POLITICA']]></enumeration>
+			</column>
+			<column name="direccionID" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<index name="pk_servicio" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="idx_servicio_direccion" unique="NORMAL" >
+				<column name="direccionID" />
+			</index>
+			<fk name="servicio_ibfk_1" to_schema="aromito" to_table="direccion" options="" >
+				<fk_column name="direccionID" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<table name="usuario" row_count="0" spec="" >
+			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
+			<column name="nombres" type="VARCHAR" length="255" jt="12" mandatory="y" />
+			<column name="apellidos" type="VARCHAR" length="255" jt="12" mandatory="y" />
+			<column name="mail" type="VARCHAR" length="255" jt="12" mandatory="y" />
+			<column name="cuil" type="BIGINT" length="20" jt="-5" mandatory="y" />
+			<column name="fechaAlta" type="DATE" jt="91" mandatory="y" />
+			<column name="sexo" type="ENUM" jt="12" mandatory="y" >
+				<enumeration><![CDATA['FEMENINO','MASCULINO','OTRO']]></enumeration>
+			</column>
+			<column name="tel" type="BIGINT" length="20" jt="-5" />
+			<column name="estado" type="BOOLEAN" jt="-7" mandatory="y" />
+			<column name="domicilioID" type="BINARY" length="16" jt="-2" />
+			<column name="cargoID" type="BINARY" length="16" jt="-2" />
+			<column name="tipoUsuario" type="VARCHAR" length="50" jt="12" mandatory="y" />
+			<index name="pk_usuario" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="domicilioID" unique="NORMAL" >
+				<column name="domicilioID" />
+			</index>
+			<index name="cargoID" unique="NORMAL" >
+				<column name="cargoID" />
+			</index>
+			<fk name="usuario_ibfk_1" to_schema="aromito" to_table="domicilio" options="" >
+				<fk_column name="domicilioID" pk="id" />
+			</fk>
+			<fk name="usuario_ibfk_2" to_schema="aromito" to_table="cargo" options="" >
+				<fk_column name="cargoID" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
+		</table>
+		<function name="BIN_TO_UUID2" id="Function-167f" isSystem="false" params_known="y" >
+			<string><![CDATA[CREATE  FUNCTION `BIN_TO_UUID2`(b BINARY(16)) RETURNS char(36) CHARSET ascii COLLATE ascii_general_ci
+    DETERMINISTIC
+BEGIN
+   DECLARE hexStr CHAR(32);
+   SET hexStr = HEX(b);
+   RETURN LOWER(CONCAT(
+     SUBSTR(hexStr, 25, 8), '-',      -- eeeeeeee
+     SUBSTR(hexStr, 21, 4), '-',      -- eeee
+     SUBSTR(hexStr, 13, 8), '-',      -- ddddcccc
+     SUBSTR(hexStr, 9, 4), '-',       -- bbbb
+     SUBSTR(hexStr, 1, 8)             -- aaaaaaaa
+  ));
+END]]></string>
+			<input_param jt="1" type="char" inOut="4" />
+			<input_param name="b" jt="-2" type="binary" inOut="1" />
+		</function>
+		<function name="UUID_TO_BIN" id="Function-1783" isSystem="false" params_known="y" >
+			<string><![CDATA[CREATE  FUNCTION `UUID_TO_BIN`(uuid CHAR(36)) RETURNS binary(16)
+    DETERMINISTIC
+BEGIN
+  RETURN UNHEX(CONCAT(
+    SUBSTRING(uuid, 25, 12),
+    SUBSTRING(uuid, 20, 4),
+    SUBSTRING(uuid, 15, 4),
+    SUBSTRING(uuid, 10, 4),
+    SUBSTRING(uuid, 1, 8)
+  ));
+END]]></string>
+			<input_param jt="-2" type="binary" inOut="4" />
+			<input_param name="uuid" jt="1" type="char" inOut="1" />
+		</function>
+		<trigger name="trg_check_servicio_consistente_before_insert" table="empleado" id="Trigger-be8" isSystem="false" >
+			<string><![CDATA[CREATE TRIGGER ${nameWithSchemaName} BEFORE INSERT ON empleado FOR EACH ROW BEGIN
+    DECLARE jefaturaServicioID BINARY(16);
+    -- Verificar si NEW.jefaturaID no es NULL
+    IF NEW.jefaturaID IS NOT NULL THEN
+        -- Intentar obtener el servicioID de la JefaturaDeServicio asociada
+        SELECT servicioID INTO jefaturaServicioID
+        FROM JefaturaDeServicio
+        WHERE id = NEW.jefaturaID;
+        -- Si no se encuentra la JefaturaDeServicio, generar un error
+        IF jefaturaServicioID IS NULL THEN
+            SIGNAL SQLSTATE '45000' 
+            SET MESSAGE_TEXT = 'La JefaturaDeServicio especificada no existe.';
+        END IF;
+        -- Verificar si los servicioID coinciden
+        IF NEW.servicioID != jefaturaServicioID THEN
+            SIGNAL SQLSTATE '45000' 
+            SET MESSAGE_TEXT = 'El servicioID del Empleado debe coincidir con el servicioID de la JefaturaDeServicio.';
+        END IF;
+    END IF;
+    -- Si NEW.jefaturaID es NULL, no se realiza la validación
+END]]></string>
+		</trigger>
+		<trigger name="trg_check_servicio_consistente_before_update" table="empleado" id="Trigger-231a" isSystem="false" >
+			<string><![CDATA[CREATE TRIGGER ${nameWithSchemaName} BEFORE UPDATE ON empleado FOR EACH ROW BEGIN
+    DECLARE jefaturaServicioID BINARY(16);
+    -- Verificar si NEW.jefaturaID no es NULL
+    IF NEW.jefaturaID IS NOT NULL THEN
+        -- Intentar obtener el servicioID de la JefaturaDeServicio asociada
+        SELECT servicioID INTO jefaturaServicioID
+        FROM JefaturaDeServicio
+        WHERE id = NEW.jefaturaID;
+        -- Si no se encuentra la JefaturaDeServicio, generar un error
+        IF jefaturaServicioID IS NULL THEN
+            SIGNAL SQLSTATE '45000' 
+            SET MESSAGE_TEXT = 'La JefaturaDeServicio especificada no existe.';
+        END IF;
+        -- Verificar si los servicioID coinciden
+        IF NEW.servicioID != jefaturaServicioID THEN
+            SIGNAL SQLSTATE '45000' 
+            SET MESSAGE_TEXT = 'El servicioID del Empleado debe coincidir con el servicioID de la JefaturaDeServicio.';
+        END IF;
+    END IF;
+    -- Si NEW.jefaturaID es NULL, no se realiza la validación
+END]]></string>
+		</trigger>
+	</schema>
+	<layout name="Main Layout" id="Layout-8aa" show_column_type="y" show_page_borders="y" show_relation="cascade" >
+		<entity schema="aromito" name="autorizacion" color="BED3F4" x="48" y="160" />
+		<entity schema="aromito" name="cargo" color="BED3F4" x="464" y="160" />
+		<entity schema="aromito" name="diagramadeservicio" color="F4DDBE" x="1904" y="800" />
+		<entity schema="aromito" name="direccion" color="BED3F4" x="1568" y="400" />
+		<entity schema="aromito" name="domicilio" color="BED3F4" x="272" y="112" />
+		<entity schema="aromito" name="empleado" color="BED3F4" x="928" y="544" />
+		<entity schema="aromito" name="empleado_novedad" color="BED3F4" x="1184" y="928" />
+		<entity schema="aromito" name="estadotramite" color="BED3F4" x="1456" y="1040" />
+		<entity schema="aromito" name="francocompensatorio" color="BED3F4" x="1360" y="144" />
+		<entity schema="aromito" name="horaextra" color="BED3F4" x="752" y="64" />
+		<entity schema="aromito" name="horario" color="BEBEF4" x="2464" y="592" />
+		<entity schema="aromito" name="horarioabierto" color="BEBEF4" x="2224" y="352" />
+		<entity schema="aromito" name="horariobase" color="BEBEF4" x="2128" y="592" />
+		<entity schema="aromito" name="horarioconfranquicia" color="BEBEF4" x="2112" y="800" />
+		<entity schema="aromito" name="horariodxi" color="BEBEF4" x="2816" y="1184" />
+		<entity schema="aromito" name="horarioestandar" color="D1BEF4" x="2848" y="352" />
+		<entity schema="aromito" name="horarioferiante" color="D1BEF4" x="2816" y="720" />
+		<entity schema="aromito" name="horarioguardiaenfermeria" color="D1BEF4" x="2848" y="1024" />
+		<entity schema="aromito" name="horarioguardiamedica" color="D1BEF4" x="2800" y="864" />
+		<entity schema="aromito" name="horariojefeservicioguardiapasiva" color="BEBEF4" x="2432" y="912" />
+		<entity schema="aromito" name="horarionocturno" color="BEBEF4" x="2832" y="576" />
+		<entity schema="aromito" name="horariosemanal" color="BEBEF4" x="2528" y="352" />
+		<entity schema="aromito" name="jefaturadeservicio" color="BED3F4" x="1280" y="816" />
+		<entity schema="aromito" name="jornadalaboral" color="F4DDBE" x="1904" y="320" />
+		<entity schema="aromito" name="marcacionempleado" color="BED3F4" x="864" y="1168" />
+		<entity schema="aromito" name="memorandum" color="C7F4BE" x="496" y="1408" />
+		<entity schema="aromito" name="memorandum_autorizacion" color="C7F4BE" x="256" y="1184" />
+		<entity schema="aromito" name="memorandum_destinatario" color="C7F4BE" x="592" y="1184" />
+		<entity schema="aromito" name="memorandum_firmante" color="C7F4BE" x="96" y="1408" />
+		<entity schema="aromito" name="novedad" color="BED3F4" x="1184" y="1168" />
+		<entity schema="aromito" name="oficinadepersonal" color="BED3F4" x="256" y="768" />
+		<entity schema="aromito" name="partediario" color="BED3F4" x="256" y="928" />
+		<entity schema="aromito" name="partediario_empleado" color="BED3F4" x="624" y="928" />
+		<entity schema="aromito" name="planificacion" color="F4DDBE" x="1904" y="464" />
+		<entity schema="aromito" name="registrojornadalaboral" color="BED3F4" x="928" y="928" />
+		<entity schema="aromito" name="servicio" color="F4DDBE" x="1568" y="800" />
+		<entity schema="aromito" name="usuario" color="BED3F4" x="432" y="368" />
+		<callout x="1120" y="48" pointer="Round" >
+			<comment><![CDATA[Diagrama Entidad Relación (DER)]]></comment>
+		</callout>
+	</layout>
+	<layout name="~Layout with Sample Tools" id="Layout-17b0" show_column_type="y" show_relation="columns" >
+		<entity schema="aromito" name="autorizacion" color="BED3F4" x="736" y="656" />
+		<entity schema="aromito" name="cargo" color="BED3F4" x="1376" y="48" />
+		<entity schema="aromito" name="diagramadeservicio" color="F4DDBE" x="1072" y="1216" />
+		<entity schema="aromito" name="direccion" color="F4DDBE" x="736" y="1216" />
+		<entity schema="aromito" name="domicilio" color="C7F4BE" x="2000" y="704" />
+		<entity schema="aromito" name="empleado" color="BED3F4" x="2304" y="48" />
+		<entity schema="aromito" name="empleado_novedad" color="BED3F4" x="2304" y="304" />
+		<entity schema="aromito" name="estadotramite" color="BED3F4" x="1712" y="656" />
+		<entity schema="aromito" name="francocompensatorio" color="BED3F4" x="1376" y="656" />
+		<entity schema="aromito" name="horaextra" color="BED3F4" x="1056" y="656" />
+		<entity schema="aromito" name="horario" color="BEBEF4" x="2320" y="1216" />
+		<entity schema="aromito" name="horarioabierto" color="BEBEF4" x="2000" y="1264" />
+		<entity schema="aromito" name="horariobase" color="BEBEF4" x="2608" y="1216" />
+		<entity schema="aromito" name="horarioconfranquicia" color="BEBEF4" x="2608" y="1472" />
+		<entity schema="aromito" name="horariodxi" color="BEBEF4" x="2320" y="1008" />
+		<entity schema="aromito" name="horarioestandar" color="D1BEF4" x="3584" y="1008" />
+		<entity schema="aromito" name="horarioferiante" color="D1BEF4" x="3872" y="1008" />
+		<entity schema="aromito" name="horarioguardiaenfermeria" color="D1BEF4" x="2944" y="1008" />
+		<entity schema="aromito" name="horarioguardiamedica" color="D1BEF4" x="3248" y="1008" />
+		<entity schema="aromito" name="horariojefeservicioguardiapasiva" color="BEBEF4" x="2320" y="1472" />
+		<entity schema="aromito" name="horarionocturno" color="BEBEF4" x="2016" y="1008" />
+		<entity schema="aromito" name="horariosemanal" color="BEBEF4" x="2000" y="1472" />
+		<entity schema="aromito" name="jefaturadeservicio" color="BED3F4" x="1712" y="288" />
+		<entity schema="aromito" name="jornadalaboral" color="F4DDBE" x="1328" y="1008" />
+		<entity schema="aromito" name="marcacionempleado" color="BED3F4" x="2672" y="48" />
+		<entity schema="aromito" name="memorandum" color="C7F4BE" x="64" y="1008" />
+		<entity schema="aromito" name="memorandum_autorizacion" color="C7F4BE" x="336" y="1008" />
+		<entity schema="aromito" name="memorandum_destinatario" color="C7F4BE" x="48" y="1264" />
+		<entity schema="aromito" name="memorandum_firmante" color="C7F4BE" x="336" y="1264" />
+		<entity schema="aromito" name="novedad" color="BED3F4" x="3056" y="320" />
+		<entity schema="aromito" name="oficinadepersonal" color="BED3F4" x="1088" y="80" />
+		<entity schema="aromito" name="partediario" color="BED3F4" x="1056" y="400" />
+		<entity schema="aromito" name="partediario_empleado" color="BED3F4" x="2000" y="304" />
+		<entity schema="aromito" name="planificacion" color="F4DDBE" x="1072" y="1008" />
+		<entity schema="aromito" name="registrojornadalaboral" color="BED3F4" x="3056" y="48" />
+		<entity schema="aromito" name="servicio" color="F4DDBE" x="736" y="1008" />
+		<entity schema="aromito" name="usuario" color="BED3F4" x="1376" y="288" />
+		<script name="SQL Editor" id="Editor-563" language="SQL" >
+			<string><![CDATA[SELECT
+	id, nombres, apellidos, mail, cuil, `fechaAlta`, sexo, tel, estado, `domicilioID`, `cargoID`, `tipoUsuario`
+FROM
+	aromito.usuario o;]]></string>
+		</script>
+		<browser id="Browse-1bcd" name="Relational Data Explorer" confirm_updates="y" >
+			<browse_table schema="aromito" entity="usuario" x="20" y="20" width="270" height="-60" >
+				<browse_table schema="aromito" entity="autorizacion" fk="autorizacion_ibfk_1" x="310" y="20" width="500" height="350" />
+			</browse_table>
+		</browser>
+	</layout>
+</project>
