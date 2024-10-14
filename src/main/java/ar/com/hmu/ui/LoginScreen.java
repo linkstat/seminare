@@ -10,10 +10,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
-import java.awt.*;
-
 public class LoginScreen extends Application {
-
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Inicio de sesión :: Sistema de Gestión de Ausentismo HMU");

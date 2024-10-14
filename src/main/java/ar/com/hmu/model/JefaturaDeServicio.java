@@ -45,9 +45,9 @@ public class JefaturaDeServicio extends Usuario {
 
 	/**
 	 * 
-	 * @param Data
+	 * @param reporte
 	 */
-	public void generarReporte(Data Data){
+	public void generarReporte(int reporte){
 
 	}
 }//end JefaturaDeServicio
