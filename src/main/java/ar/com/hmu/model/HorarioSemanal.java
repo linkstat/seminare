@@ -3,18 +3,20 @@ package ar.com.hmu.model;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import ar.com.hmu.utils.DiaSemana;
 
 /**
  * @author Pablo Alejandro Hamann <linkstat@hmu.com.ar>
  * @version 1.0
   */
-public class HorarioDXI extends Horario {
+public class HorarioSemanal extends Horario {
 
-	private Map<DiaSemana, Integer> distribucionHoraria;
+	private Map<DiaSemana, Integer> distribucionSemanal;
 	private Map<DiaSemana, LocalDateTime> horaInicioPorDia;
-	private int horasSemanales;
 
-	public HorarioDXI(){
+	public HorarioSemanal(){
 
 	}
 
@@ -23,7 +25,7 @@ public class HorarioDXI extends Horario {
 		return null;
 	}
 
-	public boolean verificarCondicionesEspec�ficas(){
+	public boolean verificarCondicionesEspecificas(){
 		return false;
 	}
-}//end HorarioDXI
+}//end HorarioSemanal
