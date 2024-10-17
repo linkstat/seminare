@@ -1,5 +1,11 @@
 package ar.com.hmu.config;
 
+/*
+ * Clase POJO que se utiliza para almacenar y acceder a los parámetros de conexión de la BD.
+ * Contiene datos de configuración como motor de BD, host, puerto, nombre de la BD, y credenciales de conexión.
+ * No realiza operaciones activas, solo almacena información.
+ * Es utilizada por la clase ConfigReader para mapear los valores de YAML a un objeto Java.
+ */
 public class DatabaseConfig {
 
     private String type;
