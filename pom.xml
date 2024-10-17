@@ -24,16 +24,19 @@
             <artifactId>javafx-fxml</artifactId>
             <version>23</version>
         </dependency>
+        <!-- MariaDB JDBC Dependencies -->
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
             <version>3.0.6</version>
         </dependency>
+        <!-- Spring Framework Dependencies -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
             <version>5.8.0</version>
         </dependency>
+        <!-- SnakeYAML Dependencies -->
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
@@ -49,6 +52,7 @@
 
     <build>
         <plugins>
+            <!-- Plugin de compilación de JDK para Maven -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -58,6 +62,7 @@
                     <target>23</target>
                 </configuration>
             </plugin>
+            <!-- Plugin de compilación de JavaFX para Maven -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
@@ -69,6 +74,7 @@
                         </goals>
                     </execution>
                 </executions>
+                <!--Configuración acerca del punto de entrada (donde está el main) para Maven -->
                 <configuration>
                     <mainClass>ar.com.hmu.ui.LoginScreen</mainClass>
                 </configuration>
