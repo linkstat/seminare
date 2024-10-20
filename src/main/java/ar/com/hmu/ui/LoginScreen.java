@@ -1,5 +1,7 @@
 package ar.com.hmu.ui;
 
+import ar.com.hmu.config.ConfigReader;
+import ar.com.hmu.repository.DatabaseConnector;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
@@ -12,7 +14,24 @@ public class LoginScreen extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        // Seteo de las propiedades de la "ventana" de login
+        // Configurar la base de datos
+        ConfigReader configReader = new ConfigReader();
+        DatabaseConnector databaseConnector = new DatabaseConnector(configReader);
+
+        // Carga del archivo FXML
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("loginScreen.fxml"));
+        Parent root = loader.load();
+
+        // Obtener el controlador y pasarle el DatabaseConnector
+        LoginController controller = loader.getController();
+        if (controller == null) {
+            System.err.println("El controlador no fue inicializado correctamente.");
+            return;
+        }
+        controller.setDatabaseConnector(databaseConnector);
+
+        // Configurar la ventana principal
+        Scene scene = new Scene(root);
         primaryStage.setTitle("Inicio de sesión :: Sistema de Gestión de Ausentismo HMU");
         primaryStage.setResizable(false);
         Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
@@ -20,14 +39,6 @@ public class LoginScreen extends Application {
         //double windowHeight = screenBounds.getHeight() * 0.25; // 25% de la pantalla
         //primaryStage.setWidth(windowWidth);
         //primaryStage.setHeight(windowHeight);
-
-        // Carga del archivo FXML
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("loginScreen.fxml"));
-        Parent root = loader.load();
-
-        // Crear la escena a partir del FXML
-        //Scene scene = new Scene(root, 400, 300);
-        Scene scene = new Scene(root);
         primaryStage.setScene(scene);
         primaryStage.show();
     }

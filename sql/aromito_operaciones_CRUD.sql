@@ -115,48 +115,61 @@ SET @NutricionID = UUID_TO_BIN(UUID());
 SET @TraumatoID = UUID_TO_BIN(UUID());
 SET @ToxicologiaID = UUID_TO_BIN(UUID());
 
+-- Generar una contraseña inicial usando Bcrypt
+/* Por defecto, utlizaremos la contraseña Aromito2024
+ * En GNU/Linux, la herramienta 'htpasswd' (parte de Apache HTTP Server tools), genera un hash de bcrypt con:
+ *
+ *   htpasswd -bnBC 10 "" "miContraseñaSegura123" | tr -d ':\n'
+ * 
+ * De forma online, Bcrypt-Generator.com (en https://bcrypt-generator.com/ ), puede generar contraseñas.
+ * String: Aromito1
+ * Rounds: 12
+ */
+SET @initPass = '$2a$12$dUczG8OtzxElYH.qAXbtUOHVKORj4zJH2eoy5WXfXqXUm0vRq3obO';
+
+
 -- Insertar en Usuario
-INSERT INTO Usuario (id, nombres, apellidos, mail, cuil, fechaAlta, sexo, estado, domicilioID, tipoUsuario)
+INSERT INTO Usuario (id, nombres, apellidos, mail, cuil, fechaAlta, sexo, estado, domicilioID, tipoUsuario, passwd)
 VALUES
-    (UUID_TO_BIN(UUID()), 'Mariano Gustavo', 'Marino', 'direccion@hmu.com.ar', 20224448885, CURDATE(), 'MASCULINO', TRUE, @HMUdomID, 'Direccion'),
-    (UUID_TO_BIN(UUID()), 'Federico', 'Huergo Sánchez', 'fedesubdir@hmu.com.ar', 20259993331, CURDATE(), 'MASCULINO', TRUE, @HIMdomID, 'Direccion'),
-    (UUID_TO_BIN(UUID()), 'Gloria', 'Longoni', 'subdirectora@hmu.com.ar', 27129997773, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio WHERE ciudad = 'Alta Gracia' LIMIT 1), 'Direccion'),
-    (UUID_TO_BIN(UUID()), 'Fabricio', 'Vitali', 'subdireccion@hmu.com.ar', 20239997772, CURDATE(), 'MASCULINO', TRUE, @HMUdomID, 'Direccion'),
-    (@JefeAdmisionID, 'Andrea', 'Balconte', 'andrea@hmu.com.ar', 27295554447, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio'),
-    (@JefeBiomedicaID, 'Silvina', 'Maestro', 'smaestro@hmu.com.ar', 27274422442, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio'),
-    (@JefeCardiologiaID, 'Juan', 'Aniceto', 'janiceto@hmu.com.ar', 20124543421, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio'),
-    (@JefeCirugiaID, 'Maximiliano', 'Titarelli', 'drtita@hmu.com.ar', 20268944448, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio'),
-    (@JefeDxiID, 'Juan Ignacio', 'Morales', 'jimorales@hmu.com.ar', 20281324547, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio'),
-    (@JefeEnfermeriaID, 'Tania', 'Plaza', 'tplaza@hmu.com.ar', 27224444445, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio'),
-    (@JefeEsterilizacionID, 'Matías', 'Pérez Cabral', 'mcp@hmu.com.ar', 20289445441, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio'),
-    (@JefeFarmaciaID, 'María Pía', 'Arancibia', 'piaarancibia@hmu.com.ar', 27254344447, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio'),
-    (@JefeHabilitacionID, 'Carlos Fernando', 'Roberts', 'ferroberts@hmu.com.ar', 20276444446, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio'),
-    (@JefeInformaticaID, 'Juan Manuel', 'Roqué', 'jmroque@hmu.com.ar', 20220361118, CURDATE(), 'OTRO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio'),
-    (@JefeNutricionID, 'Alejandra', 'Boqué', 'aleboque@hmu.com.ar', 27174444446, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio'),
-    (@JefeTraumatoID, 'Omar Wenceslao', 'Sánchez', 'owsanchez@hmu.com.ar', 20124644445, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio'),
-    (@JefeToxicologiaID, 'Andrea', 'Vilkelis', 'avilkelis@hmu.com.ar', 27214434447, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio'),
-    (UUID_TO_BIN(UUID()), 'Florencia', 'Maurino', 'flormaurino@hmu.com.ar', 27284644443, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'OficinaDePersonal'),
-    (UUID_TO_BIN(UUID()), 'Baltazar', 'Garzón', 'baltig@hmu.com.ar', 20554644448, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado'),
-    (UUID_TO_BIN(UUID()), 'Pedro', 'Taborda', 'pltaborda@hmu.com.ar', 20154786445, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado'),
-    (UUID_TO_BIN(UUID()), 'María Laura', 'Vargas Ruíz', 'mlvargas@hmu.com.ar', 27554664563, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado'),
-    (UUID_TO_BIN(UUID()), 'María Celeste', 'Vignetta', 'mcv@hmu.com.ar', 27554685443, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado'),
-    (UUID_TO_BIN(UUID()), 'Alicia', 'Vivas', 'baltig@hmu.com.ar', 27554567443, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado'),
-    (UUID_TO_BIN(UUID()), 'Matías Quique', 'Cnga Castellanos', 'lestat@hmu.com.ar', 20554649743, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado'),
-    (UUID_TO_BIN(UUID()), 'Mauricio Elio', 'Garay', 'baltig@hmu.com.ar', 24574741745, CURDATE(), 'OTRO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado'),
-    (UUID_TO_BIN(UUID()), 'Eva Patricia', 'Usandivares', 'epu@hmu.com.ar', 27556786453, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado'),
-    (UUID_TO_BIN(UUID()), 'Edith', 'Tolay', 'etolay@hmu.com.ar', 20454676443, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado'),
-    (UUID_TO_BIN(UUID()), 'José Luis', 'Terrieris', 'jterrieris@hmu.com.ar', 20554543453, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado'),
-    (UUID_TO_BIN(UUID()), 'Claudia', 'Tarifa', 'clautarifa@hmu.com.ar', 27540678443, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado'),
-    (UUID_TO_BIN(UUID()), 'Erica', 'Tapia', 'erikatapia@hmu.com.ar', 27554560863, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado'),
-    (UUID_TO_BIN(UUID()), 'Demetrio', 'Tampares', 'demetam@hmu.com.ar', 24784044443, CURDATE(), 'OTRO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado'),
-    (UUID_TO_BIN(UUID()), 'Alejandro', 'Suizer', 'amsuizer@hmu.com.ar', 20526456443, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado'),
-    (UUID_TO_BIN(UUID()), 'David', 'Suárez', 'dsuarez@hmu.com.ar', 20554897343, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado'),
-    (UUID_TO_BIN(UUID()), 'Soledad', 'Romero', 'soleromero@hmu.com.ar', 27864567893, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado'),
-    (UUID_TO_BIN(UUID()), 'Pedro', 'Rius', 'pedrorius@hmu.com.ar', 20554674843, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado'),
-    (UUID_TO_BIN(UUID()), 'Damian', 'Rabbat', 'drabbat@hmu.com.ar', 20558244443, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado'),
-    (UUID_TO_BIN(UUID()), 'Ismael', 'Puig', 'ipuig@hmu.com.ar', 20567974443, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado'),
-    (UUID_TO_BIN(UUID()), 'Diego', 'Pascolo', 'dpascolo@hmu.com.ar', 20456645843, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado'),
-    (UUID_TO_BIN(UUID()), 'Sebastián', 'Bustos', 'sebustos@hmu.com.ar', 24554978443, CURDATE(), 'OTRO', TRUE, (SELECT id FROM Domicilio WHERE calle = 'Av. Siempre Viva' LIMIT 1), 'Empleado');
+    (UUID_TO_BIN(UUID()), 'Mariano Gustavo', 'Marino', 'direccion@hmu.com.ar', 20224448885, CURDATE(), 'MASCULINO', TRUE, @HMUdomID, 'Direccion', @initPass),
+    (UUID_TO_BIN(UUID()), 'Federico', 'Huergo Sánchez', 'fedesubdir@hmu.com.ar', 20259993331, CURDATE(), 'MASCULINO', TRUE, @HIMdomID, 'Direccion', @initPass),
+    (UUID_TO_BIN(UUID()), 'Gloria', 'Longoni', 'subdirectora@hmu.com.ar', 27129997773, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio WHERE ciudad = 'Alta Gracia' LIMIT 1), 'Direccion', @initPass),
+    (UUID_TO_BIN(UUID()), 'Fabricio', 'Vitali', 'subdireccion@hmu.com.ar', 20239997772, CURDATE(), 'MASCULINO', TRUE, @HMUdomID, 'Direccion', @initPass),
+    (@JefeAdmisionID, 'Andrea', 'Balconte', 'andrea@hmu.com.ar', 27295554447, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio', @initPass),
+    (@JefeBiomedicaID, 'Silvina', 'Maestro', 'smaestro@hmu.com.ar', 27274422442, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio', @initPass),
+    (@JefeCardiologiaID, 'Juan', 'Aniceto', 'janiceto@hmu.com.ar', 20124543421, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio', @initPass),
+    (@JefeCirugiaID, 'Maximiliano', 'Titarelli', 'drtita@hmu.com.ar', 20268944448, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio', @initPass),
+    (@JefeDxiID, 'Juan Ignacio', 'Morales', 'jimorales@hmu.com.ar', 20281324547, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio', @initPass),
+    (@JefeEnfermeriaID, 'Tania', 'Plaza', 'tplaza@hmu.com.ar', 27224444445, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio', @initPass),
+    (@JefeEsterilizacionID, 'Matías', 'Pérez Cabral', 'mcp@hmu.com.ar', 20289445441, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio', @initPass),
+    (@JefeFarmaciaID, 'María Pía', 'Arancibia', 'piaarancibia@hmu.com.ar', 27254344447, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio', @initPass),
+    (@JefeHabilitacionID, 'Carlos Fernando', 'Roberts', 'ferroberts@hmu.com.ar', 20276444446, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio', @initPass),
+    (@JefeInformaticaID, 'Juan Manuel', 'Roqué', 'jmroque@hmu.com.ar', 20220361118, CURDATE(), 'OTRO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio', @initPass),
+    (@JefeNutricionID, 'Alejandra', 'Boqué', 'aleboque@hmu.com.ar', 27174444446, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio', @initPass),
+    (@JefeTraumatoID, 'Omar Wenceslao', 'Sánchez', 'owsanchez@hmu.com.ar', 20124644445, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio', @initPass),
+    (@JefeToxicologiaID, 'Andrea', 'Vilkelis', 'avilkelis@hmu.com.ar', 27214434447, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio', @initPass),
+    (UUID_TO_BIN(UUID()), 'Florencia', 'Maurino', 'flormaurino@hmu.com.ar', 27284644443, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'OficinaDePersonal', @initPass),
+    (UUID_TO_BIN(UUID()), 'Baltazar', 'Garzón', 'baltig@hmu.com.ar', 20554644448, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
+    (UUID_TO_BIN(UUID()), 'Pedro', 'Taborda', 'pltaborda@hmu.com.ar', 20154786445, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
+    (UUID_TO_BIN(UUID()), 'María Laura', 'Vargas Ruíz', 'mlvargas@hmu.com.ar', 27554664563, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
+    (UUID_TO_BIN(UUID()), 'María Celeste', 'Vignetta', 'mcv@hmu.com.ar', 27554685443, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
+    (UUID_TO_BIN(UUID()), 'Alicia', 'Vivas', 'baltig@hmu.com.ar', 27554567443, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
+    (UUID_TO_BIN(UUID()), 'Matías Quique', 'Cnga Castellanos', 'lestat@hmu.com.ar', 20554649743, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
+    (UUID_TO_BIN(UUID()), 'Mauricio Elio', 'Garay', 'baltig@hmu.com.ar', 24574741745, CURDATE(), 'OTRO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
+    (UUID_TO_BIN(UUID()), 'Eva Patricia', 'Usandivares', 'epu@hmu.com.ar', 27556786453, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
+    (UUID_TO_BIN(UUID()), 'Edith', 'Tolay', 'etolay@hmu.com.ar', 20454676443, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
+    (UUID_TO_BIN(UUID()), 'José Luis', 'Terrieris', 'jterrieris@hmu.com.ar', 20554543453, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
+    (UUID_TO_BIN(UUID()), 'Claudia', 'Tarifa', 'clautarifa@hmu.com.ar', 27540678443, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
+    (UUID_TO_BIN(UUID()), 'Erica', 'Tapia', 'erikatapia@hmu.com.ar', 27554560863, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
+    (UUID_TO_BIN(UUID()), 'Demetrio', 'Tampares', 'demetam@hmu.com.ar', 24784044443, CURDATE(), 'OTRO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
+    (UUID_TO_BIN(UUID()), 'Alejandro', 'Suizer', 'amsuizer@hmu.com.ar', 20526456443, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
+    (UUID_TO_BIN(UUID()), 'David', 'Suárez', 'dsuarez@hmu.com.ar', 20554897343, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
+    (UUID_TO_BIN(UUID()), 'Soledad', 'Romero', 'soleromero@hmu.com.ar', 27864567893, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
+    (UUID_TO_BIN(UUID()), 'Pedro', 'Rius', 'pedrorius@hmu.com.ar', 20554674843, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
+    (UUID_TO_BIN(UUID()), 'Damian', 'Rabbat', 'drabbat@hmu.com.ar', 20558244443, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
+    (UUID_TO_BIN(UUID()), 'Ismael', 'Puig', 'ipuig@hmu.com.ar', 20567974443, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
+    (UUID_TO_BIN(UUID()), 'Diego', 'Pascolo', 'dpascolo@hmu.com.ar', 20456645843, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
+    (UUID_TO_BIN(UUID()), 'Sebastián', 'Bustos', 'sebustos@hmu.com.ar', 24554978443, CURDATE(), 'OTRO', TRUE, (SELECT id FROM Domicilio WHERE calle = 'Av. Siempre Viva' LIMIT 1), 'Empleado', @initPass);
 
 -- Insertar en la tabla 'Direccion' utilizando los 'id' guardados previamente para esos usuarios
 INSERT INTO Direccion (id)
