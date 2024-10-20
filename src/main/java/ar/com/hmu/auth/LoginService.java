@@ -1,41 +1,39 @@
 package ar.com.hmu.auth;
 
-import ar.com.hmu.repository.DatabaseConnector;
+import ar.com.hmu.repository.UsuarioRepository;
 import org.springframework.security.crypto.bcrypt.BCrypt;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-/*
- * Gestiona la lógica de negocio relacionada con el inicio de sesión,
- * incluyendo la validación de las credenciales del usuario.
- * Esta clase no representa un modelo de datos, ni es una clase de configuración, ni es un controlador de interfaz de usuario.
- * Más bien, su propósito es encapsular la lógica central de la aplicación.
- * Por tanto, tiene más sentido que se coloque en un paquete destinado específicamente a autenticación y autorización.
- * Eventualmente tendremos múltiples servicios relacionados con la seguridad.
+
+/**
+ * Servicio que gestiona la lógica de negocio relacionada con el inicio de sesión de usuarios.
  */
 public class LoginService {
 
-    private DatabaseConnector databaseConnector;
+    private UsuarioRepository usuarioRepository;
 
-    public LoginService(DatabaseConnector databaseConnector) {
-        this.databaseConnector = databaseConnector;
+    /**
+     * Constructor que inicializa el `LoginService` con un objeto {@link UsuarioRepository}.
+     *
+     * @param usuarioRepository el repositorio de usuarios.
+     */
+    public LoginService(UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
     }
 
+    /**
+     * Valida las credenciales de un usuario.
+     *
+     * @param cuil el CUIL del usuario que intenta iniciar sesión.
+     * @param password la contraseña ingresada por el usuario.
+     * @return true si las credenciales son válidas, false de lo contrario.
+     */
     public boolean validateUser(long cuil, String password) {
-        String query = "SELECT passwd FROM Usuario WHERE cuil = ?";
-        try (Connection conn = databaseConnector.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-
-            stmt.setLong(1, cuil);
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                String storedHash = rs.getString("passwd");
+        try {
+            String storedHash = usuarioRepository.findPasswordByCuil(cuil);
+            if (storedHash != null) {
                 // Validar la contraseña con BCrypt
                 return BCrypt.checkpw(password, storedHash);
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
         }

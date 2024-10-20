@@ -1,18 +1,19 @@
 package ar.com.hmu.ui;
 
-import ar.com.hmu.repository.DatabaseConnector;
-import ar.com.hmu.utils.PasswordUtils;
+import ar.com.hmu.auth.LoginService;
+import ar.com.hmu.utils.AlertUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-//import org.mariadb.jdbc.Connection;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import javafx.scene.input.KeyEvent;
 
+/**
+ * Controlador para la pantalla de inicio de sesión.
+ *
+ * La clase gestiona la lógica relacionada con el inicio de sesión, incluyendo la validación de credenciales de usuario,
+ * y la interacción con la base de datos mediante el uso de {@link LoginService}.
+ */
 public class LoginController {
 
     @FXML
@@ -22,50 +23,120 @@ public class LoginController {
     private PasswordField passwordField;
 
     @FXML
-    private CheckBox showPasswordCheckBox;
-
-    @FXML
-    private CheckBox rememberMeCheckBox;
-
-    @FXML
     private Button loginButton;
 
+    // LoginService para la autenticación del usuario
+    private LoginService loginService;
+
+    /**
+     * Método para establecer el {@link LoginService} que se utilizará para la autenticación.
+     *
+     * @param loginService el servicio de autenticación que se va a utilizar.
+     */
+    public void setLoginService(LoginService loginService) {
+        this.loginService = loginService;
+    }
+
+    /**
+     * Inicializa los componentes de la interfaz de usuario.
+     *
+     * Este método es llamado automáticamente por el framework JavaFX después de que se cargue el archivo FXML.
+     */
     @FXML
     public void initialize() {
-        // Lógica de inicialización si es necesaria
+        configureCuilField();
     }
 
-    private DatabaseConnector databaseConnector;
-    // Método para establecer el DatabaseConnector desde fuera
-    public void setDatabaseConnector(DatabaseConnector databaseConnector) {
-        this.databaseConnector = databaseConnector;
+    /**
+     * Configura el campo de texto para el CUIL para que solo acepte números y formatee el texto automáticamente.
+     */
+    private void configureCuilField() {
+        // Limitar el input a solo dígitos numéricos
+        usernameField.addEventFilter(KeyEvent.KEY_TYPED, event -> {
+            if (!event.getCharacter().matches("\\d")) {
+                event.consume();  // Ignora el input si no es un número
+            }
+        });
+
+        // Añadir un listener para formatear el texto mientras se escribe
+        usernameField.textProperty().addListener((observable, oldValue, newValue) -> {
+            // Remover cualquier caracter que no sea un dígito
+            String digitsOnly = newValue.replaceAll("[^\\d]", "");
+
+            // Limitar la longitud máxima a 11 dígitos
+            if (digitsOnly.length() > 11) {
+                digitsOnly = digitsOnly.substring(0, 11);
+            }
+
+            // Aplicar el formato NN-NNNNNNNN-N
+            String formattedText = formatCuil(digitsOnly);
+
+            // Actualizar el campo de texto con el texto formateado
+            usernameField.setText(formattedText);
+
+            // Mover el cursor al final del texto
+            usernameField.positionCaret(formattedText.length());
+        });
     }
 
+    /**
+     * Aplica el formato NN-NNNNNNNN-N a una cadena de números.
+     *
+     * @param digits cadena de dígitos que representan el CUIL.
+     * @return el CUIL formateado como NN-NNNNNNNN-N.
+     */
+    private String formatCuil(String digits) {
+        StringBuilder formatted = new StringBuilder();
+
+        if (digits.length() >= 2) {
+            formatted.append(digits.substring(0, 2)).append("-");
+        } else {
+            formatted.append(digits);
+            return formatted.toString();
+        }
+
+        if (digits.length() >= 10) {
+            formatted.append(digits.substring(2, 10)).append("-");
+            formatted.append(digits.substring(10));
+        } else if (digits.length() > 2) {
+            formatted.append(digits.substring(2));
+        }
+
+        return formatted.toString();
+    }
+
+    /**
+     * Gestiona el evento del botón de inicio de sesión.
+     *
+     * Este método es invocado cuando el usuario hace clic en el botón de "Iniciar Sesión".
+     * Valida las credenciales ingresadas por el usuario consultando la base de datos.
+     * Si las credenciales son correctas, se muestra un mensaje de éxito; si no lo son, se muestra una advertencia.
+     */
     @FXML
     private void handleLoginButtonClick() {
-        String username = usernameField.getText();
-        String password = passwordField.getText();
+        try {
+            // Obtener el CUIL y la contraseña ingresados
+            String cuil = usernameField.getText().replaceAll("[^\\d]", "");  // Remover guiones para obtener solo números
+            String password = passwordField.getText();
 
-        try (Connection connection = databaseConnector.getConnection()) {
-            String query = "SELECT passwd FROM usuario WHERE cuil = ?";
-            try (PreparedStatement statement = connection.prepareStatement(query)) {
-                statement.setString(1, username);
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    if (resultSet.next()) {
-                        String hashedPassword = resultSet.getString("passwd");
-                        if (PasswordUtils.validatePassword(password, hashedPassword)) {
-                            System.out.println("Inicio de sesión exitoso para el usuario: " + username);
-                        } else {
-                            System.out.println("Contraseña incorrecta para el usuario: " + username);
-                        }
-                    } else {
-                        System.out.println("Usuario no encontrado: " + username);
-                    }
-                }
+            if (loginService == null) {
+                throw new IllegalStateException("LoginService no está configurado. No se puede validar la autenticación.");
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("Error al intentar conectar a la base de datos.");
+
+            // Validar el usuario con LoginService
+            boolean isValidUser = loginService.validateUser(Long.parseLong(cuil), password);
+            if (isValidUser) {
+                AlertUtils.showInfo("Inicio de sesión exitoso para el CUIL: " + cuil);
+            } else {
+                AlertUtils.showWarn("¡Contraseña incorrecta o usuario no encontrado! [CUIL ingresado: " + cuil + "]");
+            }
+
+        } catch (NumberFormatException e) {
+            AlertUtils.showErr("El CUIL ingresado no es válido. Debe contener solo números.");
+        } catch (IllegalStateException e) {
+            AlertUtils.showErr("Error de configuración: " + e.getMessage());
+        } catch (Exception e) {
+            AlertUtils.showErr("Ocurrió un error inesperado: " + e.getMessage());
         }
     }
 }
