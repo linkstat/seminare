@@ -194,17 +194,18 @@ CREATE TABLE Cargo (
  */
 CREATE TABLE Usuario (
     id BINARY(16) PRIMARY KEY,
-    nombres VARCHAR(255) NOT NULL,
-    apellidos VARCHAR(255) NOT NULL,
-    mail VARCHAR(255) NOT NULL,
-    cuil BIGINT NOT NULL,
     fechaAlta DATE NOT NULL,
-    sexo ENUM('FEMENINO', 'MASCULINO', 'OTRO') NOT NULL,
-    tel BIGINT,
     estado BOOLEAN NOT NULL,
+    cuil BIGINT UNIQUE NOT NULL,
+    apellidos VARCHAR(255) NOT NULL,
+    nombres VARCHAR(255) NOT NULL,
+    sexo ENUM('FEMENINO', 'MASCULINO', 'OTRO') NOT NULL,
+    mail VARCHAR(255) NOT NULL,
+    tel BIGINT,
     domicilioID BINARY(16),
     cargoID BINARY(16),
     tipoUsuario VARCHAR(50) NOT NULL, -- Indica si: 'Direccion', 'Empleado', 'JefaturaDeServicio', 'OficinaDePersonal'
+    passwd VARCHAR(255) NOT NULL,
     FOREIGN KEY (domicilioID) REFERENCES Domicilio(id),
     FOREIGN KEY (cargoID) REFERENCES Cargo(id)
 );
@@ -557,9 +558,19 @@ CREATE TABLE RegistroJornadaLaboral (
 
 
 
-/* Extra:
- * Índices en Claves Foráneas:
+-- Extras
+/*
+/* Creación de índices en FK (Claves Foráneas)
  * Agregamos índices en las columnas que son claves foráneas y se utilizan en consultas frecuentes.
  */
 CREATE INDEX idx_empleado_jefatura ON Empleado (jefaturaID);
 CREATE INDEX idx_servicio_direccion ON Servicio (direccionID);
+
+/*
+ * Creación de un usuario propietario para la BD (acceso localhost unicamente)
+ * user: aromito
+ * pass: aromitoSuperSecretDBPass
+ */
+CREATE USER 'aromito'@'localhost' IDENTIFIED BY 'aromitoSuperSecretDBPass';
+GRANT ALL PRIVILEGES ON aromito.* TO 'aromito'@'localhost';
+FLUSH PRIVILEGES;
