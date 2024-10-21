@@ -48,7 +48,8 @@ public class DatabaseConnector {
      * Establece y devuelve una conexión con la base de datos.
      *
      * Este método crea una conexión a la base de datos utilizando los valores de configuración previamente
-     * obtenidos. Actualmente, solo se soporta la conexión a bases de datos de tipo MariaDB.
+     * obtenidos. Actualmente, solo se soporta la conexión a bases de datos de tipo MariaDB, por lo cual si
+     * el motor de BD fuera otro distinto de MariaDB, se tira una excepción indicando que no hay implementación.
      *
      * @return una instancia de {@link Connection} que representa la conexión activa a la base de datos.
      * @throws SQLException si ocurre un error al intentar conectar a la base de datos.
