@@ -7,12 +7,17 @@ import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
+import java.sql.SQLNonTransientConnectionException;
+import java.sql.SQLException;
 
 /**
- * Controlador para la pantalla de inicio de sesión.
+ * Controlador encargado de gestionar la interfaz de usuario de la pantalla de login.
  *
- * La clase gestiona la lógica relacionada con el inicio de sesión, incluyendo la validación de credenciales de usuario,
- * y la interacción con la base de datos mediante el uso de {@link LoginService}.
+ * Esta clase se encarga de manejar la lógica de presentación del formulario de inicio de sesión,
+ * incluyendo la validación de entradas del usuario y la coordinación con {@link LoginService}
+ * para la autenticación de las credenciales.
+ * Su responsabilidad principal es actualizar la interfaz de usuario en función de los resultados
+ * obtenidos del servicio de autenticación, mostrando mensajes adecuados para informar al usuario.
  */
 public class LoginController {
 
@@ -132,7 +137,7 @@ public class LoginController {
             }
 
         } catch (NumberFormatException e) {
-            AlertUtils.showErr("El CUIL ingresado no es válido. Debe contener solo números.");
+            AlertUtils.showErr("El CUIL ingresado no es válido.\nDebe contener solo números.");
         } catch (IllegalStateException e) {
             AlertUtils.showErr("Error de configuración: " + e.getMessage());
         } catch (Exception e) {

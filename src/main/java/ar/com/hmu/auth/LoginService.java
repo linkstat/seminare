@@ -26,17 +26,21 @@ public class LoginService {
      * @param cuil el CUIL del usuario que intenta iniciar sesión.
      * @param password la contraseña ingresada por el usuario.
      * @return true si las credenciales son válidas, false de lo contrario.
+     * @throws SQLException si ocurre un error con la conexión a la base de datos.
      */
-    public boolean validateUser(long cuil, String password) {
+    public boolean validateUser(long cuil, String password) throws SQLException {
         try {
             String storedHash = usuarioRepository.findPasswordByCuil(cuil);
-            if (storedHash != null) {
-                // Validar la contraseña con BCrypt
-                return BCrypt.checkpw(password, storedHash);
+
+            if (storedHash == null) {
+                return false; // Usuario no encontrado
             }
+
+            // Validar la contraseña con BCrypt
+            return BCrypt.checkpw(password, storedHash);
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new SQLException("Error al conectar con la base de datos para validar el usuario", e);
         }
-        return false;
     }
+
 }
