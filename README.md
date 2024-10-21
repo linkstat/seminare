@@ -9,14 +9,14 @@
 
 Este repositorio tiene como propósito el **almacenamiento y organización** de todos los archivos fuente necesarios para el desarrollo del proyecto del _Seminario de Práctica Profesional 2024_.
 
-Aquí encontrarás:
+Aquí tenemos:
 - Documentos técnicos.
 - Planos de software.
 - Diagramas UML.
 - Código fuente en Java.
 - Clases y espacios de trabajo.
 - Diseño de tablas SQL.
-- ¡Y todo lo que se te ocurra que contribuya al desarrollo del proyecto!
+- ¡Y muchas cosa más que hacen al desarrollo del proyecto!
 
 ## 📁 Estructura del Repositorio
 
