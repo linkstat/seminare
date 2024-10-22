@@ -10,20 +10,18 @@ import java.util.UUID;
   */
 public abstract class Usuario {
 
-	private String apellidos;
-	private Cargo cargo;
-	private int cuil;
-	private Domicilio domicilio;
-	private boolean estado;
-	private LocalDate fechaAlta;
 	private UUID id;
-	private String mail;
+	private LocalDate fechaAlta;
+	private long cuil;
+	private String apellidos;
 	private String nombres;
 	private Sexo sexo;
+	private boolean estado;
+	private String mail;
+	private Domicilio domicilio;
 	private int tel;
-	public Cargo m_Cargo;
-	public Domicilio m_Domicilio;
-	public Sexo m_Sexo;
+	private Cargo cargo;
+	private String password;
 
 	public Usuario(){
 
