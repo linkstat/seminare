@@ -3,9 +3,9 @@
 # y no son leídas por el programa (solo humanos ;-)
 #
 db:
-  type: mariadb
-  hostname: localhost
-  port: 3306
-  database: aromito
-  username: aromito
-  password: aromitoSuperSecretDBPass
+  dbType: mariadb
+  dbHost: localhost
+  dbPort: 3306
+  dbName: aromito
+  dbUser: aromito
+  dbPass: aromitoSuperSecretDBPass

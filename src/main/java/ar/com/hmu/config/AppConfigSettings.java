@@ -1,24 +1,20 @@
 package ar.com.hmu.config;
 
 /**
- * Clase que representa la configuración de la base de datos completa.
+ * Clase que representa la configuración completa de la aplicación.
  *
- * La clase `DatabaseSettings` se utiliza para encapsular la configuración de la base de datos.
- * Esta clase contiene un objeto de tipo {@link AppConfig}, el cual almacena todos los detalles
- * de conexión, como el tipo de base de datos, el host, el puerto, el nombre de la base de datos,
- * y las credenciales.
+ * La clase `AppConfigSettings` se utiliza para encapsular todas las configuraciones de la aplicación.
+ * Incluye un objeto de tipo {@link AppConfig} que almacena los detalles de conexión a la base de datos.
  */
-public class DatabaseSettings {
+public class AppConfigSettings {
 
     private AppConfig db;
 
     /**
      * Obtiene la configuración de la base de datos.
      *
-     * Este método devuelve un objeto {@link AppConfig} que contiene todos los parámetros
-     * necesarios para establecer una conexión con la base de datos.
-     *
-     * @return la configuración de la base de datos encapsulada en un {@link AppConfig}.
+     * @return un objeto {@link AppConfig} que contiene todos los parámetros
+     *         necesarios para establecer una conexión con la base de datos.
      */
     public AppConfig getDb() {
         return db;
@@ -26,10 +22,6 @@ public class DatabaseSettings {
 
     /**
      * Establece la configuración de la base de datos.
-     *
-     * Este método permite definir el objeto {@link AppConfig} que contiene toda la información
-     * necesaria para conectarse a la base de datos, como tipo, host, puerto, nombre de base de datos,
-     * y credenciales.
      *
      * @param db el objeto {@link AppConfig} que contiene los detalles de conexión de la base de datos.
      */
