@@ -28,8 +28,8 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
                 statement.setLong(1, usuario.getCuil());
                 statement.setString(2, usuario.getApellidos());
                 statement.setString(2, usuario.getNombres());
-                statement.setString(3, usuario.getEmail());
-                statement.setString(4, usuario.getPassword());
+                statement.setString(3, usuario.getMail());
+                statement.setString(4, usuario.getEncryptedPassword());
                 statement.executeUpdate();
             }
         } catch (SQLException e) {
