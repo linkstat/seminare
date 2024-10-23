@@ -2,12 +2,12 @@ package ar.com.hmu.config;
 
 /**
  * Clase POJO que se utiliza para almacenar y acceder a los parámetros de configuración de la aplicación.
- *
+ * <p></p>
  * La clase `AppConfig` contiene los datos de configuración generales de la aplicación, incluyendo los parámetros
  * de conexión a la BD (y otros valores de configuración que puedan ser necesarios en el futuro).
  * Actualmente, se enfoca principalmente en los detalles de la base de datos, como el motor de BD,
  * el hostname del servidor, el puerto TCP, el nombre de la BD, y las credenciales de acceso.
- *
+ * </br>
  * Esta clase no realiza operaciones activas, solo actúa como un contenedor de información.
  * Es utilizada por {@link AppConfigReader} para mapear los valores de un archivo YAML a un objeto Java,
  * permitiendo que otras partes de la aplicación accedan fácilmente a la configuración.
@@ -15,11 +15,11 @@ package ar.com.hmu.config;
 public class AppConfig {
 
     private String dbType;
-    private String dbHostname;
+    private String dbHost;
     private int dbPort;
     private String dbName;
-    private String dbUsername;
-    private String dbPassword;
+    private String dbUser;
+    private String dbPass;
 
     /**
      * Obtiene el tipo de base de datos.
@@ -44,17 +44,17 @@ public class AppConfig {
      *
      * @return el nombre del host de la base de datos.
      */
-    public String getDbHostname() {
-        return dbHostname;
+    public String getDbHost() {
+        return dbHost;
     }
 
     /**
      * Establece el nombre del host de la base de datos.
      *
-     * @param dbHostname el nombre del host donde se encuentra la base de datos.
+     * @param dbHost el nombre del host donde se encuentra la base de datos.
      */
-    public void setDbHostname(String dbHostname) {
-        this.dbHostname = dbHostname;
+    public void setDbHost(String dbHost) {
+        this.dbHost = dbHost;
     }
 
     /**
@@ -98,17 +98,17 @@ public class AppConfig {
      *
      * @return el nombre de usuario utilizado para la conexión.
      */
-    public String getDbUsername() {
-        return dbUsername;
+    public String getDbUser() {
+        return dbUser;
     }
 
     /**
      * Establece el nombre de usuario para la conexión a la base de datos.
      *
-     * @param dbUsername el nombre de usuario para conectarse a la base de datos.
+     * @param dbUser el nombre de usuario para conectarse a la base de datos.
      */
-    public void setDbUsername(String dbUsername) {
-        this.dbUsername = dbUsername;
+    public void setDbUser(String dbUser) {
+        this.dbUser = dbUser;
     }
 
     /**
@@ -116,16 +116,16 @@ public class AppConfig {
      *
      * @return la contraseña utilizada para la conexión.
      */
-    public String getDbPassword() {
-        return dbPassword;
+    public String getDbPass() {
+        return dbPass;
     }
 
     /**
      * Establece la contraseña para la conexión a la base de datos.
      *
-     * @param dbPassword la contraseña para conectarse a la base de datos.
+     * @param dbPass la contraseña para conectarse a la base de datos.
      */
-    public void setDbPassword(String dbPassword) {
-        this.dbPassword = dbPassword;
+    public void setDbPass(String dbPass) {
+        this.dbPass = dbPass;
     }
 }

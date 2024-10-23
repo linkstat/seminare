@@ -18,7 +18,7 @@ import java.io.InputStream;
  */
 public class AppConfigReader {
 
-    private AppConfig dbConfig;
+    private AppConfig appConfig;
 
 
     /**
@@ -38,7 +38,7 @@ public class AppConfigReader {
         loaderOptions.setAllowRecursiveKeys(false); // Opcional, evita llaves recursivas
 
         // Crear un Constructor que utilice los LoaderOptions
-        Constructor constructor = new Constructor(DatabaseSettings.class, loaderOptions);
+        Constructor constructor = new Constructor(AppConfigSettings.class, loaderOptions);
 
         // Inicializar Yaml con el constructor
         Yaml yaml = new Yaml(constructor);
@@ -48,8 +48,8 @@ public class AppConfigReader {
             if (inputStream == null) {
                 throw new RuntimeException("Archivo " + filePath + " no encontrado");
             }
-            DatabaseSettings settings = yaml.load(inputStream);
-            this.dbConfig = settings.getDb();
+            AppConfigSettings settings = yaml.load(inputStream);
+            this.appConfig = settings.getDb();
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Error al leer el archivo YAML", e);
@@ -57,15 +57,12 @@ public class AppConfigReader {
     }
 
     /**
-     * Obtiene la configuración de la base de datos.
+     * Obtiene la configuración de la aplicación.
      *
-     * Este método devuelve un objeto {@link AppConfig} que contiene los parámetros necesarios
-     * para establecer la conexión con la base de datos.
-     *
-     * @return un objeto {@link AppConfig} con la configuración de la base de datos.
+     * @return un objeto {@link AppConfig} con la configuración general de la aplicación.
      */
-    public AppConfig getDbConfig() {
-        return dbConfig;
+    public AppConfig getAppConfig() {
+        return appConfig;
     }
 
 }

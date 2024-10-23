@@ -20,11 +20,11 @@ import java.sql.SQLException;
 public class DatabaseConnector {
 
     private final String dbType;
-    private final String hostname;
-    private final int port;
-    private final String database;
-    private final String username;
-    private final String password;
+    private final String dbHost;
+    private final int dbPort;
+    private final String dbName;
+    private final String dbUser;
+    private final String dbPass;
 
     /**
      * Constructor que inicializa el conector de base de datos utilizando un objeto {@link AppConfigReader}.
@@ -36,15 +36,15 @@ public class DatabaseConnector {
      */
     public DatabaseConnector(AppConfigReader appConfigReader) {
         // Obtenemos la configuración desde ConfigReader
-        AppConfig dbConfig = appConfigReader.getDbConfig();
+        AppConfig dbConfig = appConfigReader.getAppConfig();
 
         // Asignamos los valores de configuración
         this.dbType = dbConfig.getDbType();
-        this.hostname = dbConfig.getDbHostname();
-        this.port = dbConfig.getDbPort();
-        this.database = dbConfig.getDbName();
-        this.username = dbConfig.getDbUsername();
-        this.password = dbConfig.getDbPassword();
+        this.dbHost = dbConfig.getDbHost();
+        this.dbPort = dbConfig.getDbPort();
+        this.dbName = dbConfig.getDbName();
+        this.dbUser = dbConfig.getDbUser();
+        this.dbPass = dbConfig.getDbPass();
     }
 
     /**
@@ -63,8 +63,8 @@ public class DatabaseConnector {
             throw new UnsupportedOperationException("Motor de base de datos no implementado: " + dbType);
         }
 
-        String url = String.format("jdbc:mariadb://%s:%d/%s", hostname, port, database);
-        return DriverManager.getConnection(url, username, password);
+        String url = String.format("jdbc:mariadb://%s:%d/%s", dbHost, dbPort, dbName);
+        return DriverManager.getConnection(url, dbUser, dbPass);
     }
 
     // Métodos para verificar estado de conectividad contra el servidor //
@@ -94,8 +94,8 @@ public class DatabaseConnector {
      * @return true si el puerto del servicio de BD está abierto y accesible; false si no lo está.
      */
     public boolean isDatabaseServiceAvailable() {
-        String host = this.hostname;
-        int port = this.port;
+        String host = this.dbHost;
+        int port = this.dbPort;
         try (Socket socket = new Socket()) {
             socket.connect(new InetSocketAddress(host, port), 2000); // Timeout de 2 segundos
             return true; // Conexión exitosa
@@ -113,7 +113,7 @@ public class DatabaseConnector {
      * @return true si el servidor responde al ping ICMP; false en caso contrario.
      */
     public boolean isHostReachable() {
-        String host = this.hostname;
+        String host = this.dbHost;
         try {
             String command = System.getProperty("os.name").toLowerCase().contains("win") ?
                     "ping -n 1 " + host :
