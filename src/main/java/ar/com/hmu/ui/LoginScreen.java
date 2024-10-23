@@ -1,7 +1,7 @@
 package ar.com.hmu.ui;
 
 import ar.com.hmu.auth.LoginService;
-import ar.com.hmu.config.ConfigReader;
+import ar.com.hmu.config.AppConfigReader;
 import ar.com.hmu.repository.DatabaseConnector;
 import ar.com.hmu.repository.UsuarioRepository;
 import javafx.application.Application;
@@ -16,7 +16,7 @@ import javafx.stage.Stage;
  *
  * Esta clase extiende {@link Application} y es responsable de cargar la interfaz de usuario (JavaFX),
  * inicializar los componentes, y configurar la ventana principal para el inicio de sesión.
- * Utiliza {@link ConfigReader} para obtener la configuración de la base de datos y {@link DatabaseConnector}
+ * Utiliza {@link AppConfigReader} para obtener la configuración de la base de datos y {@link DatabaseConnector}
  * para establecer la conexión necesaria para validar las credenciales del usuario.
  */
 public class LoginScreen extends Application {
@@ -70,8 +70,8 @@ public class LoginScreen extends Application {
      * @return una instancia de {@link LoginService} para la validación de credenciales.
      */
     private LoginService initializeLoginService() {
-        ConfigReader configReader = new ConfigReader();
-        DatabaseConnector databaseConnector = new DatabaseConnector(configReader);
+        AppConfigReader appConfigReader = new AppConfigReader();
+        DatabaseConnector databaseConnector = new DatabaseConnector(appConfigReader);
         UsuarioRepository usuarioRepository = new UsuarioRepository(databaseConnector);
         return new LoginService(usuarioRepository);
     }

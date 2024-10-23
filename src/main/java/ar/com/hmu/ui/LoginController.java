@@ -1,14 +1,14 @@
 package ar.com.hmu.ui;
 
 import ar.com.hmu.auth.LoginService;
+import ar.com.hmu.repository.DatabaseConnector;
 import ar.com.hmu.utils.AlertUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
-import java.sql.SQLNonTransientConnectionException;
-import java.sql.SQLException;
 
 /**
  * Controlador encargado de gestionar la interfaz de usuario de la pantalla de login.
@@ -21,6 +21,8 @@ import java.sql.SQLException;
  */
 public class LoginController {
 
+    private DatabaseConnector databaseConnector;
+
     @FXML
     private TextField usernameField;
 
@@ -29,6 +31,9 @@ public class LoginController {
 
     @FXML
     private Button loginButton;
+
+    @FXML
+    private Label serverStatusLabel;
 
     // LoginService para la autenticación del usuario
     private LoginService loginService;
@@ -43,14 +48,37 @@ public class LoginController {
     }
 
     /**
-     * Inicializa los componentes de la interfaz de usuario.
+     * Inicializa los componentes de la interfaz de usuario al cargar la pantalla de inicio de sesión.
      *
-     * Este método es llamado automáticamente por el framework JavaFX después de que se cargue el archivo FXML.
+     * Este método es invocado automáticamente por el framework JavaFX después de que se haya cargado
+     * el archivo FXML correspondiente. Se encarga de realizar las siguientes tareas:
+     * - Verifica el estado de conexión con el server y actualiza la GUI en consecuencia.
+     * - Configura el TextBox del CUIL, limitando la entrada solo a números y además, le da un formato
+     *   de fácil lectura para humanos (NN-UUVVVWWW-M en vez de NNUUVVVWWWM).
+     *
+     * Asegúrate de que las configuraciones necesarias se realicen antes de que el usuario
+     * interactúe con la interfaz.
      */
     @FXML
     public void initialize() {
-        configureCuilField();
+        updateServerStatus(); // Llamar a la función para verificar el estado del servidor al iniciar la ventana.
+        configureCuilField(); // Configurar el campo de CUIL
     }
+
+    /**
+     * Verifica el estado del servidor y actualiza el Label correspondiente.
+     */
+    private void updateServerStatus() {
+        if (databaseConnector != null) {
+            String[] serverStatus = databaseConnector.checkServerStatus();
+            serverStatusLabel.setText(serverStatus[0]);
+            serverStatusLabel.setStyle("-fx-text-fill: " + serverStatus[1] + ";");
+        } else {
+            serverStatusLabel.setText("Error al inicializar la conexión al servidor");
+            serverStatusLabel.setStyle("-fx-text-fill: red;");
+        }
+    }
+
 
     /**
      * Configura el campo de texto para el CUIL para que solo acepte números y formatee el texto automáticamente.
@@ -144,4 +172,6 @@ public class LoginController {
             AlertUtils.showErr("Ocurrió un error inesperado: " + e.getMessage());
         }
     }
+
+
 }

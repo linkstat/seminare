@@ -6,27 +6,32 @@ import org.yaml.snakeyaml.LoaderOptions;
 import java.io.InputStream;
 
 /**
- * Clase que se encarga de leer la configuración de la base de datos desde un archivo YAML.
+ * Clase que se encarga de leer la configuración general de la aplicación desde un archivo YAML.
  *
- * La clase `ConfigReader` utiliza SnakeYAML para deserializar un archivo de configuración
- * YAML (`config.yaml`) y cargar los valores necesarios para la configuración de la base de datos.
- * Proporciona un objeto de tipo {@link DatabaseConfig} que contiene todos los detalles
- * para la conexión a la base de datos.
+ * La clase `AppConfigReader` utiliza la biblioteca SnakeYAML para deserializar un archivo de configuración
+ * YAML (`config.yaml`) y cargar los valores necesarios para la configuración de la aplicación.
+ * Proporciona un objeto de tipo {@link AppConfig} que contiene tanto los detalles de conexión a la BD
+ * como cualquier otra configuración general de la aplicación (que se agregue en el futuro).
+ *
+ * Esta clase permite centralizar el acceso a las configuraciones, facilitando la lectura y utilización de parámetros
+ * clave que necesitan ser accesibles en diferentes partes de la aplicación.
  */
-public class ConfigReader {
+public class AppConfigReader {
 
-    private DatabaseConfig dbConfig;
+    private AppConfig dbConfig;
+
 
     /**
-     * Constructor que inicializa el objeto `ConfigReader` y carga la configuración de la base de datos.
+     * Constructor que inicializa el objeto `AppConfigReader` y carga la configuración de la aplicación.
      *
-     * Este constructor lee un archivo YAML (`config.yaml`) que contiene la configuración necesaria
-     * para establecer la conexión con la base de datos. Utiliza `LoaderOptions` para personalizar
-     * cómo se debe deserializar el archivo YAML y asegurar la seguridad del proceso.
+     * Este constructor lee un archivo YAML (`config.yaml`) que contiene la configuración general de la aplicación,
+     * incluyendo detalles de la base de datos y otros parámetros relevantes. Utiliza `LoaderOptions` para personalizar
+     * el comportamiento de deserialización del archivo YAML, lo cual ayuda a asegurar la seguridad y control del proceso.
+     * El resultado es un objeto de tipo {@link AppConfig} que almacena toda la configuración.
      *
      * @throws RuntimeException si el archivo de configuración no se encuentra o si ocurre un error durante la carga.
      */
-    public ConfigReader() {
+    public AppConfigReader() {
         // Crear LoaderOptions para configurar el comportamiento de carga de YAML
         LoaderOptions loaderOptions = new LoaderOptions();
         loaderOptions.setMaxAliasesForCollections(50); // Configuración opcional para limitar alias (por seguridad)
@@ -54,12 +59,12 @@ public class ConfigReader {
     /**
      * Obtiene la configuración de la base de datos.
      *
-     * Este método devuelve un objeto {@link DatabaseConfig} que contiene los parámetros necesarios
+     * Este método devuelve un objeto {@link AppConfig} que contiene los parámetros necesarios
      * para establecer la conexión con la base de datos.
      *
-     * @return un objeto {@link DatabaseConfig} con la configuración de la base de datos.
+     * @return un objeto {@link AppConfig} con la configuración de la base de datos.
      */
-    public DatabaseConfig getDbConfig() {
+    public AppConfig getDbConfig() {
         return dbConfig;
     }
 
