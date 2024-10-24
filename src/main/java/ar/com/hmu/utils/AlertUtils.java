@@ -5,7 +5,7 @@ import javafx.scene.control.Alert.AlertType;
 
 /**
  * Utilidad para mostrar alertas emergentes en una aplicación JavaFX.
- * <p></p>
+ * <p>
  * La clase proporciona métodos para mostrar mensajes al usuario utilizando la clase {@link Alert} de JavaFX.
  * Incluye métodos para mostrar alertas de error, advertencia e información.
  */

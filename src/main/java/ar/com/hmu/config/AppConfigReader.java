@@ -7,12 +7,12 @@ import java.io.InputStream;
 
 /**
  * Clase que se encarga de leer la configuración general de la aplicación desde un archivo YAML.
- *
+ * <p>
  * La clase `AppConfigReader` utiliza la biblioteca SnakeYAML para deserializar un archivo de configuración
  * YAML (`config.yaml`) y cargar los valores necesarios para la configuración de la aplicación.
  * Proporciona un objeto de tipo {@link AppConfig} que contiene tanto los detalles de conexión a la BD
  * como cualquier otra configuración general de la aplicación (que se agregue en el futuro).
- *
+ * <p>
  * Esta clase permite centralizar el acceso a las configuraciones, facilitando la lectura y utilización de parámetros
  * clave que necesitan ser accesibles en diferentes partes de la aplicación.
  */
@@ -23,12 +23,12 @@ public class AppConfigReader {
 
     /**
      * Constructor que inicializa el objeto `AppConfigReader` y carga la configuración de la aplicación.
-     *
+     * <p>
      * Este constructor lee un archivo YAML (`config.yaml`) que contiene la configuración general de la aplicación,
      * incluyendo detalles de la base de datos y otros parámetros relevantes. Utiliza `LoaderOptions` para personalizar
      * el comportamiento de deserialización del archivo YAML, lo cual ayuda a asegurar la seguridad y control del proceso.
      * El resultado es un objeto de tipo {@link AppConfig} que almacena toda la configuración.
-     *
+     * <p>
      * @throws RuntimeException si el archivo de configuración no se encuentra o si ocurre un error durante la carga.
      */
     public AppConfigReader() {

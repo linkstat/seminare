@@ -12,10 +12,10 @@ import java.sql.SQLException;
 
 /**
  * Clase responsable de gestionar la conexión a la base de datos.
- *
- * La clase `DatabaseConnector` utiliza los valores de configuración proporcionados por {@link AppConfigReader}
+ * <p>
+ * La clase {@link DatabaseConnector} utiliza los valores de configuración proporcionados por {@link AppConfigReader}
  * para establecer una conexión con la base de datos especificada. Actualmente, soporta la conexión
- * a bases de datos de tipo MariaDB (y desestima otros motores de BD, indicando que no están soportados).
+ * a bases de datos de tipo <i>MariaDB</i> (y desestima otros motores de BD, indicando que no están soportados).
  */
 public class DatabaseConnector {
 
@@ -28,7 +28,7 @@ public class DatabaseConnector {
 
     /**
      * Constructor que inicializa el conector de base de datos utilizando un objeto {@link AppConfigReader}.
-     *
+     * <p>
      * Este constructor recupera la configuración de la base de datos a través de un {@link AppConfigReader},
      * que lee los detalles de conexión desde un archivo de configuración (por ejemplo, YAML).
      *
@@ -49,10 +49,10 @@ public class DatabaseConnector {
 
     /**
      * Establece y devuelve una conexión con la base de datos.
-     *
+     * <p>
      * Este método crea una conexión a la base de datos utilizando los valores de configuración previamente
-     * obtenidos. Actualmente, solo se soporta la conexión a bases de datos de tipo MariaDB, por lo cual si
-     * el motor de BD fuera otro distinto de MariaDB, se tira una excepción indicando que no hay implementación.
+     * obtenidos. Actualmente, solo se soporta la conexión a bases de datos de tipo <i>MariaDB</i>, por lo cual si
+     * el motor de BD fuera otro distinto de <i>MariaDB</i>, se tira una excepción indicando que no hay implementación.
      *
      * @return una instancia de {@link Connection} que representa la conexión activa a la base de datos.
      * @throws SQLException si ocurre un error al intentar conectar a la base de datos.
@@ -71,7 +71,7 @@ public class DatabaseConnector {
 
     /**
      * Verifica si es posible conectarse a la base de datos utilizando las credenciales especificadas.
-     *
+     * <p>
      * Este método intenta obtener una conexión con la BD configurada y verifica si está abierta.
      * Si la conexión se establece exitosamente, retorna true; en caso contrario, retorna false.
      *
@@ -87,7 +87,7 @@ public class DatabaseConnector {
 
     /**
      * Verifica si el servicio de BD está disponible realizando una conexión TCP al puerto especificado.
-     *
+     * <p>
      * Este método intenta abrir una conexión TCP al servidor y puerto configurados para verificar
      * que el servicio de base de datos esté operativo. Utiliza un tiempo de espera de 2 seg.
      *
@@ -106,7 +106,7 @@ public class DatabaseConnector {
 
     /**
      * Verifica si el servidor es alcanzable mediante un ping ICMP.
-     *
+     * <p>
      * Este método intenta enviar un ping ICMP al servidor configurado para determinar si el host está en línea.
      * Se adapta tanto para sistemas Windows como para sistemas Unix/Linux, ejecutando el comando adecuado.
      *
@@ -129,17 +129,20 @@ public class DatabaseConnector {
 
     /**
      * Verifica el estado del servidor combinando múltiples niveles de verificación de conectividad.
-     *
+     * <p>
      * Este método verifica si el servidor de base de datos está disponible realizando tres niveles de pruebas:
-     * 1. Intentar conectarse a la BD con las credenciales especificadas en el archivo de configuración YAML.
-     * 2. Si falla, intenta una conexión TCP al puerto especificado. Si es exitoso, hay problemas de autenticación.
-     * 3. Si falla, probar si el servidor está en línea mediante un ping ICMP. Si es exitoso, el servicio de BD no está en ejecución.
-     *
+     * <ol>
+     *      <li>Intentar conectarse a la BD con las credenciales especificadas en el archivo de configuración YAML.</li>
+     *      <li>Si falla, intenta una conexión TCP al puerto especificado. Si es exitoso, hay problemas de autenticación.</li>
+     *      <li>Si falla, probar si el servidor está en línea mediante un ping ICMP. Si es exitoso, el servicio de BD no está en ejecución.</li>
+     *</ol>
      * @return una descripción del estado del servidor:
-     *         - "Servidor en línea y funcional."
-     *         - "Servidor en línea, pero error de validación para la conexión a la BD."
-     *         - "Servidor parcialmente en línea: el servicio de BD no está en ejecución."
-     *         - "Servidor completamente fuera de línea / apagado."
+     * <ul>
+     *      <li>"Servidor en línea y funcional."</li>
+     *      <li>"Servidor en línea, pero error de validación para la conexión a la BD."</li>
+     *      <li>"Servidor parcialmente en línea: el servicio de BD no está en ejecución."</li>
+     *      <li>"Servidor completamente fuera de línea / apagado."</li>
+     * </ul>
      */
     public String[] checkServerStatus() {
         // Nivel 1: Intentar conexión con las credenciales

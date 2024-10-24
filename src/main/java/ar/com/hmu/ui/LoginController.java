@@ -1,14 +1,26 @@
 package ar.com.hmu.ui;
 
 import ar.com.hmu.auth.LoginService;
+import ar.com.hmu.auth.MainMenuService;
+import ar.com.hmu.model.Usuario;
 import ar.com.hmu.repository.DatabaseConnector;
 import ar.com.hmu.utils.AlertUtils;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.stage.Stage;
+import javafx.util.Duration;
+
+import java.io.IOException;
 
 /**
  * Controlador encargado de gestionar la interfaz de usuario de la pantalla de login.
@@ -20,8 +32,6 @@ import javafx.scene.input.KeyEvent;
  * obtenidos del servicio de autenticación, mostrando mensajes adecuados para informar al usuario.
  */
 public class LoginController {
-
-    private DatabaseConnector databaseConnector;
 
     @FXML
     private TextField usernameField;
@@ -35,8 +45,11 @@ public class LoginController {
     @FXML
     private Label serverStatusLabel;
 
-    // LoginService para la autenticación del usuario
-    private LoginService loginService;
+    private Timeline serverCheckTimeline;
+    private int checkIntervalInSeconds = 4;  // Intervalo inicial de 4 segundos
+
+    private LoginService loginService;  // LoginService para la autenticación del usuario
+    private DatabaseConnector databaseConnector;  // DatabaseConnector para la verificación del estado del servidor de BD
 
     /**
      * Método para establecer el {@link LoginService} que se utilizará para la autenticación.
@@ -47,35 +60,109 @@ public class LoginController {
         this.loginService = loginService;
     }
 
+
     /**
      * Inicializa los componentes de la interfaz de usuario al cargar la pantalla de inicio de sesión.
-     *
+     * <p>
      * Este método es invocado automáticamente por el framework JavaFX después de que se haya cargado
      * el archivo FXML correspondiente. Se encarga de realizar las siguientes tareas:
-     * - Verifica el estado de conexión con el server y actualiza la GUI en consecuencia.
-     * - Configura el TextBox del CUIL, limitando la entrada solo a números y además, le da un formato
+     * * Verifica el estado de conexión con el server y actualiza la GUI en consecuencia.
+     * * Configura el TextBox del CUIL, limitando la entrada solo a números y además, le da un formato
      *   de fácil lectura para humanos (NN-UUVVVWWW-M en vez de NNUUVVVWWWM).
-     *
-     * Asegúrate de que las configuraciones necesarias se realicen antes de que el usuario
-     * interactúe con la interfaz.
      */
     @FXML
     public void initialize() {
         updateServerStatus(); // Llamar a la función para verificar el estado del servidor al iniciar la ventana.
         configureCuilField(); // Configurar el campo de CUIL
+
+        // Añadir el evento de presionar "Enter" para usernameField
+        usernameField.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                handleLoginButtonClick();
+            }
+        });
+
+        // Añadir el evento de presionar "Enter" para passwordField
+        passwordField.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                handleLoginButtonClick();
+            }
+        });
+
+    }
+
+    /**
+     * Método para establecer el {@link DatabaseConnector} que se utilizará para verificar el estado del servidor.
+     *
+     * @param databaseConnector el conector de base de datos a utilizar.
+     */
+    public void setDatabaseConnector(DatabaseConnector databaseConnector) {
+        this.databaseConnector = databaseConnector;
+    }
+
+    /**
+     * Método que se debe llamar después de establecer todas las dependencias necesarias.
+     *
+     * Este método se encarga de realizar todas las inicializaciones de la interfaz de usuario y de las
+     * verificaciones necesarias para el estado del servidor.
+     */
+    public void postInitialize() {
+        if (databaseConnector == null || loginService == null) {
+            throw new IllegalStateException("Las dependencias no han sido configuradas correctamente.");
+        }
+
+        updateServerStatus();  // Actualizar el estado del servidor
+        configureCuilField();  // Configurar el campo de CUIL después de configurar las dependencias
+        startPeriodicServerCheck();  // Iniciar chequeo periódico del servidor
+    }
+
+    /**
+     * Ajusta el intervalo de chequeo según el estado del servidor.
+     *
+     * @param serverIsFunctional true si el servidor está operativo; false si hay algún problema.
+     */
+    private void adjustCheckInterval(boolean serverIsFunctional) {
+        if (serverIsFunctional) {
+            // Si el servidor está en línea y funcional, aumentar el intervalo de chequeo a 16 segundos
+            checkIntervalInSeconds = 16;
+        } else {
+            // Si el servidor tiene problemas, reducir el intervalo de chequeo a 4 segundos
+            checkIntervalInSeconds = 4;
+        }
+        // Reiniciar el Timeline con el nuevo intervalo
+        serverCheckTimeline.stop();
+        serverCheckTimeline.getKeyFrames().setAll(new KeyFrame(Duration.seconds(checkIntervalInSeconds), event -> {
+            boolean updatedServerStatus = updateServerStatus();
+            adjustCheckInterval(updatedServerStatus);
+        }));
+        serverCheckTimeline.play();
+    }
+
+    /**
+     * Inicia un chequeo periódico del estado del servidor con un intervalo dinámico.
+     */
+    private void startPeriodicServerCheck() {
+        serverCheckTimeline = new Timeline(new KeyFrame(Duration.seconds(checkIntervalInSeconds), event -> {
+            boolean serverIsFunctional = updateServerStatus();
+            adjustCheckInterval(serverIsFunctional);
+        }));
+        serverCheckTimeline.setCycleCount(Timeline.INDEFINITE); // Se ejecuta indefinidamente
+        serverCheckTimeline.play(); // Inicia el Timeline
     }
 
     /**
      * Verifica el estado del servidor y actualiza el Label correspondiente.
      */
-    private void updateServerStatus() {
+    private boolean updateServerStatus() {
         if (databaseConnector != null) {
             String[] serverStatus = databaseConnector.checkServerStatus();
             serverStatusLabel.setText(serverStatus[0]);
             serverStatusLabel.setStyle("-fx-text-fill: " + serverStatus[1] + ";");
+            return serverStatus[0].equals("Servidor en línea y funcional.");
         } else {
             serverStatusLabel.setText("Error al inicializar la conexión al servidor");
             serverStatusLabel.setStyle("-fx-text-fill: red;");
+            return false;
         }
     }
 
@@ -159,9 +246,12 @@ public class LoginController {
             // Validar el usuario con LoginService
             boolean isValidUser = loginService.validateUser(Long.parseLong(cuil), password);
             if (isValidUser) {
-                AlertUtils.showInfo("Inicio de sesión exitoso para el CUIL: " + cuil);
+                // Obtener el usuario autenticado para pasarlo al menú principal
+                Usuario usuario = loginService.getUsuarioByCuil(Long.parseLong(cuil));
+                showMainMenu(usuario);
+                //ANTES: AlertUtils.showInfo("Inicio de sesión exitoso para el CUIL: " + cuil);
             } else {
-                AlertUtils.showWarn("¡Contraseña incorrecta o usuario no encontrado! [CUIL ingresado: " + cuil + "]");
+                AlertUtils.showWarn("¡Contraseña incorrecta o usuario no encontrado!\n[ CUIL ingresado: " + formatCuil(cuil) + " ]");
             }
 
         } catch (NumberFormatException e) {
@@ -173,5 +263,32 @@ public class LoginController {
         }
     }
 
+    /**
+     * Muestra el menú principal de la aplicación después de un inicio de sesión exitoso.
+     * <p>
+     * Este método se encarga de cargar la vista del menú principal (mainMenu.fxml), configurar el controlador
+     * del menú con el usuario autenticado y las opciones de menú correspondientes, y luego cambiar la escena
+     * de la ventana principal de la aplicación para mostrar el menú principal.
+     *
+     * @param usuario El usuario autenticado que ha iniciado sesión.
+     */
+    private void showMainMenu(Usuario usuario) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ar/com/hmu/ui/mainMenu.fxml"));
+            Parent root = loader.load();
+
+            // Configurar el controlador del menú principal
+            MainMenuController controller = loader.getController();
+            controller.setMainMenuService(new MainMenuService());
+            controller.setUsuarioActual(usuario);
+
+            Stage stage = (Stage) loginButton.getScene().getWindow();
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+        } catch (IOException e) {
+            e.printStackTrace(); // Para imprimir todo el stack trace y facilitar el diagnóstico.
+            AlertUtils.showErr("Error al cargar el menú principal:\n" + e.getMessage());
+        }
+    }
 
 }
