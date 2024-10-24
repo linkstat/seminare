@@ -2,12 +2,12 @@ package ar.com.hmu.config;
 
 /**
  * Clase POJO que se utiliza para almacenar y acceder a los parámetros de configuración de la aplicación.
- * <p></p>
+ * <p>
  * La clase `AppConfig` contiene los datos de configuración generales de la aplicación, incluyendo los parámetros
  * de conexión a la BD (y otros valores de configuración que puedan ser necesarios en el futuro).
  * Actualmente, se enfoca principalmente en los detalles de la base de datos, como el motor de BD,
  * el hostname del servidor, el puerto TCP, el nombre de la BD, y las credenciales de acceso.
- * </br>
+ * <p>
  * Esta clase no realiza operaciones activas, solo actúa como un contenedor de información.
  * Es utilizada por {@link AppConfigReader} para mapear los valores de un archivo YAML a un objeto Java,
  * permitiendo que otras partes de la aplicación accedan fácilmente a la configuración.

@@ -6,9 +6,9 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 /**
- * @author Pablo Alejandro Hamann <linkstat@hmu.com.ar>
+ * @author Pablo Alejandro Hamann
  * @version 1.0
-  */
+ */
 public abstract class Usuario {
 
 	private UUID id;
@@ -179,7 +179,7 @@ public abstract class Usuario {
 	}
 
 	/**
-	 * 
+	 * Asigna Servicio a un Usuario
 	 * @param servicio
 	 */
 	public void asignarAServicio(Servicio servicio){
@@ -191,7 +191,7 @@ public abstract class Usuario {
 	}
 
 	/**
-	 * 
+	 * Genera un tipo de Reporte
 	 * @param reporte
 	 */
 	public void generarReporte(int reporte){
@@ -210,4 +210,7 @@ public abstract class Usuario {
 		//void
 	}
 
+	public String getNombreCompleto() {
+		return nombres + " " + apellidos;
+	}
 }

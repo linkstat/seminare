@@ -1,5 +1,6 @@
 package ar.com.hmu.auth;
 
+import ar.com.hmu.model.Usuario;
 import ar.com.hmu.repository.UsuarioRepository;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import java.sql.SQLException;
@@ -42,5 +43,10 @@ public class LoginService {
             throw new SQLException("Error al conectar con la base de datos para validar el usuario", e);
         }
     }
+
+    public Usuario getUsuarioByCuil(long cuil) throws SQLException {
+        return usuarioRepository.findByCuil(cuil);
+    }
+
 
 }

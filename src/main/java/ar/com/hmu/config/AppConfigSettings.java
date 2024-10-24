@@ -2,7 +2,7 @@ package ar.com.hmu.config;
 
 /**
  * Clase que representa la configuración completa de la aplicación.
- *
+ * <p>
  * La clase `AppConfigSettings` se utiliza para encapsular todas las configuraciones de la aplicación.
  * Incluye un objeto de tipo {@link AppConfig} que almacena los detalles de conexión a la base de datos.
  */
