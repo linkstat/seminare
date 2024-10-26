@@ -187,13 +187,13 @@ public class LoginController {
                 serverStatusIcon.setImage(icon);
             } catch (NullPointerException | IllegalArgumentException e) {
                 System.err.println("Error al cargar el icono de estado del servidor: " + e.getMessage());
-                serverStatusIcon.setImage(new Image(getClass().getResourceAsStream("/ar/com/hmu/images/icon_circle_blue_question_52x52.png")));
+                serverStatusIcon.setImage(new Image(getClass().getResourceAsStream("serverStatus_icon_blue_question.png")));
             }
             return serverStatus[0].equals("Servidor en línea y funcional.");
         } else {
             serverStatusLabel.setText("Error al inicializar la conexión al servidor");
             serverStatusLabel.setStyle("-fx-text-fill: red;");
-            Image icon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/ar/com/hmu/images/icon_circle_blue_question_52x52.png")));
+            Image icon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("serverStatus_icon_blue_question.png")));
             serverStatusIcon.setImage(icon);
             return false;
         }

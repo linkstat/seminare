@@ -61,7 +61,7 @@ public class LoginScreen extends Application {
             primaryStage.setResizable(false);
 
             // Establecer el icono de la aplicación
-            setStageIcon(primaryStage, "/ar/com/hmu/images/app-icon.png");
+            setStageIcon(primaryStage, "app-icon.png");
 
             // Mostrar la ventana principal
             primaryStage.setScene(scene);
