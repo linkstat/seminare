@@ -147,21 +147,21 @@ public class DatabaseConnector {
     public String[] checkServerStatus() {
         // Nivel 1: Intentar conexión con las credenciales
         if (canConnectToDatabase()) {
-            return new String[] {"Servidor en línea y funcional.", "green", "/ar/com/hmu/images/icon_circle_green_ok_52x52.png"};
+            return new String[] {"Servidor en línea y funcional.", "green", "serverStatus_icon_green_ok.png"};
         }
 
         // Nivel 2: Si la conexión con las credenciales falla, intentamos conectar al puerto directamente
         if (isDatabaseServiceAvailable()) {
-            return new String[] {"Servidor en línea, pero error de validación para la conexión a la base de datos.", "orange", "/ar/com/hmu/images/icon_circle_blue_question_52x52.png"};
+            return new String[] {"Servidor en línea, pero error de validación para la conexión a la base de datos.", "orange", "serverStatus_icon_blue_question.png"};
         }
 
         // Nivel 3: Si la conexión al puerto falla, intentamos un ping ICMP
         if (isHostReachable()) {
-            return new String[] {"Servidor parcialmente en línea: el servicio de base de datos no está en ejecución.", "orange", "/ar/com/hmu/images/icon_circle_orange_warning_52x52.png"};
+            return new String[] {"Servidor parcialmente en línea: el servicio de base de datos no está en ejecución.", "orange", "serverStatus_icon_orange_warning.png"};
         }
 
         // Si ninguna verificación tiene éxito, el servidor está completamente fuera de línea
-        return new String[] {"Servidor completamente fuera de línea.", "red", "/ar/com/hmu/images/icon_circle_red_error_52x52.png"};
+        return new String[] {"Servidor completamente fuera de línea.", "red", "serverStatus_icon_red_error.png"};
     }
 
 }

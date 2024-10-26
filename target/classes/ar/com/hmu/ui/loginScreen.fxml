@@ -31,7 +31,7 @@
          <rowConstraints>
             <RowConstraints vgrow="SOMETIMES" />
             <RowConstraints maxHeight="193.600004196167" vgrow="SOMETIMES" />
-            <RowConstraints vgrow="SOMETIMES" />
+            <RowConstraints valignment="CENTER" />
          </rowConstraints>
          <children>
             <ImageView fitHeight="160.0" fitWidth="160.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="1" GridPane.halignment="CENTER">
@@ -54,14 +54,14 @@
                         <Tooltip text="Ingrese su contraseña" />
                      </tooltip>
                   </PasswordField>
-                  <TextField fx:id="passwordFieldVisible" promptText="Ingrese su contraseña" visible="false"/>
+                  <TextField fx:id="passwordFieldVisible" promptText="Ingrese su contraseña" visible="false" />
                   <CheckBox fx:id="showPasswordCheckBox" mnemonicParsing="false" text="Mostrar contraseña" />
                   <CheckBox fx:id="rememberMeCheckBox" mnemonicParsing="false" text="Recordar usuario" />
                </children>
             </VBox>
-            <Button fx:id="loginButton" mnemonicParsing="false" onAction="#handleLoginButtonClick" text="INICIAR SESIÓN" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2">
+            <Button fx:id="loginButton" mnemonicParsing="false" onAction="#handleLoginButtonClick" text="INICIAR SESIÓN" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
                <GridPane.margin>
-                  <Insets bottom="8.0" />
+                  <Insets bottom="12.0" top="12.0" />
                </GridPane.margin></Button>
             <VBox alignment="TOP_RIGHT" prefHeight="130.0" prefWidth="100.0" spacing="8.0" GridPane.rowIndex="1">
                <children>
@@ -100,8 +100,11 @@
                <HBox.margin>
                   <Insets left="4.0" />
                </HBox.margin>
+               <image>
+                  <Image url="@serverStatus_icon_blue_question.png" />
+               </image>
             </ImageView>
-            <Label fx:id="serverStatusLabel" text="Label">
+            <Label fx:id="serverStatusLabel" text="Indicador de estado de conexión">
                <padding>
                   <Insets left="4.0" right="4.0" />
                </padding>
