@@ -5,6 +5,7 @@ import ar.com.hmu.auth.MainMenuService;
 import ar.com.hmu.model.Usuario;
 import ar.com.hmu.repository.DatabaseConnector;
 import ar.com.hmu.utils.AlertUtils;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -29,7 +30,7 @@ import java.util.Objects;
 
 /**
  * Controlador encargado de gestionar la interfaz de usuario de la pantalla de login.
- *
+ * <p>
  * Esta clase se encarga de manejar la lógica de presentación del formulario de inicio de sesión,
  * incluyendo la validación de entradas del usuario y la coordinación con {@link LoginService}
  * para la autenticación de las credenciales.
@@ -261,7 +262,7 @@ public class LoginController {
      * Carga el último CUIL utilizado por el usuario desde las preferencias del sistema y
      * lo inserta en el campo correspondiente. Si existe un valor previo almacenado,
      * posiciona el foco automáticamente en el campo de contraseña para facilitar el inicio de sesión.
-     *
+     * <p>
      * Este método se utiliza para mejorar la experiencia del usuario recordando la última cuenta utilizada.
      * Si no existe un valor almacenado, el campo de CUIL quedará vacío y el usuario deberá ingresar
      * sus credenciales manualmente.
@@ -269,25 +270,32 @@ public class LoginController {
     private void loadUserCuil() {
         preferences = Preferences.userNodeForPackage(LoginController.class);
         String lastUserCuil = preferences.get(LAST_USER_CUIL_KEY, "");
+
         if (!lastUserCuil.isEmpty()) {
             usernameField.setText(lastUserCuil);
-            passwordField.requestFocus();  // Posicionar el foco en el campo de contraseña.
+            rememberMeCheckBox.setSelected(true); // Dejar marcada la casilla por defecto siempre ue haya un CUIL previamente recordado.
+            Platform.runLater(() -> passwordField.requestFocus()); // Posicionar el foco en el campo de contraseña. Platform.runLater() permite ejecutar el código de establecimiento del foco después de que JavaFX termine de realizar la configuración inicial de la pantalla.
+        } else {
+            rememberMeCheckBox.setSelected(false); // Desmarcar la casilla cuando no haya un CUIL recordado.
         }
     }
 
     /**
-     * Guarda el CUIL del usuario en las preferencias del sistema para que sea recordado
-     * en futuros inicios de sesión.
-     *
-     * Este método almacena el CUIL proporcionado, lo cual facilita el inicio de sesión
-     * del usuario en el futuro, evitando que tenga que ingresarlo nuevamente.
-     * Se invoca después de una autenticación exitosa.
+     * Guarda el CUIL del usuario en las preferencias del sistema para que sea recordado en futuros inicios de sesión.
+     * <p>
+     * Este método almacena el CUIL proporcionado, lo cual agiliza el inicio de sesión del usuario en un futuro,
+     * evitando que tenga que ingresarlo nuevamente. Se invoca después de una autenticación exitosa.
      *
      * @param cuil el CUIL del usuario que se debe almacenar para recordar en futuros inicios de sesión.
      */
     private void saveUserCuil(String cuil) {
         preferences = Preferences.userNodeForPackage(LoginController.class);
-        preferences.put(LAST_USER_CUIL_KEY, cuil);
+
+        if (rememberMeCheckBox.isSelected()) {
+            preferences.put(LAST_USER_CUIL_KEY, cuil);
+        } else {
+            preferences.remove(LAST_USER_CUIL_KEY);
+        }
     }
 
 
@@ -348,15 +356,7 @@ public class LoginController {
             // Validar el usuario con LoginService
             boolean isValidUser = loginService.validateUser(Long.parseLong(cuil), password);
             if (isValidUser) {
-                if (rememberMeCheckBox.isSelected()) {
-                    // Guardar el CUIL del usuario en las preferencias
-                    preferences.put(LAST_USER_CUIL_KEY, cuil);
-                } else {
-                    // Limpiar la preferencia si no se quiere recordar el usuario
-                    preferences.remove(LAST_USER_CUIL_KEY);
-                }
-
-                // Obtener el usuario autenticado para pasarlo al menú principal
+                saveUserCuil(cuil); // Guardar el CUIL (si correspondiese)
                 Usuario usuario = loginService.getUsuarioByCuil(Long.parseLong(cuil));
                 showMainMenu(usuario);
                 //ANTES: AlertUtils.showInfo("Inicio de sesión exitoso para el CUIL: " + cuil);
@@ -387,8 +387,11 @@ public class LoginController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ar/com/hmu/ui/mainMenu.fxml"));
             Parent root = loader.load();
 
-            // Configurar el controlador del menú principal
             MainMenuController controller = loader.getController();
+            if (controller == null) {
+                throw new IllegalStateException("El controlador del menú principal no fue inicializado correctamente.");
+            }
+
             controller.setMainMenuService(new MainMenuService());
             controller.setUsuarioActual(usuario);
 
