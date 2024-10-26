@@ -20,7 +20,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-<BorderPane xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ar.com.hmu.ui.LoginController">
+<BorderPane xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ar.com.hmu.ui.LoginController">
    <center>
       <GridPane>
          <columnConstraints>
@@ -54,8 +54,9 @@
                         <Tooltip text="Ingrese su contraseña" />
                      </tooltip>
                   </PasswordField>
+                  <TextField fx:id="passwordFieldVisible" promptText="Ingrese su contraseña" visible="false"/>
                   <CheckBox fx:id="showPasswordCheckBox" mnemonicParsing="false" text="Mostrar contraseña" />
-                  <CheckBox fx:id="rememberMeCheckBox" mnemonicParsing="false" text="Recordar contraseña" />
+                  <CheckBox fx:id="rememberMeCheckBox" mnemonicParsing="false" text="Recordar usuario" />
                </children>
             </VBox>
             <Button fx:id="loginButton" mnemonicParsing="false" onAction="#handleLoginButtonClick" text="INICIAR SESIÓN" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2">
@@ -93,17 +94,19 @@
       <Blend />
    </effect>
    <bottom>
-      <HBox prefHeight="25.0" prefWidth="480.0" spacing="10.0" BorderPane.alignment="CENTER_LEFT">
+      <HBox alignment="CENTER_LEFT" prefHeight="25.0" prefWidth="480.0" spacing="10.0" BorderPane.alignment="CENTER_LEFT">
          <children>
+            <ImageView fx:id="serverStatusIcon" fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+               <HBox.margin>
+                  <Insets left="4.0" />
+               </HBox.margin>
+            </ImageView>
             <Label fx:id="serverStatusLabel" text="Label">
                <padding>
                   <Insets left="4.0" right="4.0" />
                </padding>
             </Label>
          </children>
-         <padding>
-            <Insets top="5.0" />
-         </padding>
       </HBox>
    </bottom>
 </BorderPane>

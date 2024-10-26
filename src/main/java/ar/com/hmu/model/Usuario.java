@@ -1,6 +1,5 @@
 package ar.com.hmu.model;
 
-
 import ar.com.hmu.utils.PasswordUtils;
 import java.time.LocalDate;
 import java.util.UUID;

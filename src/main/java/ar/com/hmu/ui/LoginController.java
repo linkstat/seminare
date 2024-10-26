@@ -13,14 +13,19 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.control.CheckBox;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import java.util.prefs.Preferences;
 
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * Controlador encargado de gestionar la interfaz de usuario de la pantalla de login.
@@ -40,10 +45,26 @@ public class LoginController {
     private PasswordField passwordField;
 
     @FXML
+    private TextField passwordFieldVisible;
+
+    @FXML
+    private CheckBox showPasswordCheckBox;
+
+    @FXML
+    private CheckBox rememberMeCheckBox;
+
+    @FXML
     private Button loginButton;
 
     @FXML
+    private ImageView serverStatusIcon;
+
+    @FXML
     private Label serverStatusLabel;
+
+    // Añadir una referencia a las preferencias del sistema
+    private static final String LAST_USER_CUIL_KEY = "lastUserCuil";
+    private Preferences preferences;
 
     private Timeline serverCheckTimeline;
     private int checkIntervalInSeconds = 4;  // Intervalo inicial de 4 segundos
@@ -74,6 +95,8 @@ public class LoginController {
     public void initialize() {
         updateServerStatus(); // Llamar a la función para verificar el estado del servidor al iniciar la ventana.
         configureCuilField(); // Configurar el campo de CUIL
+        configureShowPassword(); // Configurar el checkbox de mostrar/ocultar contraseña
+        loadUserCuil();
 
         // Añadir el evento de presionar "Enter" para usernameField
         usernameField.setOnKeyPressed(event -> {
@@ -151,17 +174,26 @@ public class LoginController {
     }
 
     /**
-     * Verifica el estado del servidor y actualiza el Label correspondiente.
+     * Verifica el estado del servidor y actualiza el Label e ícono correspondientes.
      */
     private boolean updateServerStatus() {
         if (databaseConnector != null) {
             String[] serverStatus = databaseConnector.checkServerStatus();
             serverStatusLabel.setText(serverStatus[0]);
             serverStatusLabel.setStyle("-fx-text-fill: " + serverStatus[1] + ";");
+            try {
+                Image icon = new Image(Objects.requireNonNull(getClass().getResourceAsStream(serverStatus[2])));
+                serverStatusIcon.setImage(icon);
+            } catch (NullPointerException | IllegalArgumentException e) {
+                System.err.println("Error al cargar el icono de estado del servidor: " + e.getMessage());
+                serverStatusIcon.setImage(new Image(getClass().getResourceAsStream("/ar/com/hmu/images/icon_circle_blue_question_52x52.png")));
+            }
             return serverStatus[0].equals("Servidor en línea y funcional.");
         } else {
             serverStatusLabel.setText("Error al inicializar la conexión al servidor");
             serverStatusLabel.setStyle("-fx-text-fill: red;");
+            Image icon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/ar/com/hmu/images/icon_circle_blue_question_52x52.png")));
+            serverStatusIcon.setImage(icon);
             return false;
         }
     }
@@ -226,6 +258,76 @@ public class LoginController {
     }
 
     /**
+     * Carga el último CUIL utilizado por el usuario desde las preferencias del sistema y
+     * lo inserta en el campo correspondiente. Si existe un valor previo almacenado,
+     * posiciona el foco automáticamente en el campo de contraseña para facilitar el inicio de sesión.
+     *
+     * Este método se utiliza para mejorar la experiencia del usuario recordando la última cuenta utilizada.
+     * Si no existe un valor almacenado, el campo de CUIL quedará vacío y el usuario deberá ingresar
+     * sus credenciales manualmente.
+     */
+    private void loadUserCuil() {
+        preferences = Preferences.userNodeForPackage(LoginController.class);
+        String lastUserCuil = preferences.get(LAST_USER_CUIL_KEY, "");
+        if (!lastUserCuil.isEmpty()) {
+            usernameField.setText(lastUserCuil);
+            passwordField.requestFocus();  // Posicionar el foco en el campo de contraseña.
+        }
+    }
+
+    /**
+     * Guarda el CUIL del usuario en las preferencias del sistema para que sea recordado
+     * en futuros inicios de sesión.
+     *
+     * Este método almacena el CUIL proporcionado, lo cual facilita el inicio de sesión
+     * del usuario en el futuro, evitando que tenga que ingresarlo nuevamente.
+     * Se invoca después de una autenticación exitosa.
+     *
+     * @param cuil el CUIL del usuario que se debe almacenar para recordar en futuros inicios de sesión.
+     */
+    private void saveUserCuil(String cuil) {
+        preferences = Preferences.userNodeForPackage(LoginController.class);
+        preferences.put(LAST_USER_CUIL_KEY, cuil);
+    }
+
+
+    /**
+     * Configura la funcionalidad de mostrar u ocultar la contraseña ingresada por el usuario.
+     * <p>
+     * Este método alterna entre un {@link PasswordField} (que como tal, no muestra la contraseña),
+     * y un {@link TextField}, que sí muestra la contraseña (en texto plano) cuando la casilla
+     * "Mostrar contraseña" está seleccionada.
+     * La sincronización entre ambos campos permite que el usuario pueda alternar libremente la
+     * visibilidad de la contraseña sin perder la información ya ingresada.
+     * <p>
+     * El {@link CheckBox} "Mostrar contraseña" controla esta funcionalidad y al ser seleccionado,
+     * oculta el campo de {@link PasswordField} y muestra el campo de {@link TextField} para visualizar la contraseña en texto plano.
+     * Cuando se deselecciona, se vuelve a ocultar la contraseña.
+     */
+    private void configureShowPassword() {
+        // Ocultamos el TextField visible de contraseña (de forma inicial)
+        passwordFieldVisible.setVisible(false);
+        passwordFieldVisible.managedProperty().bind(showPasswordCheckBox.selectedProperty());
+        passwordField.managedProperty().bind(showPasswordCheckBox.selectedProperty().not());
+        passwordFieldVisible.textProperty().bindBidirectional(passwordField.textProperty());
+
+        // Listener para la casilla "Mostrar contraseña"
+        showPasswordCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                // Mostrar el campo de texto que tiene la contraseña visible
+                passwordFieldVisible.setVisible(true);
+                passwordFieldVisible.setText(passwordField.getText());
+                passwordField.setVisible(false);
+            } else {
+                // Volver a ocultar la contraseña y mostrar el PasswordField
+                passwordField.setVisible(true);
+                passwordField.setText(passwordFieldVisible.getText());
+                passwordFieldVisible.setVisible(false);
+            }
+        });
+    }
+
+    /**
      * Gestiona el evento del botón de inicio de sesión.
      *
      * Este método es invocado cuando el usuario hace clic en el botón de "Iniciar Sesión".
@@ -246,6 +348,14 @@ public class LoginController {
             // Validar el usuario con LoginService
             boolean isValidUser = loginService.validateUser(Long.parseLong(cuil), password);
             if (isValidUser) {
+                if (rememberMeCheckBox.isSelected()) {
+                    // Guardar el CUIL del usuario en las preferencias
+                    preferences.put(LAST_USER_CUIL_KEY, cuil);
+                } else {
+                    // Limpiar la preferencia si no se quiere recordar el usuario
+                    preferences.remove(LAST_USER_CUIL_KEY);
+                }
+
                 // Obtener el usuario autenticado para pasarlo al menú principal
                 Usuario usuario = loginService.getUsuarioByCuil(Long.parseLong(cuil));
                 showMainMenu(usuario);
