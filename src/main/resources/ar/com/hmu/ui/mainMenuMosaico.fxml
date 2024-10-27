@@ -4,6 +4,10 @@
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
@@ -11,392 +15,12 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.TilePane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-
 <BorderPane xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ar.com.hmu.ui.MainMenuMosaico">
-   <center>
-      <GridPane BorderPane.alignment="CENTER">
-         <columnConstraints>
-            <ColumnConstraints hgrow="SOMETIMES" />
-            <ColumnConstraints hgrow="SOMETIMES" />
-            <ColumnConstraints hgrow="SOMETIMES" />
-            <ColumnConstraints hgrow="SOMETIMES" />
-         </columnConstraints>
-         <rowConstraints>
-            <RowConstraints vgrow="SOMETIMES" />
-            <RowConstraints vgrow="SOMETIMES" />
-            <RowConstraints vgrow="SOMETIMES" />
-         </rowConstraints>
-         <children>
-            <GridPane alignment="CENTER" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
-              <columnConstraints>
-                <ColumnConstraints halignment="CENTER" />
-              </columnConstraints>
-              <rowConstraints>
-                <RowConstraints />
-                <RowConstraints />
-              </rowConstraints>
-               <children>
-                  <ImageView fitHeight="128.0" fitWidth="128.0" pickOnBounds="true" preserveRatio="true" GridPane.halignment="CENTER">
-                     <image>
-                        <Image url="@mosaic_default_image.png" />
-                     </image>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </ImageView>
-                  <Text stroke="GREY" strokeWidth="0.5" text="Gestión de Novedades" textAlignment="CENTER" wrappingWidth="128.0" GridPane.rowIndex="1">
-                     <font>
-                        <Font name="System Bold" size="14.0" />
-                     </font>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </Text>
-               </children>
-               <GridPane.margin>
-                  <Insets bottom="16.0" left="32.0" right="32.0" top="16.0" />
-               </GridPane.margin>
-            </GridPane>
-            <GridPane alignment="CENTER" layoutX="10.0" layoutY="10.0" GridPane.columnIndex="1">
-               <columnConstraints>
-                  <ColumnConstraints halignment="CENTER" />
-               </columnConstraints>
-               <rowConstraints>
-                  <RowConstraints />
-                  <RowConstraints />
-               </rowConstraints>
-               <children>
-                  <ImageView fitHeight="128.0" fitWidth="128.0" pickOnBounds="true" preserveRatio="true" GridPane.halignment="CENTER">
-                     <image>
-                        <Image url="@mosaic_default_image.png" />
-                     </image>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </ImageView>
-                  <Text stroke="GREY" strokeWidth="0.5" text="Memorandum, Notas" textAlignment="CENTER" wrappingWidth="128.0" GridPane.rowIndex="1">
-                     <font>
-                        <Font name="System Bold" size="14.0" />
-                     </font>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </Text>
-               </children>
-               <GridPane.margin>
-                  <Insets bottom="16.0" left="32.0" right="32.0" top="16.0" />
-               </GridPane.margin>
-            </GridPane>
-            <GridPane alignment="CENTER" layoutX="10.0" layoutY="10.0" GridPane.columnIndex="2">
-               <columnConstraints>
-                  <ColumnConstraints halignment="CENTER" />
-               </columnConstraints>
-               <rowConstraints>
-                  <RowConstraints />
-                  <RowConstraints />
-               </rowConstraints>
-               <children>
-                  <ImageView fitHeight="128.0" fitWidth="128.0" pickOnBounds="true" preserveRatio="true" GridPane.halignment="CENTER">
-                     <image>
-                        <Image url="@mosaic_default_image.png" />
-                     </image>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </ImageView>
-                  <Text stroke="GREY" strokeWidth="0.5" text="Opcion 1" textAlignment="CENTER" wrappingWidth="128.0" GridPane.rowIndex="1">
-                     <font>
-                        <Font name="System Bold" size="14.0" />
-                     </font>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </Text>
-               </children>
-               <GridPane.margin>
-                  <Insets bottom="16.0" left="32.0" right="32.0" top="16.0" />
-               </GridPane.margin>
-            </GridPane>
-            <GridPane alignment="CENTER" layoutX="10.0" layoutY="10.0" GridPane.columnIndex="3">
-               <columnConstraints>
-                  <ColumnConstraints halignment="CENTER" />
-               </columnConstraints>
-               <rowConstraints>
-                  <RowConstraints />
-                  <RowConstraints />
-               </rowConstraints>
-               <children>
-                  <ImageView fitHeight="128.0" fitWidth="128.0" pickOnBounds="true" preserveRatio="true" GridPane.halignment="CENTER">
-                     <image>
-                        <Image url="@mosaic_default_image.png" />
-                     </image>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </ImageView>
-                  <Text stroke="GREY" strokeWidth="0.5" text="Opcion 1" textAlignment="CENTER" wrappingWidth="128.0" GridPane.rowIndex="1">
-                     <font>
-                        <Font name="System Bold" size="14.0" />
-                     </font>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </Text>
-               </children>
-               <GridPane.margin>
-                  <Insets bottom="16.0" left="32.0" right="32.0" top="16.0" />
-               </GridPane.margin>
-            </GridPane>
-            <GridPane alignment="CENTER" layoutX="10.0" layoutY="10.0" GridPane.rowIndex="1">
-               <columnConstraints>
-                  <ColumnConstraints halignment="CENTER" />
-               </columnConstraints>
-               <rowConstraints>
-                  <RowConstraints />
-                  <RowConstraints />
-               </rowConstraints>
-               <children>
-                  <ImageView fitHeight="128.0" fitWidth="128.0" pickOnBounds="true" preserveRatio="true" GridPane.halignment="CENTER">
-                     <image>
-                        <Image url="@mosaic_default_image.png" />
-                     </image>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </ImageView>
-                  <Text stroke="GREY" strokeWidth="0.5" text="Diagrama de Servicio" textAlignment="CENTER" wrappingWidth="128.0" GridPane.rowIndex="1">
-                     <font>
-                        <Font name="System Bold" size="14.0" />
-                     </font>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </Text>
-               </children>
-               <GridPane.margin>
-                  <Insets bottom="16.0" left="32.0" right="32.0" top="16.0" />
-               </GridPane.margin>
-            </GridPane>
-            <GridPane alignment="CENTER" layoutX="10.0" layoutY="10.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-               <columnConstraints>
-                  <ColumnConstraints halignment="CENTER" />
-               </columnConstraints>
-               <rowConstraints>
-                  <RowConstraints />
-                  <RowConstraints />
-               </rowConstraints>
-               <children>
-                  <ImageView fitHeight="128.0" fitWidth="128.0" pickOnBounds="true" preserveRatio="true" GridPane.halignment="CENTER">
-                     <image>
-                        <Image url="@mosaic_default_image.png" />
-                     </image>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </ImageView>
-                  <Text stroke="GREY" strokeWidth="0.5" text="Opcion 1" textAlignment="CENTER" wrappingWidth="128.0" GridPane.rowIndex="1">
-                     <font>
-                        <Font name="System Bold" size="14.0" />
-                     </font>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </Text>
-               </children>
-               <GridPane.margin>
-                  <Insets bottom="16.0" left="32.0" right="32.0" top="16.0" />
-               </GridPane.margin>
-            </GridPane>
-            <GridPane alignment="CENTER" layoutX="10.0" layoutY="10.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
-               <columnConstraints>
-                  <ColumnConstraints halignment="CENTER" />
-               </columnConstraints>
-               <rowConstraints>
-                  <RowConstraints />
-                  <RowConstraints />
-               </rowConstraints>
-               <children>
-                  <ImageView fitHeight="128.0" fitWidth="128.0" pickOnBounds="true" preserveRatio="true" GridPane.halignment="CENTER">
-                     <image>
-                        <Image url="@mosaic_default_image.png" />
-                     </image>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </ImageView>
-                  <Text stroke="GREY" strokeWidth="0.5" text="Opcion 1" textAlignment="CENTER" wrappingWidth="128.0" GridPane.rowIndex="1">
-                     <font>
-                        <Font name="System Bold" size="14.0" />
-                     </font>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </Text>
-               </children>
-               <GridPane.margin>
-                  <Insets bottom="16.0" left="32.0" right="32.0" top="16.0" />
-               </GridPane.margin>
-            </GridPane>
-            <GridPane alignment="CENTER" layoutX="10.0" layoutY="10.0" GridPane.columnIndex="3" GridPane.rowIndex="1">
-               <columnConstraints>
-                  <ColumnConstraints halignment="CENTER" />
-               </columnConstraints>
-               <rowConstraints>
-                  <RowConstraints />
-                  <RowConstraints />
-               </rowConstraints>
-               <children>
-                  <ImageView fitHeight="128.0" fitWidth="128.0" pickOnBounds="true" preserveRatio="true" GridPane.halignment="CENTER">
-                     <image>
-                        <Image url="@mosaic_default_image.png" />
-                     </image>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </ImageView>
-                  <Text stroke="GREY" strokeWidth="0.5" text="Opcion 1" textAlignment="CENTER" wrappingWidth="128.0" GridPane.rowIndex="1">
-                     <font>
-                        <Font name="System Bold" size="14.0" />
-                     </font>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </Text>
-               </children>
-               <GridPane.margin>
-                  <Insets bottom="16.0" left="32.0" right="32.0" top="16.0" />
-               </GridPane.margin>
-            </GridPane>
-            <GridPane alignment="CENTER" layoutX="10.0" layoutY="10.0" GridPane.rowIndex="2">
-               <columnConstraints>
-                  <ColumnConstraints halignment="CENTER" />
-               </columnConstraints>
-               <rowConstraints>
-                  <RowConstraints />
-                  <RowConstraints />
-               </rowConstraints>
-               <children>
-                  <ImageView fitHeight="128.0" fitWidth="128.0" pickOnBounds="true" preserveRatio="true" GridPane.halignment="CENTER">
-                     <image>
-                        <Image url="@mosaic_default_image.png" />
-                     </image>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </ImageView>
-                  <Text stroke="GREY" strokeWidth="0.5" text="Opcion 1" textAlignment="CENTER" wrappingWidth="128.0" GridPane.rowIndex="1">
-                     <font>
-                        <Font name="System Bold" size="14.0" />
-                     </font>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </Text>
-               </children>
-               <GridPane.margin>
-                  <Insets bottom="16.0" left="32.0" right="32.0" top="16.0" />
-               </GridPane.margin>
-            </GridPane>
-            <GridPane alignment="CENTER" layoutX="10.0" layoutY="10.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-               <columnConstraints>
-                  <ColumnConstraints halignment="CENTER" />
-               </columnConstraints>
-               <rowConstraints>
-                  <RowConstraints />
-                  <RowConstraints />
-               </rowConstraints>
-               <children>
-                  <ImageView fitHeight="128.0" fitWidth="128.0" pickOnBounds="true" preserveRatio="true" GridPane.halignment="CENTER">
-                     <image>
-                        <Image url="@mosaic_default_image.png" />
-                     </image>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </ImageView>
-                  <Text stroke="GREY" strokeWidth="0.5" text="Opcion 1" textAlignment="CENTER" wrappingWidth="128.0" GridPane.rowIndex="1">
-                     <font>
-                        <Font name="System Bold" size="14.0" />
-                     </font>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </Text>
-               </children>
-               <GridPane.margin>
-                  <Insets bottom="16.0" left="32.0" right="32.0" top="16.0" />
-               </GridPane.margin>
-            </GridPane>
-            <GridPane alignment="CENTER" layoutX="10.0" layoutY="10.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
-               <columnConstraints>
-                  <ColumnConstraints halignment="CENTER" />
-               </columnConstraints>
-               <rowConstraints>
-                  <RowConstraints />
-                  <RowConstraints />
-               </rowConstraints>
-               <children>
-                  <ImageView fitHeight="128.0" fitWidth="128.0" pickOnBounds="true" preserveRatio="true" GridPane.halignment="CENTER">
-                     <image>
-                        <Image url="@mosaic_default_image.png" />
-                     </image>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </ImageView>
-                  <Text stroke="GREY" strokeWidth="0.5" text="Opcion 1" textAlignment="CENTER" wrappingWidth="128.0" GridPane.rowIndex="1">
-                     <font>
-                        <Font name="System Bold" size="14.0" />
-                     </font>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </Text>
-               </children>
-               <GridPane.margin>
-                  <Insets bottom="16.0" left="32.0" right="32.0" top="16.0" />
-               </GridPane.margin>
-            </GridPane>
-            <GridPane alignment="CENTER" layoutX="10.0" layoutY="10.0" GridPane.columnIndex="3" GridPane.rowIndex="2">
-               <columnConstraints>
-                  <ColumnConstraints halignment="CENTER" />
-               </columnConstraints>
-               <rowConstraints>
-                  <RowConstraints />
-                  <RowConstraints />
-               </rowConstraints>
-               <children>
-                  <ImageView fitHeight="128.0" fitWidth="128.0" pickOnBounds="true" preserveRatio="true" GridPane.halignment="CENTER">
-                     <image>
-                        <Image url="@mosaic_default_image.png" />
-                     </image>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </ImageView>
-                  <Text stroke="GREY" strokeWidth="0.5" text="Opcion 1" textAlignment="CENTER" wrappingWidth="128.0" GridPane.rowIndex="1">
-                     <font>
-                        <Font name="System Bold" size="14.0" />
-                     </font>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </Text>
-               </children>
-               <GridPane.margin>
-                  <Insets bottom="16.0" left="32.0" right="32.0" top="16.0" />
-               </GridPane.margin>
-            </GridPane>
-         </children>
-         <BorderPane.margin>
-            <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
-         </BorderPane.margin>
-      </GridPane>
-   </center>
    <bottom>
       <VBox alignment="CENTER_LEFT" BorderPane.alignment="CENTER_LEFT">
          <children>
@@ -439,25 +63,450 @@
       </VBox>
    </bottom>
    <top>
-      <HBox prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER_LEFT">
+      <VBox BorderPane.alignment="CENTER_LEFT">
          <children>
-            <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
-               <image>
-                  <Image url="@loginImage.png" />
-               </image>
-            </ImageView>
-            <GridPane>
-              <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-              </columnConstraints>
-              <rowConstraints>
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-              </rowConstraints>
-            </GridPane>
+            <MenuBar>
+              <menus>
+                <Menu mnemonicParsing="false" text="Archivo">
+                  <items>
+                    <MenuItem mnemonicParsing="false" text="Cerrar sesión" />
+                        <MenuItem mnemonicParsing="false" text="Salir" />
+                  </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Módulos">
+                  <items>
+                    <MenuItem mnemonicParsing="false" text="Alta, Baja y Modificación de Agentes" />
+                        <MenuItem mnemonicParsing="false" text="Memorandum, Notas" />
+                        <MenuItem mnemonicParsing="false" text="Gestión de novedades" />
+                        <MenuItem mnemonicParsing="false" text="Memorandum, Notas" />
+                        <MenuItem mnemonicParsing="false" text="Gestión de novedades" />
+                  </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Ayuda">
+                  <items>
+                    <MenuItem mnemonicParsing="false" text="Acerca de..." />
+                  </items>
+                </Menu>
+              </menus>
+            </MenuBar>
+            <HBox prefHeight="100.0" prefWidth="200.0">
+               <children>
+                  <ImageView fitHeight="96.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@loginImage.png" />
+                     </image>
+                     <HBox.margin>
+                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                     </HBox.margin>
+                  </ImageView>
+                  <GridPane alignment="CENTER_LEFT">
+                    <columnConstraints>
+                      <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" />
+                      <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" />
+                    </columnConstraints>
+                    <rowConstraints>
+                      <RowConstraints valignment="BASELINE" vgrow="NEVER" />
+                      <RowConstraints valignment="BASELINE" vgrow="NEVER" />
+                      <RowConstraints valignment="BASELINE" vgrow="NEVER" />
+                    </rowConstraints>
+                     <HBox.margin>
+                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                     </HBox.margin>
+                     <children>
+                        <Label alignment="TOP_LEFT" text="AGENTE" textAlignment="RIGHT" textFill="GREY">
+                           <font>
+                              <Font name="System Bold" size="11.0" />
+                           </font>
+                           <GridPane.margin>
+                              <Insets right="4.0" />
+                           </GridPane.margin>
+                        </Label>
+                        <Text stroke="BLUE" strokeWidth="0.2" text="APELLIDOS, Nombres" GridPane.columnIndex="1">
+                           <font>
+                              <Font name="System Bold" size="18.0" />
+                           </font>
+                           <GridPane.margin>
+                              <Insets left="4.0" />
+                           </GridPane.margin>
+                        </Text>
+                        <Label alignment="TOP_LEFT" text="SERVICIO" textAlignment="RIGHT" textFill="GREY" GridPane.rowIndex="1">
+                           <font>
+                              <Font name="System Bold" size="11.0" />
+                           </font>
+                           <GridPane.margin>
+                              <Insets right="4.0" />
+                           </GridPane.margin>
+                        </Label>
+                        <Text layoutX="67.0" layoutY="41.0" stroke="GREY" strokeWidth="0.2" text="Nombre del Servicio" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                           <font>
+                              <Font name="System Bold Italic" size="16.0" />
+                           </font>
+                           <GridPane.margin>
+                              <Insets left="4.0" />
+                           </GridPane.margin>
+                        </Text>
+                        <Label alignment="TOP_LEFT" layoutX="20.0" layoutY="18.0" text="CARGO" textAlignment="RIGHT" textFill="GREY" GridPane.rowIndex="2">
+                           <font>
+                              <Font name="System Bold" size="11.0" />
+                           </font>
+                           <GridPane.margin>
+                              <Insets right="4.0" />
+                           </GridPane.margin>
+                        </Label>
+                        <Text layoutX="67.0" layoutY="63.0" stroke="RED" strokeWidth="0.1" text="0000" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                           <font>
+                              <Font name="System Bold" size="16.0" />
+                           </font>
+                           <GridPane.margin>
+                              <Insets left="4.0" />
+                           </GridPane.margin>
+                        </Text>
+                     </children>
+                  </GridPane>
+                  <ScrollPane fitToWidth="true" HBox.hgrow="ALWAYS">
+                     <content>
+                        <VBox alignment="TOP_RIGHT">
+                           <children>
+                              <Label alignment="TOP_RIGHT" layoutX="252.0" layoutY="14.0" text="Datos de conexión actual:" textAlignment="RIGHT" textFill="GREY">
+                                 <font>
+                                    <Font name="System Bold" size="10.0" />
+                                 </font>
+                                 <padding>
+                                    <Insets top="8.0" />
+                                 </padding>
+                              </Label>
+                              <Text layoutX="290.0" layoutY="42.0" stroke="RED" strokeWidth="0.1" text="vie 04, oct 2024 23:40 Hs" textAlignment="RIGHT">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                              </Text>
+                              <Text layoutX="58.0" layoutY="89.0" stroke="RED" strokeWidth="0.1" text="inv.553.urgencias.local" textAlignment="RIGHT">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                              </Text>
+                              <Text layoutX="172.0" layoutY="66.0" stroke="RED" strokeWidth="0.1" text="10.22.9.2" textAlignment="RIGHT">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                              </Text>
+                              <Label alignment="TOP_RIGHT" text="Datos de conexión anterior:" textAlignment="RIGHT" textFill="GREY">
+                                 <font>
+                                    <Font name="System Bold" size="10.0" />
+                                 </font>
+                                 <padding>
+                                    <Insets top="8.0" />
+                                 </padding>
+                              </Label>
+                              <Text stroke="RED" strokeWidth="0.1" text="vie 04, oct 2024" textAlignment="RIGHT">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                              </Text>
+                              <Text layoutX="289.0" layoutY="42.0" stroke="RED" strokeWidth="0.1" text="inv-700.urgencias.local (10.22.9.1)" textAlignment="RIGHT">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                              </Text>
+                           </children>
+                           <padding>
+                              <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                           </padding>
+                        </VBox>
+                     </content>
+                  </ScrollPane>
+               </children>
+            </HBox>
          </children>
-      </HBox>
+      </VBox>
    </top>
+   <center>
+      <ScrollPane fitToHeight="true" fitToWidth="true">
+         <content>
+            <TilePane hgap="8.0" prefColumns="2" prefHeight="430.0" prefRows="2" prefWidth="730.0" vgap="8.0">
+               <children>
+                  <VBox alignment="TOP_CENTER">
+                     <children>
+                        <ImageView fitHeight="96.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@mosaic_default_image.png" />
+                           </image>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </ImageView>
+                        <Text stroke="GREY" strokeWidth="0.5" text="Alta, Baja y Modificación de Agentes" textAlignment="CENTER" wrappingWidth="128.0">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </Text>
+                     </children>
+                     <TilePane.margin>
+                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                     </TilePane.margin>
+                  </VBox>
+                  <VBox alignment="TOP_CENTER">
+                     <children>
+                        <ImageView fitHeight="96.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@mosaic_default_image.png" />
+                           </image>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </ImageView>
+                        <Text stroke="GREY" strokeWidth="0.5" text="Listados de Agentes" textAlignment="CENTER" wrappingWidth="128.0">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </Text>
+                     </children>
+                     <TilePane.margin>
+                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                     </TilePane.margin>
+                  </VBox>
+                  <VBox alignment="TOP_CENTER">
+                     <children>
+                        <ImageView fitHeight="96.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@mosaic_default_image.png" />
+                           </image>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </ImageView>
+                        <Text stroke="GREY" strokeWidth="0.5" text="Consulta de Diagramas de Servicios" textAlignment="CENTER" wrappingWidth="128.0">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </Text>
+                     </children>
+                     <TilePane.margin>
+                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                     </TilePane.margin>
+                  </VBox>
+                  <VBox alignment="TOP_CENTER">
+                     <children>
+                        <ImageView fitHeight="96.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@mosaic_default_image.png" />
+                           </image>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </ImageView>
+                        <Text stroke="GREY" strokeWidth="0.5" text="Gestión de Partes Diarios" textAlignment="CENTER" wrappingWidth="128.0">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </Text>
+                     </children>
+                     <TilePane.margin>
+                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                     </TilePane.margin>
+                  </VBox>
+                  <VBox alignment="TOP_CENTER">
+                     <children>
+                        <ImageView fitHeight="96.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@mosaic_default_image.png" />
+                           </image>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </ImageView>
+                        <Text stroke="GREY" strokeWidth="0.5" text="Diagramación de Servicio" textAlignment="CENTER" wrappingWidth="128.0">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </Text>
+                     </children>
+                     <TilePane.margin>
+                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                     </TilePane.margin>
+                  </VBox>
+                  <VBox alignment="TOP_CENTER">
+                     <children>
+                        <ImageView fitHeight="96.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@mosaic_default_image.png" />
+                           </image>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </ImageView>
+                        <Text stroke="GREY" strokeWidth="0.5" text="Control de marcaciones" textAlignment="CENTER" wrappingWidth="128.0">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </Text>
+                     </children>
+                     <TilePane.margin>
+                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                     </TilePane.margin>
+                  </VBox>
+                  <VBox alignment="TOP_CENTER">
+                     <children>
+                        <ImageView fitHeight="96.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@mosaic_default_image.png" />
+                           </image>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </ImageView>
+                        <Text stroke="GREY" strokeWidth="0.5" text="Gestión de Francos Compensatorios" textAlignment="CENTER" wrappingWidth="128.0">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </Text>
+                     </children>
+                     <TilePane.margin>
+                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                     </TilePane.margin>
+                  </VBox>
+                  <VBox alignment="TOP_CENTER">
+                     <children>
+                        <ImageView fitHeight="96.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@mosaic_default_image.png" />
+                           </image>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </ImageView>
+                        <Text stroke="GREY" strokeWidth="0.5" text="Omisión de Ingreso/Egreso" textAlignment="CENTER" wrappingWidth="128.0">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </Text>
+                     </children>
+                     <TilePane.margin>
+                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                     </TilePane.margin>
+                  </VBox>
+                  <VBox alignment="TOP_CENTER">
+                     <children>
+                        <ImageView fitHeight="96.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@mosaic_default_image.png" />
+                           </image>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </ImageView>
+                        <Text stroke="GREY" strokeWidth="0.5" text="Gestión de Pases de Salida" textAlignment="CENTER" wrappingWidth="128.0">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </Text>
+                     </children>
+                     <TilePane.margin>
+                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                     </TilePane.margin>
+                  </VBox>
+                  <VBox alignment="TOP_CENTER">
+                     <children>
+                        <ImageView fitHeight="96.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@mosaic_default_image.png" />
+                           </image>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </ImageView>
+                        <Text stroke="GREY" strokeWidth="0.5" text="Gestión de inasistencias" textAlignment="CENTER" wrappingWidth="128.0">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </Text>
+                     </children>
+                     <TilePane.margin>
+                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                     </TilePane.margin>
+                  </VBox>
+                  <VBox alignment="TOP_CENTER">
+                     <children>
+                        <ImageView fitHeight="96.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@mosaic_default_image.png" />
+                           </image>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </ImageView>
+                        <Text stroke="GREY" strokeWidth="0.5" text="Módulo de Reportes" textAlignment="CENTER" wrappingWidth="128.0">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </Text>
+                     </children>
+                     <TilePane.margin>
+                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                     </TilePane.margin>
+                  </VBox>
+                  <VBox alignment="TOP_CENTER">
+                     <children>
+                        <ImageView fitHeight="96.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@mosaic_default_image.png" />
+                           </image>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </ImageView>
+                        <Text stroke="GREY" strokeWidth="0.5" text="Gestión de Servicios" textAlignment="CENTER" wrappingWidth="128.0">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </Text>
+                     </children>
+                     <TilePane.margin>
+                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                     </TilePane.margin>
+                  </VBox>
+               </children>
+               <padding>
+                  <Insets top="8.0" />
+               </padding>
+            </TilePane>
+         </content>
+      </ScrollPane>
+   </center>
 </BorderPane>
