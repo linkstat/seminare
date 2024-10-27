@@ -22,6 +22,7 @@ public abstract class Usuario {
 	private int tel;
 	private Cargo cargo;
 	private String password;
+	private byte[] profileImage;
 
 	// Constructor por defecto
 	public Usuario(){
@@ -176,6 +177,15 @@ public abstract class Usuario {
 		String defaultPassword = String.valueOf(this.cuil);
 		return PasswordUtils.validatePassword(defaultPassword, this.password);
 	}
+
+	public byte[] getProfileImage() {
+		return profileImage;
+	}
+
+	public void setProfileImage(byte[] profileImage) {
+		this.profileImage = profileImage;
+	}
+
 
 	/**
 	 * Asigna Servicio a un Usuario
