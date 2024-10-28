@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * @author Pablo Alejandro Hamann <linkstat@hmu.com.ar>
+ * @author Pablo Alejandro Hamann
  * @version 1.0
   */
 public class Novedad {

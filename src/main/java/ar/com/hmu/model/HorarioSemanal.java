@@ -8,7 +8,7 @@ import java.util.HashMap;
 import ar.com.hmu.utils.DiaSemana;
 
 /**
- * @author Pablo Alejandro Hamann <linkstat@hmu.com.ar>
+ * @author Pablo Alejandro Hamann
  * @version 1.0
   */
 public class HorarioSemanal extends Horario {
