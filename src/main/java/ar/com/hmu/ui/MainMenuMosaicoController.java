@@ -1,16 +1,19 @@
 package ar.com.hmu.ui;
 
 import ar.com.hmu.model.Usuario;
+import ar.com.hmu.repository.DatabaseConnector;
 import ar.com.hmu.utils.AlertUtils;
+import ar.com.hmu.utils.SessionUtils;
+import static ar.com.hmu.utils.SessionUtils.handleLogout;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.fxml.FXMLLoader;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -47,6 +50,7 @@ public class MainMenuMosaicoController {
     // Similar al altaBajaVBox...
 
     private Usuario usuarioActual;
+    private DatabaseConnector databaseConnector; // Necesario para la verificación del estado del servidor.
 
     /**
      * Inicializa los componentes después de que el archivo FXML ha sido cargado.
@@ -64,8 +68,9 @@ public class MainMenuMosaicoController {
     public void setUsuarioActual(Usuario usuario) {
         this.usuarioActual = usuario;
         agentNameLabel.setText(usuario.getApellidos() + ", " + usuario.getNombres());
-        serviceLabel.setText(usuario.getServicio());  // Si tiene el servicio asignado
-        positionLabel.setText(String.valueOf(usuario.getCargo()));
+        serviceLabel.setText(usuario.getServicio().getNombre());  // Si tiene el servicio asignado
+        positionLabel.setText(usuario.getCargo().toString());
+        setupConnectionInfo();  // Muestra la información de la conexión actual.
     }
 
     /**
@@ -87,30 +92,13 @@ public class MainMenuMosaicoController {
     }
 
     /**
-     * Muestra la ventana de inicio de sesión y cierra el menú principal.
-     */
-    private void handleLogout() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ar/com/hmu/ui/loginScreen.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) logoutButton.getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-        } catch (IOException e) {
-            AlertUtils.showErr("Error al cargar la pantalla de inicio de sesión: " + e.getMessage());
-        }
-    }
-
-    /**
      * Maneja la opción "Modificar Contraseña" abriendo una nueva ventana para cambiar la contraseña.
      */
     private void handleChangePassword() {
-        // Crear una ventana emergente con tres campos para modificar la contraseña.
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Modificar contraseña");
         dialog.setHeaderText("Ingrese su contraseña actual y la nueva contraseña.");
 
-        // Campos de contraseña
         PasswordField currentPassword = new PasswordField();
         currentPassword.setPromptText("Contraseña actual");
 
@@ -120,17 +108,18 @@ public class MainMenuMosaicoController {
         PasswordField confirmPassword = new PasswordField();
         confirmPassword.setPromptText("Repetir nueva contraseña");
 
-        // Añadir campos a la ventana
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         dialog.getDialogPane().setContent(new VBox(10, currentPassword, newPassword, confirmPassword));
 
         dialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                // Implementar lógica para modificar la contraseña
-                if (!newPassword.getText().equals(confirmPassword.getText())) {
+                if (!usuarioActual.validatePassword(currentPassword.getText())) {
+                    AlertUtils.showErr("¡CUIDADO! La contraseña actual no es correcta.");
+                } else if (!newPassword.getText().equals(confirmPassword.getText())) {
                     AlertUtils.showErr("¡CUIDADO! Las contraseñas no coinciden. La nueva contraseña se debe repetir dos veces, sin errores.");
                 } else {
-                    // Aquí iría la lógica para actualizar la contraseña en la base de datos
+                    usuarioActual.setPassword(newPassword.getText());
+                    // Aquí se debería actualizar la base de datos con el nuevo valor de la contraseña.
                     AlertUtils.showInfo("Contraseña modificada exitosamente.");
                 }
             }
@@ -151,8 +140,12 @@ public class MainMenuMosaicoController {
      * actualizada esta información.
      */
     public void updateServerStatus() {
-        // Implementar la lógica de verificación del estado del servidor aquí.
-        // Puedes reutilizar el código de LoginController para actualizar el connectionStatusLabel y connectionStatusIcon.
+        // Similar a LoginController
+        if (databaseConnector != null) {
+            String[] serverStatus = databaseConnector.checkServerStatus();
+            connectionStatusLabel.setText(serverStatus[0]);
+            connectionStatusIcon.setImage(new Image(getClass().getResourceAsStream(serverStatus[2])));
+        }
     }
 
     /**
@@ -160,7 +153,6 @@ public class MainMenuMosaicoController {
      * nombre del host, e IP.
      */
     public void setupConnectionInfo() {
-        // Datos de la conexión actual
         String currentConnectionTime = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss").format(new Date());
         String hostname = "Desconocido";
         String ipAddress = "Desconocida";
@@ -168,13 +160,11 @@ public class MainMenuMosaicoController {
         try {
             InetAddress inetAddress = InetAddress.getLocalHost();
             hostname = inetAddress.getHostName();
-            ipAddress = inetAddress.getHostAddress();s
+            ipAddress = inetAddress.getHostAddress();
         } catch (UnknownHostException e) {
             System.err.println("No se pudo obtener la información de la conexión actual: " + e.getMessage());
         }
 
-        // Actualiza la UI con la información de conexión
-        connectionStatusLabel.setText("vie " + currentConnectionTime + " " + hostname + " " + ipAddress);
+        connectionStatusLabel.setText("Conexión: " + currentConnectionTime + " | " + hostname + " | " + ipAddress);
     }
-
 }

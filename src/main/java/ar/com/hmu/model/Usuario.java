@@ -10,6 +10,8 @@ import java.util.UUID;
  */
 public abstract class Usuario {
 
+	public static final String NOMBRE_SERVICIO_DIRECCION = "Dirección";
+	public static final String NOMBRE_SERVICIO_PERSONAL = "Personal";
 	private UUID id;
 	private LocalDate fechaAlta;
 	private long cuil;
@@ -23,6 +25,7 @@ public abstract class Usuario {
 	private Cargo cargo;
 	private String password;
 	private byte[] profileImage;
+	private Servicio servicio;
 
 	// Constructor por defecto
 	public Usuario(){
@@ -178,6 +181,22 @@ public abstract class Usuario {
 		return PasswordUtils.validatePassword(defaultPassword, this.password);
 	}
 
+	public boolean changePassword(String currentPassword, String newPassword, String confirmNewPassword) {
+		// Paso 1: Validar la contraseña actual
+		if (!validatePassword(currentPassword)) {
+			throw new IllegalArgumentException("La contraseña actual no es correcta.");
+		}
+
+		// Paso 2: Validar que la nueva contraseña coincide con la confirmación
+		if (!newPassword.equals(confirmNewPassword)) {
+			throw new IllegalArgumentException("Las nuevas contraseñas no coinciden.");
+		}
+
+		// Paso 3: Establecer la nueva contraseña cifrada con BCrypt
+		setPassword(newPassword);
+		return true; // Si el cambio es exitoso, retorna true
+	}
+
 	public byte[] getProfileImage() {
 		return profileImage;
 	}
@@ -186,13 +205,22 @@ public abstract class Usuario {
 		this.profileImage = profileImage;
 	}
 
+	/**
+	 * Obtiene el servicio al que pertenece el usuario.
+	 *
+	 * @return el servicio asociado al usuario.
+	 */
+	public Servicio getServicio() {
+		return servicio;
+	}
 
 	/**
-	 * Asigna Servicio a un Usuario
-	 * @param servicio
+	 * Establece el servicio al que pertenece el usuario.
+	 *
+	 * @param servicio el servicio a asociar con el usuario.
 	 */
-	public void asignarAServicio(Servicio servicio){
-		//void
+	public void setServicio(Servicio servicio) {
+		this.servicio = servicio;
 	}
 
 	public void consultarHorario(){
