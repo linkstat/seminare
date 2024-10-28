@@ -1,9 +1,8 @@
-package ar.com.hmu.auth;
+package ar.com.hmu.service;
 
 import ar.com.hmu.model.*;
 import javafx.scene.image.Image;
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;

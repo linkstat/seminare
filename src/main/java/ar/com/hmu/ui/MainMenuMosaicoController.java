@@ -1,6 +1,6 @@
 package ar.com.hmu.ui;
 
-import ar.com.hmu.auth.MainMenuMosaicoService;
+import ar.com.hmu.service.MainMenuMosaicoService;
 import ar.com.hmu.auth.PasswordChangeHandler;
 import ar.com.hmu.model.Usuario;
 import ar.com.hmu.repository.DatabaseConnector;
