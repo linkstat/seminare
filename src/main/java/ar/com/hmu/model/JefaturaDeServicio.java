@@ -10,15 +10,12 @@ import java.util.List;
 public class JefaturaDeServicio extends Usuario {
 
 	private List<Empleado> listaEmpleados;
-	private Servicio servicio;
-	public Direccion m_Direccion;
-	public Servicio m_Servicio;
+	private Direccion direccion;
 
 	public JefaturaDeServicio(){
 
 	}
 
-	
 	/**
 	 * 
 	 * @param franco
