@@ -2692,7 +2692,7 @@
 										<UML:TaggedValue tag="styleex" value="volatile=0;"/>
 									</UML:ModelElement.taggedValue>
 								</UML:Attribute>
-								<UML:Attribute name="desc" changeable="none" visibility="private" ownerScope="instance" targetScope="instance">
+								<UML:Attribute name="descripcion" changeable="none" visibility="private" ownerScope="instance" targetScope="instance">
 									<UML:Attribute.initialValue>
 										<UML:Expression/>
 									</UML:Attribute.initialValue>
@@ -2882,7 +2882,7 @@
 										<UML:TaggedValue tag="styleex" value="volatile=0;"/>
 									</UML:ModelElement.taggedValue>
 								</UML:Attribute>
-								<UML:Attribute name="desc" changeable="none" visibility="private" ownerScope="instance" targetScope="instance">
+								<UML:Attribute name="descripcion" changeable="none" visibility="private" ownerScope="instance" targetScope="instance">
 									<UML:Attribute.initialValue>
 										<UML:Expression/>
 									</UML:Attribute.initialValue>
@@ -4838,7 +4838,7 @@
 										<UML:TaggedValue tag="styleex" value="volatile=0;"/>
 									</UML:ModelElement.taggedValue>
 								</UML:Attribute>
-								<UML:Attribute name="desc" changeable="none" visibility="private" ownerScope="instance" targetScope="instance">
+								<UML:Attribute name="descripcion" changeable="none" visibility="private" ownerScope="instance" targetScope="instance">
 									<UML:Attribute.initialValue>
 										<UML:Expression/>
 									</UML:Attribute.initialValue>
@@ -8028,7 +8028,7 @@
 										<UML:TaggedValue tag="styleex" value="volatile=0;"/>
 									</UML:ModelElement.taggedValue>
 								</UML:Attribute>
-								<UML:Attribute name="desc" changeable="none" visibility="private" ownerScope="instance" targetScope="instance">
+								<UML:Attribute name="descripcion" changeable="none" visibility="private" ownerScope="instance" targetScope="instance">
 									<UML:Attribute.initialValue>
 										<UML:Expression/>
 									</UML:Attribute.initialValue>

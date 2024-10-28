@@ -20,13 +20,13 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<BorderPane xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ar.com.hmu.ui.MainMenuMosaico">
+<BorderPane xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ar.com.hmu.ui.MainMenuMosaicoController">
    <bottom>
       <VBox alignment="CENTER_LEFT" BorderPane.alignment="CENTER_LEFT">
          <children>
             <HBox alignment="CENTER_LEFT" prefHeight="25.0" prefWidth="480.0">
                <children>
-                  <Button mnemonicParsing="false" text="Cerrar sesión">
+                  <Button fx:id="logoutButton" mnemonicParsing="false" text="Cerrar sesión">
                      <padding>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                      </padding>
@@ -41,7 +41,7 @@
             </HBox>
             <HBox>
                <children>
-                  <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                  <ImageView fx:id="connectionStatusIcon" fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
                      <HBox.margin>
                         <Insets left="4.0" />
                      </HBox.margin>
@@ -49,7 +49,7 @@
                         <Image url="@serverStatus_icon_blue_question.png" />
                      </image>
                   </ImageView>
-                  <Label text="Estado de conexión del servidor">
+                  <Label fx:id="connectionStatusLabel" text="Estado de conexión del servidor">
                      <HBox.margin>
                         <Insets left="4.0" />
                      </HBox.margin>
@@ -69,9 +69,9 @@
               <menus>
                 <Menu mnemonicParsing="false" text="Archivo">
                   <items>
-                    <MenuItem mnemonicParsing="false" text="Modificar contraseña" />
+                    <MenuItem fx:id="changePasswordMenuItem" mnemonicParsing="false" text="Modificar contraseña" />
                         <MenuItem mnemonicParsing="false" text="Cerrar sesión" />
-                        <MenuItem mnemonicParsing="false" text="Salir" />
+                        <MenuItem fx:id="exitMenuItem" mnemonicParsing="false" text="Salir" />
                   </items>
                 </Menu>
                   <Menu mnemonicParsing="false" text="Agente">
@@ -142,7 +142,7 @@
             </MenuBar>
             <HBox prefHeight="100.0" prefWidth="200.0">
                <children>
-                  <ImageView fitHeight="96.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true">
+                  <ImageView fx:id="agentProfileImage" fitHeight="96.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@loginImage.png" />
                      </image>
@@ -172,7 +172,7 @@
                               <Insets right="4.0" />
                            </GridPane.margin>
                         </Label>
-                        <Text stroke="BLUE" strokeWidth="0.2" text="APELLIDOS, Nombres" GridPane.columnIndex="1">
+                        <Text fx:id="agentFullNameText" stroke="BLUE" strokeWidth="0.2" text="APELLIDOS, Nombres" GridPane.columnIndex="1">
                            <font>
                               <Font name="System Bold" size="18.0" />
                            </font>
@@ -188,7 +188,7 @@
                               <Insets right="4.0" />
                            </GridPane.margin>
                         </Label>
-                        <Text layoutX="67.0" layoutY="41.0" stroke="GREY" strokeWidth="0.2" text="Nombre del Servicio" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <Text fx:id="agentServiceText" layoutX="67.0" layoutY="41.0" stroke="GREY" strokeWidth="0.2" text="Nombre del Servicio" GridPane.columnIndex="1" GridPane.rowIndex="1">
                            <font>
                               <Font name="System Bold Italic" size="16.0" />
                            </font>
@@ -204,7 +204,7 @@
                               <Insets right="4.0" />
                            </GridPane.margin>
                         </Label>
-                        <Text layoutX="67.0" layoutY="63.0" stroke="RED" strokeWidth="0.1" text="0000" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                        <Text fx:id="agentCargoText" layoutX="67.0" layoutY="63.0" stroke="RED" strokeWidth="0.1" text="0000" GridPane.columnIndex="1" GridPane.rowIndex="2">
                            <font>
                               <Font name="System Bold" size="16.0" />
                            </font>
@@ -231,7 +231,7 @@
                                     <Font name="System Bold" size="12.0" />
                                  </font>
                               </Text>
-                              <Text layoutX="58.0" layoutY="89.0" stroke="RED" strokeWidth="0.1" text="inv.553.urgencias.local" textAlignment="RIGHT">
+                              <Text fx:id="positionLabel" layoutX="58.0" layoutY="89.0" stroke="RED" strokeWidth="0.1" text="inv.553.urgencias.local" textAlignment="RIGHT">
                                  <font>
                                     <Font name="System Bold" size="12.0" />
                                  </font>
@@ -603,7 +603,7 @@
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                      </TilePane.margin>
                   </VBox>
-                  <VBox alignment="TOP_CENTER">
+                  <VBox fx:id="altaBajaVBox" alignment="TOP_CENTER">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true">
                            <image>

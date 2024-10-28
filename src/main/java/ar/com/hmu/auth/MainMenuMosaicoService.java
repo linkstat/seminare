@@ -1,9 +1,9 @@
 package ar.com.hmu.auth;
 
-import ar.com.hmu.model.JefaturaDeServicio;
-import ar.com.hmu.model.Usuario;
-import ar.com.hmu.model.OficinaDePersonal;
-import ar.com.hmu.model.Servicio;
+import ar.com.hmu.model.*;
+import javafx.scene.image.Image;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 /**
  * Servicio que gestiona la lógica del menú principal en mosaico.
@@ -26,6 +26,15 @@ public class MainMenuMosaicoService {
     }
 
     /**
+     * Devuelve el nombre completo del usuario actual, en formato "Apellidos, Nombres".
+     *
+     * @return El/los apellido/s y nombre/s del usuario.
+     */
+    public String getAgenteFullName() {
+        return usuarioActual.getApellidos() + ", " + usuarioActual.getNombres();
+    }
+
+    /**
      * Devuelve el nombre del servicio al que pertenece el usuario actual.
      *
      * @return El nombre del servicio del usuario.
@@ -33,6 +42,28 @@ public class MainMenuMosaicoService {
     public String getServicioNombre() {
         Servicio servicio = usuarioActual.getServicio();
         return servicio != null ? servicio.getNombre() : "Sin servicio asignado";
+    }
+
+    /**
+     * Obtiene la imagen de perfil del usuario.
+     * <p>
+     * Este método devuelve la imagen de perfil del usuario en forma de una instancia de {@link Image}.
+     * Si el usuario no tiene una imagen de perfil almacenada, se devuelve una imagen predeterminada.
+     * Esta lógica asegura que siempre haya una imagen visible en la interfaz, incluso si el usuario
+     * no ha configurado una imagen personalizada.
+     *
+     * @return una instancia de {@link Image} con la imagen de perfil del usuario si existe, o una imagen por defecto si no la hay.
+     */
+    public Image getProfileImage() {
+        // Solo actualizar la imagen si el usuario tiene una imagen de perfil personalizada
+        byte[] profileImageBytes = usuarioActual.getProfileImage();
+        if (profileImageBytes != null && profileImageBytes.length > 0) {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(profileImageBytes);
+            Image profileImage = new Image(inputStream);
+            return new Image(inputStream);
+        }
+        //return null; // Si no tiene imagen personalizada, retornamos null.
+        return new Image(getClass().getResourceAsStream("/ar/com/hmu/ui/loginImage.png"));
     }
 
     /**
@@ -59,8 +90,14 @@ public class MainMenuMosaicoService {
      * @return El cargo del usuario actual como String.
      */
     public String getCargoUsuario() {
-        return usuarioActual.getCargo().getNumero().toString();
+        Cargo cargo = usuarioActual.getCargo();
+        if (cargo == null) {
+            return "0000";
+        } else {
+            return usuarioActual.getCargo().getNumero().toString();
+        }
     }
+
 
     // Aquí podrías añadir más métodos para proporcionar datos adicionales
     // sobre los módulos a los que tiene acceso el usuario o información de la sesión actual.

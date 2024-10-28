@@ -3,10 +3,7 @@ package ar.com.hmu.repository;
 import ar.com.hmu.factory.UsuarioFactory;
 import ar.com.hmu.model.*;
 import ar.com.hmu.repository.dao.GenericDAO;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,13 +22,13 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
     public void create(Usuario usuario) {
         try (Connection connection = databaseConnector.getConnection()) {
             String query = "INSERT INTO Usuario (cuil, nombre, mail, passwd) VALUES (?, ?, ?, ?)";
-            try (PreparedStatement statement = connection.prepareStatement(query)) {
-                statement.setLong(1, usuario.getCuil());
-                statement.setString(2, usuario.getApellidos());
-                statement.setString(2, usuario.getNombres());
-                statement.setString(3, usuario.getMail());
-                statement.setString(4, usuario.getEncryptedPassword());
-                statement.executeUpdate();
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                stmt.setLong(1, usuario.getCuil());
+                stmt.setString(2, usuario.getApellidos());
+                stmt.setString(2, usuario.getNombres());
+                stmt.setString(3, usuario.getMail());
+                stmt.setString(4, usuario.getEncryptedPassword());
+                stmt.executeUpdate();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -63,15 +60,37 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
 
     // Métodos específicos para Usuario
 
-    // Implementación del método findByCuil específico
-    public Usuario findByCuil(long cuil) throws SQLException {
-        String query = "SELECT * FROM Usuario WHERE cuil = ?";
+    /**
+     * Recupera un usuario de la base de datos basado en el CUIL proporcionado.
+     * Además, carga la información de cargo asociada al usuario si está disponible.
+     *
+     * @param cuil El número de CUIL del usuario.
+     * @return El objeto Usuario si se encuentra en la base de datos, o null si no existe.
+     * @throws SQLException En caso de errores durante la consulta SQL.
+     */
+    public Usuario getUsuarioByCuil(long cuil) throws SQLException {
+        Usuario usuario = null;
+        String query = "SELECT *, BIN_TO_UUID2(cargoID) AS cargoUUID FROM Usuario WHERE cuil = ?";
+
         try (Connection connection = databaseConnector.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setLong(1, cuil);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    return UsuarioFactory.createUsuario(resultSet);
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setLong(1, cuil);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    // Primero, crear el usuario utilizando UsuarioFactory
+                    usuario = UsuarioFactory.createUsuario(rs);
+
+                    // Luego, cargar el Cargo asociado si existe
+                    String cargoIdString = rs.getString("cargoUUID");
+                    if (cargoIdString != null && !cargoIdString.isEmpty()) {
+                        UUID cargoId = UUID.fromString(cargoIdString);
+                        Cargo cargo = getCargoById(cargoId);
+                        if (cargo != null) {
+                            usuario.setCargo(cargo);
+                        }
+                    }
+
+                    return usuario; // Retornar el objeto Usuario cargado completamente.
                 } else {
                     return null; // No se encontró el usuario
                 }
@@ -101,4 +120,30 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
         }
         return null;
     }
+
+    public Cargo getCargoById(UUID cargoId) throws SQLException {
+        String query = "SELECT * FROM Cargo WHERE id = UUID_TO_BIN(?)";
+
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, cargoId.toString()); // Pasamos el UUID como un String para la consulta
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    int numero = rs.getInt("numero");
+                    String descripcion = rs.getString("descripcion");
+                    String agrupacionStr = rs.getString("agrupacion");
+
+                    // Convertir el valor de agrupación en el Enum correspondiente
+                    Agrupacion agrupacion = Agrupacion.valueOf(agrupacionStr);
+
+                    // Crear y retornar un objeto Cargo
+                    return new Cargo(cargoId, numero, descripcion, agrupacion);
+                } else {
+                    return null; // No se encontró el cargo
+                }
+            }
+        }
+    }
+
 }

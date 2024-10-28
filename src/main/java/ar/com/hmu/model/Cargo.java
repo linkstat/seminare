@@ -11,11 +11,14 @@ public class Cargo {
 
 	private UUID id;
 	private Agrupacion agrupacion;
-	private String desc;
+	private String descripcion;
 	private Integer numero;
 
-	public Cargo(){
-
+	public Cargo(UUID id, int numero, String descripcion, Agrupacion agrupacion) {
+		this.id = id;
+		this.numero = numero;
+		this.descripcion = descripcion;
+		this.agrupacion = agrupacion;
 	}
 
 	public Integer getNumero() {
@@ -26,12 +29,12 @@ public class Cargo {
 		this.numero = numero;
 	}
 
-	public String getDesc() {
-		return desc;
+	public String getDescripcion() {
+		return descripcion;
 	}
 
-	public void setDesc(String desc) {
-		this.desc = desc;
+	public void setDescripcion(String descripcion) {
+		this.descripcion = descripcion;
 	}
 
 	public Agrupacion getAgrupacion() {

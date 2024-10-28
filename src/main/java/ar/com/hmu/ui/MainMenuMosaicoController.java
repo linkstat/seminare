@@ -6,7 +6,6 @@ import ar.com.hmu.model.Usuario;
 import ar.com.hmu.repository.DatabaseConnector;
 import ar.com.hmu.utils.AlertUtils;
 import static ar.com.hmu.utils.SessionUtils.handleLogout;
-
 import ar.com.hmu.utils.SessionUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -14,10 +13,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.fxml.FXMLLoader;
-import java.io.IOException;
+import javafx.scene.text.Text;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
@@ -32,11 +28,15 @@ import java.util.Date;
 public class MainMenuMosaicoController {
 
     @FXML
-    private Label agentNameLabel;
+    private Text agentFullNameText;
     @FXML
-    private Label serviceLabel;
+    private Text agentServiceText;
     @FXML
-    private Label positionLabel;
+    private Text agentCargoText;
+    @FXML
+    private ImageView agentProfileImage;
+    @FXML
+    private Text positionLabel;
     @FXML
     private MenuItem changePasswordMenuItem;
     @FXML
@@ -69,9 +69,11 @@ public class MainMenuMosaicoController {
      */
     public void setUsuarioActual(Usuario usuario) {
         this.mainMenuService = new MainMenuMosaicoService(usuario);
-        agentNameLabel.setText(usuario.getApellidos() + ", " + usuario.getNombres());
-        serviceLabel.setText(mainMenuService.getServicioNombre());
-        positionLabel.setText(mainMenuService.getCargoUsuario());
+        agentFullNameText.setText(mainMenuService.getAgenteFullName());
+        agentServiceText.setText(mainMenuService.getServicioNombre());
+        agentCargoText.setText(mainMenuService.getCargoUsuario());
+        agentProfileImage.setImage(mainMenuService.getProfileImage());
+        positionLabel.setText("En construcción");
 
         // Configurar visibilidad del mosaico "Alta, Baja y Modificación de Agentes"
         altaBajaVBox.setVisible(mainMenuService.puedeAccederAltaBajaAgentes());
@@ -146,6 +148,7 @@ public class MainMenuMosaicoController {
             hostname = inetAddress.getHostName();
             ipAddress = inetAddress.getHostAddress();
         } catch (UnknownHostException e) {
+            e.printStackTrace(); // EImprimir mensaje completo del error por consola.
             System.err.println("No se pudo obtener la información de la conexión actual: " + e.getMessage());
         }
 

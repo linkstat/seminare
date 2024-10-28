@@ -1,5 +1,7 @@
 package ar.com.hmu.factory;
 import ar.com.hmu.model.*;
+
+import java.sql.Blob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -53,8 +55,12 @@ import java.sql.SQLException;
         usuario.setCuil(resultSet.getLong("cuil"));
         usuario.setApellidos(resultSet.getString("apellidos"));
         usuario.setNombres(resultSet.getString("nombres"));
-        // Completa la asignación de otros atributos...
-
+        // Obtener la imagen de perfil (si existe)
+        Blob profileImageBlob = resultSet.getBlob("profile_image");
+        if (profileImageBlob != null) {
+            int blobLength = (int) profileImageBlob.length();
+            usuario.setProfileImage(profileImageBlob.getBytes(1, blobLength));
+        }
         return usuario;
     }
 
