@@ -1,7 +1,6 @@
 package ar.com.hmu.ui;
 
 import ar.com.hmu.auth.LoginService;
-import ar.com.hmu.auth.MainMenuMosaicoService;
 import ar.com.hmu.auth.PasswordChangeHandler;
 import ar.com.hmu.model.Usuario;
 import ar.com.hmu.repository.DatabaseConnector;
@@ -14,18 +13,14 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.util.Duration;
+
 import java.util.prefs.Preferences;
 import java.io.IOException;
-import java.util.Objects;
 
 /**
  * Controlador encargado de gestionar la interfaz de usuario de la pantalla de login.

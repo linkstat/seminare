@@ -4,5 +4,6 @@ ar.com.hmu.factory
 ar.com.hmu.model
 ar.com.hmu.repository
 ar.com.hmu.repository.dao
+ar.com.hmu.service
 ar.com.hmu.ui
 ar.com.hmu.utils
