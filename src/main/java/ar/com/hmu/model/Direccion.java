@@ -2,21 +2,28 @@ package ar.com.hmu.model;
 
 
 import java.util.List;
+import java.util.UUID;
 
 /**
- * @author Pablo Alejandro Hamann <linkstat@hmu.com.ar>
+ * @author Pablo Alejandro Hamann
  * @version 1.0
   */
 public class Direccion extends Usuario {
 
 	private List<JefaturaDeServicio> listaJefaturasDeServicio;
-	public Novedad m_Novedad;
+	private Novedad novedad;
 
-	public Direccion(){
-
+	// Constructor vacío o con atributos propios, ya no accede a la base de datos.
+	public Direccion() {
+		super();
 	}
 
-	
+	@Override
+	public void setServicio(Servicio servicio) {
+		throw new UnsupportedOperationException("No se puede cambiar el servicio para los usuarios de tipo Dirección.");
+	}
+
+
 	/**
 	 * 
 	 * @param diagramaDeServicio

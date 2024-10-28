@@ -5,7 +5,7 @@ import java.io.File;
 import java.time.Period;
 
 /**
- * @author Pablo Alejandro Hamann <linkstat@hmu.com.ar>
+ * @author Pablo Alejandro Hamann
  * @version 1.0
   */
 public abstract class Reporte {

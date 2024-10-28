@@ -352,7 +352,7 @@ JOIN Servicio S ON J.servicioID = S.id
 JOIN Usuario UD ON S.direccionID = UD.id;
 
 
--- Contar la cantidad de empleados de cada servicio (incluiso sus jefes)
+-- Contar la cantidad de empleados de cada servicio (incluidos sus jefes)
 SELECT
     S.nombre AS servicio_nombre,
     COUNT(U.id) AS total_empleados

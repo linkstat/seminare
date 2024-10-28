@@ -4,7 +4,7 @@ package ar.com.hmu.model;
 import java.util.List;
 
 /**
- * @author Pablo Alejandro Hamann <linkstat@hmu.com.ar>
+ * @author Pablo Alejandro Hamann
  * @version 1.0
   */
 public class Empleado extends Usuario {
@@ -13,12 +13,10 @@ public class Empleado extends Usuario {
 	private HorarioBase horarioActual;
 	private List<HoraExtra> horasExtra;
 	private List<Novedad> novedad;
-	private Servicio servicio;
-	public HorarioBase m_HorarioBase;
-	public Servicio m_Servicio;
-	public FrancoCompensatorio m_FrancoCompensatorio;
-	public JefaturaDeServicio m_JefaturaDeServicio;
-	public OficinaDePersonal m_OficinaDePersonal;
+	private HorarioBase horarioBase;
+	private FrancoCompensatorio francoCompensatorio;
+	private JefaturaDeServicio jefaturaDeServicio;
+	private OficinaDePersonal oficinaDePersonal;
 
 	public Empleado(){
 
@@ -57,10 +55,6 @@ public class Empleado extends Usuario {
 		return null;
 	}
 
-	public Servicio getServicio(){
-		return null;
-	}
-
 	/**
 	 * 
 	 * @param horaExtra
@@ -85,11 +79,4 @@ public class Empleado extends Usuario {
 
 	}
 
-	/**
-	 * 
-	 * @param servicio
-	 */
-	public void setServicio(Servicio servicio){
-
-	}
-}//end Empleado
+}

@@ -206,6 +206,7 @@ CREATE TABLE Usuario (
     cargoID BINARY(16),
     tipoUsuario VARCHAR(50) NOT NULL, -- Indica si: 'Direccion', 'Empleado', 'JefaturaDeServicio', 'OficinaDePersonal'
     passwd VARCHAR(255) NOT NULL,
+    profile_image BLOB,
     FOREIGN KEY (domicilioID) REFERENCES Domicilio(id),
     FOREIGN KEY (cargoID) REFERENCES Cargo(id)
 );

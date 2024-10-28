@@ -1,18 +1,36 @@
 package ar.com.hmu.ui;
 
 import ar.com.hmu.auth.LoginService;
+import ar.com.hmu.auth.MainMenuService;
+import ar.com.hmu.auth.PasswordChangeHandler;
+import ar.com.hmu.model.Usuario;
+import ar.com.hmu.repository.DatabaseConnector;
 import ar.com.hmu.utils.AlertUtils;
+import ar.com.hmu.utils.SessionUtils;
+import static ar.com.hmu.utils.SessionUtils.handleLogout;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import java.sql.SQLNonTransientConnectionException;
-import java.sql.SQLException;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import javafx.util.Duration;
+import java.util.prefs.Preferences;
+
+import java.io.IOException;
+import java.util.Objects;
 
 /**
  * Controlador encargado de gestionar la interfaz de usuario de la pantalla de login.
- *
+ * <p>
  * Esta clase se encarga de manejar la lógica de presentación del formulario de inicio de sesión,
  * incluyendo la validación de entradas del usuario y la coordinación con {@link LoginService}
  * para la autenticación de las credenciales.
@@ -28,10 +46,32 @@ public class LoginController {
     private PasswordField passwordField;
 
     @FXML
+    private TextField passwordFieldVisible;
+
+    @FXML
+    private CheckBox showPasswordCheckBox;
+
+    @FXML
+    private CheckBox rememberMeCheckBox;
+
+    @FXML
     private Button loginButton;
 
-    // LoginService para la autenticación del usuario
-    private LoginService loginService;
+    @FXML
+    private ImageView serverStatusIcon;
+
+    @FXML
+    private Label serverStatusLabel;
+
+    // Añadir una referencia a las preferencias del sistema
+    private static final String LAST_USER_CUIL_KEY = "lastUserCuil";
+    private Preferences preferences;
+
+    private Timeline serverCheckTimeline;
+    private int checkIntervalInSeconds = 4;  // Intervalo inicial de 4 segundos
+
+    private LoginService loginService;  // LoginService para la autenticación del usuario
+    private DatabaseConnector databaseConnector;  // DatabaseConnector para la verificación del estado del servidor de BD
 
     /**
      * Método para establecer el {@link LoginService} que se utilizará para la autenticación.
@@ -42,15 +82,123 @@ public class LoginController {
         this.loginService = loginService;
     }
 
+
     /**
-     * Inicializa los componentes de la interfaz de usuario.
-     *
-     * Este método es llamado automáticamente por el framework JavaFX después de que se cargue el archivo FXML.
+     * Inicializa los componentes de la interfaz de usuario al cargar la pantalla de inicio de sesión.
+     * <p>
+     * Este método es invocado automáticamente por el framework JavaFX después de que se haya cargado
+     * el archivo FXML correspondiente. Se encarga de realizar las siguientes tareas:
+     * * Verifica el estado de conexión con el server y actualiza la GUI en consecuencia.
+     * * Configura el TextBox del CUIL, limitando la entrada solo a números y además, le da un formato
+     *   de fácil lectura para humanos (NN-UUVVVWWW-M en vez de NNUUVVVWWWM).
      */
     @FXML
     public void initialize() {
-        configureCuilField();
+        updateServerStatus(); // Llamar a la función para verificar el estado del servidor al iniciar la ventana.
+        configureCuilField(); // Configurar el campo de CUIL
+        configureShowPassword(); // Configurar el checkbox de mostrar/ocultar contraseña
+        loadUserCuil();
+
+        // Añadir el evento de presionar "Enter" para usernameField
+        usernameField.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                handleLoginButtonClick();
+            }
+        });
+
+        // Añadir el evento de presionar "Enter" para passwordField
+        passwordField.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                handleLoginButtonClick();
+            }
+        });
+
     }
+
+    /**
+     * Método para establecer el {@link DatabaseConnector} que se utilizará para verificar el estado del servidor.
+     *
+     * @param databaseConnector el conector de base de datos a utilizar.
+     */
+    public void setDatabaseConnector(DatabaseConnector databaseConnector) {
+        this.databaseConnector = databaseConnector;
+    }
+
+    /**
+     * Método que se debe llamar después de establecer todas las dependencias necesarias.
+     *
+     * Este método se encarga de realizar todas las inicializaciones de la interfaz de usuario y de las
+     * verificaciones necesarias para el estado del servidor.
+     */
+    public void postInitialize() {
+        if (databaseConnector == null || loginService == null) {
+            throw new IllegalStateException("Las dependencias no han sido configuradas correctamente.");
+        }
+
+        updateServerStatus();  // Actualizar el estado del servidor
+        configureCuilField();  // Configurar el campo de CUIL después de configurar las dependencias
+        startPeriodicServerCheck();  // Iniciar chequeo periódico del servidor
+    }
+
+    /**
+     * Ajusta el intervalo de chequeo según el estado del servidor.
+     *
+     * @param serverIsFunctional true si el servidor está operativo; false si hay algún problema.
+     */
+    private void adjustCheckInterval(boolean serverIsFunctional) {
+        if (serverIsFunctional) {
+            // Si el servidor está en línea y funcional, aumentar el intervalo de chequeo a 16 segundos
+            checkIntervalInSeconds = 16;
+        } else {
+            // Si el servidor tiene problemas, reducir el intervalo de chequeo a 4 segundos
+            checkIntervalInSeconds = 4;
+        }
+        // Reiniciar el Timeline con el nuevo intervalo
+        serverCheckTimeline.stop();
+        serverCheckTimeline.getKeyFrames().setAll(new KeyFrame(Duration.seconds(checkIntervalInSeconds), event -> {
+            boolean updatedServerStatus = updateServerStatus();
+            adjustCheckInterval(updatedServerStatus);
+        }));
+        serverCheckTimeline.play();
+    }
+
+    /**
+     * Inicia un chequeo periódico del estado del servidor con un intervalo dinámico.
+     */
+    private void startPeriodicServerCheck() {
+        serverCheckTimeline = new Timeline(new KeyFrame(Duration.seconds(checkIntervalInSeconds), event -> {
+            boolean serverIsFunctional = updateServerStatus();
+            adjustCheckInterval(serverIsFunctional);
+        }));
+        serverCheckTimeline.setCycleCount(Timeline.INDEFINITE); // Se ejecuta indefinidamente
+        serverCheckTimeline.play(); // Inicia el Timeline
+    }
+
+    /**
+     * Verifica el estado del servidor y actualiza el Label e ícono correspondientes.
+     */
+    private boolean updateServerStatus() {
+        if (databaseConnector != null) {
+            String[] serverStatus = databaseConnector.checkServerStatus();
+            serverStatusLabel.setText(serverStatus[0]);
+            serverStatusLabel.setStyle("-fx-text-fill: " + serverStatus[1] + ";");
+            try {
+                Image icon = new Image(Objects.requireNonNull(getClass().getResourceAsStream(serverStatus[2])));
+                serverStatusIcon.setImage(icon);
+            } catch (NullPointerException | IllegalArgumentException e) {
+                System.err.println("Error al cargar el icono de estado del servidor: " + e.getMessage());
+                serverStatusIcon.setImage(new Image(getClass().getResourceAsStream("serverStatus_icon_blue_question.png")));
+            }
+            return serverStatus[0].equals("Servidor en línea y funcional.");
+        } else {
+            serverStatusLabel.setText("Error al inicializar la conexión al servidor");
+            serverStatusLabel.setStyle("-fx-text-fill: red;");
+            Image icon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("serverStatus_icon_blue_question.png")));
+            serverStatusIcon.setImage(icon);
+            return false;
+        }
+    }
+
 
     /**
      * Configura el campo de texto para el CUIL para que solo acepte números y formatee el texto automáticamente.
@@ -111,6 +259,83 @@ public class LoginController {
     }
 
     /**
+     * Carga el último CUIL utilizado por el usuario desde las preferencias del sistema y
+     * lo inserta en el campo correspondiente. Si existe un valor previo almacenado,
+     * posiciona el foco automáticamente en el campo de contraseña para facilitar el inicio de sesión.
+     * <p>
+     * Este método se utiliza para mejorar la experiencia del usuario recordando la última cuenta utilizada.
+     * Si no existe un valor almacenado, el campo de CUIL quedará vacío y el usuario deberá ingresar
+     * sus credenciales manualmente.
+     */
+    private void loadUserCuil() {
+        preferences = Preferences.userNodeForPackage(LoginController.class);
+        String lastUserCuil = preferences.get(LAST_USER_CUIL_KEY, "");
+
+        if (!lastUserCuil.isEmpty()) {
+            usernameField.setText(lastUserCuil);
+            rememberMeCheckBox.setSelected(true); // Dejar marcada la casilla por defecto siempre ue haya un CUIL previamente recordado.
+            Platform.runLater(() -> passwordField.requestFocus()); // Posicionar el foco en el campo de contraseña. Platform.runLater() permite ejecutar el código de establecimiento del foco después de que JavaFX termine de realizar la configuración inicial de la pantalla.
+        } else {
+            rememberMeCheckBox.setSelected(false); // Desmarcar la casilla cuando no haya un CUIL recordado.
+        }
+    }
+
+    /**
+     * Guarda el CUIL del usuario en las preferencias del sistema para que sea recordado en futuros inicios de sesión.
+     * <p>
+     * Este método almacena el CUIL proporcionado, lo cual agiliza el inicio de sesión del usuario en un futuro,
+     * evitando que tenga que ingresarlo nuevamente. Se invoca después de una autenticación exitosa.
+     *
+     * @param cuil el CUIL del usuario que se debe almacenar para recordar en futuros inicios de sesión.
+     */
+    private void saveUserCuil(String cuil) {
+        preferences = Preferences.userNodeForPackage(LoginController.class);
+
+        if (rememberMeCheckBox.isSelected()) {
+            preferences.put(LAST_USER_CUIL_KEY, cuil);
+        } else {
+            preferences.remove(LAST_USER_CUIL_KEY);
+        }
+    }
+
+
+    /**
+     * Configura la funcionalidad de mostrar u ocultar la contraseña ingresada por el usuario.
+     * <p>
+     * Este método alterna entre un {@link PasswordField} (que como tal, no muestra la contraseña),
+     * y un {@link TextField}, que sí muestra la contraseña (en texto plano) cuando la casilla
+     * "Mostrar contraseña" está seleccionada.
+     * La sincronización entre ambos campos permite que el usuario pueda alternar libremente la
+     * visibilidad de la contraseña sin perder la información ya ingresada.
+     * <p>
+     * El {@link CheckBox} "Mostrar contraseña" controla esta funcionalidad y al ser seleccionado,
+     * oculta el campo de {@link PasswordField} y muestra el campo de {@link TextField} para visualizar la contraseña en texto plano.
+     * Cuando se deselecciona, se vuelve a ocultar la contraseña.
+     */
+    private void configureShowPassword() {
+        // Ocultamos el TextField visible de contraseña (de forma inicial)
+        passwordFieldVisible.setVisible(false);
+        passwordFieldVisible.managedProperty().bind(showPasswordCheckBox.selectedProperty());
+        passwordField.managedProperty().bind(showPasswordCheckBox.selectedProperty().not());
+        passwordFieldVisible.textProperty().bindBidirectional(passwordField.textProperty());
+
+        // Listener para la casilla "Mostrar contraseña"
+        showPasswordCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                // Mostrar el campo de texto que tiene la contraseña visible
+                passwordFieldVisible.setVisible(true);
+                passwordFieldVisible.setText(passwordField.getText());
+                passwordField.setVisible(false);
+            } else {
+                // Volver a ocultar la contraseña y mostrar el PasswordField
+                passwordField.setVisible(true);
+                passwordField.setText(passwordFieldVisible.getText());
+                passwordFieldVisible.setVisible(false);
+            }
+        });
+    }
+
+    /**
      * Gestiona el evento del botón de inicio de sesión.
      *
      * Este método es invocado cuando el usuario hace clic en el botón de "Iniciar Sesión".
@@ -131,9 +356,23 @@ public class LoginController {
             // Validar el usuario con LoginService
             boolean isValidUser = loginService.validateUser(Long.parseLong(cuil), password);
             if (isValidUser) {
-                AlertUtils.showInfo("Inicio de sesión exitoso para el CUIL: " + cuil);
+                saveUserCuil(cuil); // Guardar el CUIL (si correspondiese)
+                Usuario usuario = loginService.getUsuarioByCuil(Long.parseLong(cuil));
+                // Verificar si el usuario tiene la contraseña predeterminada
+                if (usuario.isDefaultPassword()) {
+                    // Mostrar ventana para que el usuario cambie la contraseña
+                    PasswordChangeHandler passwordChangeHandler = new PasswordChangeHandler();
+                    passwordChangeHandler.showChangePasswordDialog(usuario,
+                            () -> showMainMenu(usuario), // Callback para continuar al menú principal
+                            this::handleLogout // Callback para cerrar la sesión si se cancela
+                    );
+                } else {
+                    // Continuar al menú principal
+                    showMainMenu(usuario);
+                }
+                //MANT.: AlertUtils.showInfo("Inicio de sesión exitoso para el CUIL: " + cuil + "\nPero el sistema está en mantenimiento en este momento.\nIntente nuevamente más tarde.");
             } else {
-                AlertUtils.showWarn("¡Contraseña incorrecta o usuario no encontrado! [CUIL ingresado: " + cuil + "]");
+                AlertUtils.showWarn("¡Contraseña incorrecta o usuario no encontrado!\n[ CUIL ingresado: " + formatCuil(cuil) + " ]");
             }
 
         } catch (NumberFormatException e) {
@@ -144,4 +383,98 @@ public class LoginController {
             AlertUtils.showErr("Ocurrió un error inesperado: " + e.getMessage());
         }
     }
+
+    /**
+     * Muestra un diálogo para cambiar la contraseña del usuario.
+     * <p>
+     * Este método presenta una ventana emergente con los campos necesarios para cambiar la contraseña,
+     * obligando al usuario a proporcionar la contraseña actual y una nueva contraseña. Es utilizado
+     * especialmente para forzar al usuario a cambiar la contraseña predeterminada antes de continuar
+     * usando el sistema.
+     * <p>
+     * El diálogo contiene los siguientes elementos:
+     * <ul>
+     *     <li>Un campo para ingresar la contraseña actual.</li>
+     *     <li>Un campo para la nueva contraseña.</li>
+     *     <li>Un campo para confirmar la nueva contraseña.</li>
+     * </ul>
+     * Si el cambio es exitoso, el usuario puede proceder al menú principal; en caso contrario, se muestra
+     * un mensaje de error indicando la razón (contraseña actual incorrecta o no coinciden las nuevas contraseñas).
+     * <p>
+     * Si el usuario cancela el cambio de contraseña, la sesión es cerrada automáticamente.
+     *
+     * @param usuario El usuario autenticado que necesita cambiar su contraseña.
+     */
+    private void showChangePasswordDialog(Usuario usuario) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Cambiar Contraseña");
+        dialog.setHeaderText("Debe cambiar su contraseña antes de continuar.");
+
+        // Campos de contraseña
+        PasswordField currentPasswordField = new PasswordField();
+        currentPasswordField.setPromptText("Contraseña actual");
+
+        PasswordField newPasswordField = new PasswordField();
+        newPasswordField.setPromptText("Nueva contraseña");
+
+        PasswordField confirmPasswordField = new PasswordField();
+        confirmPasswordField.setPromptText("Repetir nueva contraseña");
+
+        // Añadir campos a la ventana
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        dialog.getDialogPane().setContent(new VBox(10, currentPasswordField, newPasswordField, confirmPasswordField));
+
+        // Procesar el resultado del diálogo
+        dialog.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                try {
+                    // Intentar cambiar la contraseña usando el método changePassword en Usuario
+                    usuario.changePassword(currentPasswordField.getText(), newPasswordField.getText(), confirmPasswordField.getText());
+                    AlertUtils.showInfo("Contraseña cambiada exitosamente.");
+
+                    // Redirigir al menú principal después del cambio de contraseña exitoso
+                    showMainMenu(usuario);
+                } catch (IllegalArgumentException e) {
+                    AlertUtils.showErr(e.getMessage());
+                    // Reabrir el diálogo si hay un error
+                    showChangePasswordDialog(usuario);
+                }
+            } else {
+                // Si el usuario cancela el diálogo, cerramos la sesión
+                handleLogout();
+            }
+        });
+    }
+
+    /**
+     * Muestra el menú principal de la aplicación después de un inicio de sesión exitoso.
+     * <p>
+     * Este método se encarga de cargar la vista del menú principal (mainMenu.fxml), configurar el controlador
+     * del menú con el usuario autenticado y las opciones de menú correspondientes, y luego cambiar la escena
+     * de la ventana principal de la aplicación para mostrar el menú principal.
+     *
+     * @param usuario El usuario autenticado que ha iniciado sesión.
+     */
+    private void showMainMenu(Usuario usuario) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ar/com/hmu/ui/mainMenu.fxml"));
+            Parent root = loader.load();
+
+            MainMenuController controller = loader.getController();
+            if (controller == null) {
+                throw new IllegalStateException("El controlador del menú principal no fue inicializado correctamente.");
+            }
+
+            controller.setMainMenuService(new MainMenuService());
+            controller.setUsuarioActual(usuario);
+
+            Stage stage = (Stage) loginButton.getScene().getWindow();
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+        } catch (IOException e) {
+            e.printStackTrace(); // Para imprimir todo el stack trace y facilitar el diagnóstico.
+            AlertUtils.showErr("Error al cargar el menú principal:\n" + e.getMessage());
+        }
+    }
+
 }
