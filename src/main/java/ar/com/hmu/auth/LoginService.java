@@ -45,7 +45,7 @@ public class LoginService {
     }
 
     public Usuario getUsuarioByCuil(long cuil) throws SQLException {
-        return usuarioRepository.findByCuil(cuil);
+        return usuarioRepository.getUsuarioByCuil(cuil);
     }
 
 

@@ -67,7 +67,7 @@ public class LoginScreen extends Application {
             primaryStage.setScene(scene);
             primaryStage.show();
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace(); // Imprimir mensaje completo del error por consola
             System.err.println("Error durante la inicialización de la aplicación: " + e.getMessage());
         }
     }
@@ -98,6 +98,7 @@ public class LoginScreen extends Application {
             }
             stage.getIcons().add(icon);
         } catch (Exception e) {
+            e.printStackTrace(); // Imprimir mensaje completo del error por consola
             System.err.println("No se pudo establecer el icono: " + e.getMessage());
         }
     }

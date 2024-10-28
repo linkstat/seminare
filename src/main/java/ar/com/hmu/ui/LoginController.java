@@ -1,7 +1,7 @@
 package ar.com.hmu.ui;
 
 import ar.com.hmu.auth.LoginService;
-import ar.com.hmu.auth.MainMenuService;
+import ar.com.hmu.auth.MainMenuMosaicoService;
 import ar.com.hmu.auth.PasswordChangeHandler;
 import ar.com.hmu.model.Usuario;
 import ar.com.hmu.repository.DatabaseConnector;
@@ -185,6 +185,7 @@ public class LoginController {
                 Image icon = new Image(Objects.requireNonNull(getClass().getResourceAsStream(serverStatus[2])));
                 serverStatusIcon.setImage(icon);
             } catch (NullPointerException | IllegalArgumentException e) {
+                e.printStackTrace(); // Imprimir mensaje completo del error por consola
                 System.err.println("Error al cargar el icono de estado del servidor: " + e.getMessage());
                 serverStatusIcon.setImage(new Image(getClass().getResourceAsStream("serverStatus_icon_blue_question.png")));
             }
@@ -456,7 +457,7 @@ public class LoginController {
      */
     private void showMainMenu(Usuario usuario) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ar/com/hmu/ui/mainMenu.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("mainMenuMosaico.fxml"));
             Parent root = loader.load();
 
             MainMenuMosaicoController controller = loader.getController();
