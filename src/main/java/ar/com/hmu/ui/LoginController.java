@@ -24,7 +24,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import java.util.prefs.Preferences;
-
 import java.io.IOException;
 import java.util.Objects;
 
@@ -364,7 +363,7 @@ public class LoginController {
                     PasswordChangeHandler passwordChangeHandler = new PasswordChangeHandler();
                     passwordChangeHandler.showChangePasswordDialog(usuario,
                             () -> showMainMenu(usuario), // Callback para continuar al menú principal
-                            this::handleLogout // Callback para cerrar la sesión si se cancela
+                            () -> SessionUtils.handleLogout((Stage) loginButton.getScene().getWindow()) // Callback para cerrar la sesión si se cancela
                     );
                 } else {
                     // Continuar al menú principal
@@ -441,7 +440,7 @@ public class LoginController {
                 }
             } else {
                 // Si el usuario cancela el diálogo, cerramos la sesión
-                handleLogout();
+                SessionUtils.handleLogout((Stage) loginButton.getScene().getWindow());
             }
         });
     }
@@ -460,12 +459,11 @@ public class LoginController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ar/com/hmu/ui/mainMenu.fxml"));
             Parent root = loader.load();
 
-            MainMenuController controller = loader.getController();
+            MainMenuMosaicoController controller = loader.getController();
             if (controller == null) {
                 throw new IllegalStateException("El controlador del menú principal no fue inicializado correctamente.");
             }
 
-            controller.setMainMenuService(new MainMenuService());
             controller.setUsuarioActual(usuario);
 
             Stage stage = (Stage) loginButton.getScene().getWindow();

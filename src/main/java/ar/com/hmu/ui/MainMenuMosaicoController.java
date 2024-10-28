@@ -1,10 +1,13 @@
 package ar.com.hmu.ui;
 
+import ar.com.hmu.auth.MainMenuMosaicoService;
+import ar.com.hmu.auth.PasswordChangeHandler;
 import ar.com.hmu.model.Usuario;
 import ar.com.hmu.repository.DatabaseConnector;
 import ar.com.hmu.utils.AlertUtils;
-import ar.com.hmu.utils.SessionUtils;
 import static ar.com.hmu.utils.SessionUtils.handleLogout;
+
+import ar.com.hmu.utils.SessionUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -46,11 +49,10 @@ public class MainMenuMosaicoController {
     private ImageView connectionStatusIcon;
     @FXML
     private VBox altaBajaVBox;
-    // Agrega referencias para todos los mosaicos (VBox)
-    // Similar al altaBajaVBox...
 
-    private Usuario usuarioActual;
+    private MainMenuMosaicoService mainMenuService; // Servicio para gestionar la lógica del menú principal
     private DatabaseConnector databaseConnector; // Necesario para la verificación del estado del servidor.
+    private Usuario usuarioActual;
 
     /**
      * Inicializa los componentes después de que el archivo FXML ha sido cargado.
@@ -66,10 +68,15 @@ public class MainMenuMosaicoController {
      * @param usuario El usuario que ha iniciado sesión.
      */
     public void setUsuarioActual(Usuario usuario) {
-        this.usuarioActual = usuario;
+        this.mainMenuService = new MainMenuMosaicoService(usuario);
         agentNameLabel.setText(usuario.getApellidos() + ", " + usuario.getNombres());
-        serviceLabel.setText(usuario.getServicio().getNombre());  // Si tiene el servicio asignado
-        positionLabel.setText(usuario.getCargo().toString());
+        serviceLabel.setText(mainMenuService.getServicioNombre());
+        positionLabel.setText(mainMenuService.getCargoUsuario());
+
+        // Configurar visibilidad del mosaico "Alta, Baja y Modificación de Agentes"
+        altaBajaVBox.setVisible(mainMenuService.puedeAccederAltaBajaAgentes());
+        // Configurar la visibilidad de otros mosaicos según el servicio
+
         setupConnectionInfo();  // Muestra la información de la conexión actual.
     }
 
@@ -78,7 +85,7 @@ public class MainMenuMosaicoController {
      */
     private void setupEventHandlers() {
         // Configura la funcionalidad del botón "Cerrar sesión"
-        logoutButton.setOnAction(event -> handleLogout());
+        logoutButton.setOnAction(event -> handleLogout((Stage) logoutButton.getScene().getWindow()));
 
         // Configura la funcionalidad del menú: Archivo -> Salir
         exitMenuItem.setOnAction(event -> System.exit(0));
@@ -88,42 +95,19 @@ public class MainMenuMosaicoController {
 
         // Configura los mosaicos para mostrar una alerta de "Módulo en construcción"
         altaBajaVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
-        // Repite para los otros mosaicos...
+
+        // Repetir para los otros mosaicos...
     }
 
     /**
      * Maneja la opción "Modificar Contraseña" abriendo una nueva ventana para cambiar la contraseña.
      */
     private void handleChangePassword() {
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Modificar contraseña");
-        dialog.setHeaderText("Ingrese su contraseña actual y la nueva contraseña.");
-
-        PasswordField currentPassword = new PasswordField();
-        currentPassword.setPromptText("Contraseña actual");
-
-        PasswordField newPassword = new PasswordField();
-        newPassword.setPromptText("Nueva contraseña");
-
-        PasswordField confirmPassword = new PasswordField();
-        confirmPassword.setPromptText("Repetir nueva contraseña");
-
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-        dialog.getDialogPane().setContent(new VBox(10, currentPassword, newPassword, confirmPassword));
-
-        dialog.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                if (!usuarioActual.validatePassword(currentPassword.getText())) {
-                    AlertUtils.showErr("¡CUIDADO! La contraseña actual no es correcta.");
-                } else if (!newPassword.getText().equals(confirmPassword.getText())) {
-                    AlertUtils.showErr("¡CUIDADO! Las contraseñas no coinciden. La nueva contraseña se debe repetir dos veces, sin errores.");
-                } else {
-                    usuarioActual.setPassword(newPassword.getText());
-                    // Aquí se debería actualizar la base de datos con el nuevo valor de la contraseña.
-                    AlertUtils.showInfo("Contraseña modificada exitosamente.");
-                }
-            }
-        });
+        PasswordChangeHandler passwordChangeHandler = new PasswordChangeHandler();
+        passwordChangeHandler.showChangePasswordDialog(usuarioActual,
+                () -> {}, // Callback vacío para continuar después del cambio de contraseña exitoso
+                () -> SessionUtils.handleLogout((Stage) logoutButton.getScene().getWindow()) // Callback para cerrar la sesión si se cancela
+        );
     }
 
     /**
