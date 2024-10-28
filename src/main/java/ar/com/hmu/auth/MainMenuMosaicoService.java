@@ -4,6 +4,10 @@ import ar.com.hmu.model.*;
 import javafx.scene.image.Image;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Servicio que gestiona la lógica del menú principal en mosaico.
@@ -64,6 +68,40 @@ public class MainMenuMosaicoService {
         }
         //return null; // Si no tiene imagen personalizada, retornamos null.
         return new Image(getClass().getResourceAsStream("/ar/com/hmu/ui/loginImage.png"));
+    }
+
+    // Métodos adicionales para obtener la información de la conexión
+    /**
+     * Obtiene la información de conexión actual, como la fecha y hora de inicio de sesión.
+     */
+    public String getCurrentConnDateTime() {
+        return new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss").format(new Date());
+    }
+
+    /**
+     * Obtiene la información de conexión actual, como el nombre del host.
+     */
+    public String getCurrentConnHostname() {
+        try {
+            InetAddress inetAddress = InetAddress.getLocalHost();
+            return inetAddress.getHostName();
+        } catch (UnknownHostException e) {
+            System.err.println("No se pudo obtener el nombre del host: " + e.getMessage());
+            return "Desconocido";
+        }
+    }
+
+    /**
+     * Obtiene la información de conexión actual, como la dirección IP.
+     */
+    public String getCurrentConnIPAddress() {
+        try {
+            InetAddress inetAddress = InetAddress.getLocalHost();
+            return inetAddress.getHostAddress();
+        } catch (UnknownHostException e) {
+            System.err.println("No se pudo obtener la dirección IP: " + e.getMessage());
+            return "Desconocida";
+        }
     }
 
     /**

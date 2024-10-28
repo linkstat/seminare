@@ -6,18 +6,14 @@ import ar.com.hmu.model.Usuario;
 import ar.com.hmu.repository.DatabaseConnector;
 import ar.com.hmu.utils.AlertUtils;
 import static ar.com.hmu.utils.SessionUtils.handleLogout;
+import static ar.com.hmu.utils.ServerStatusUtils.*;
 import ar.com.hmu.utils.SessionUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.scene.text.Text;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * Controlador para gestionar el comportamiento del menú principal en forma de mosaico.
@@ -28,6 +24,10 @@ import java.util.Date;
 public class MainMenuMosaicoController {
 
     @FXML
+    private ImageView serverStatusIcon;
+    @FXML
+    private Label serverStatusLabel;
+    @FXML
     private Text agentFullNameText;
     @FXML
     private Text agentServiceText;
@@ -36,17 +36,17 @@ public class MainMenuMosaicoController {
     @FXML
     private ImageView agentProfileImage;
     @FXML
-    private Text positionLabel;
-    @FXML
     private MenuItem changePasswordMenuItem;
     @FXML
     private MenuItem exitMenuItem;
     @FXML
     private Button logoutButton;
     @FXML
-    private Label connectionStatusLabel;
+    private Text currentConnDateTimeText;
     @FXML
-    private ImageView connectionStatusIcon;
+    private Text currentConnHostnameText;
+    @FXML
+    private Text currentConnIPAddressText;
     @FXML
     private VBox altaBajaVBox;
 
@@ -59,6 +59,7 @@ public class MainMenuMosaicoController {
      */
     @FXML
     public void initialize() {
+        updateServerStatus(databaseConnector, serverStatusLabel, serverStatusIcon);
         setupEventHandlers();
     }
 
@@ -66,20 +67,33 @@ public class MainMenuMosaicoController {
      * Establece el usuario actual y actualiza la interfaz gráfica con sus datos.
      *
      * @param usuario El usuario que ha iniciado sesión.
+     * @param databaseConnector El conector de la base de datos.
      */
-    public void setUsuarioActual(Usuario usuario) {
+    public void postInitialize(Usuario usuario, DatabaseConnector databaseConnector) {
         this.mainMenuService = new MainMenuMosaicoService(usuario);
+
+        // Actualizar la información del agente
         agentFullNameText.setText(mainMenuService.getAgenteFullName());
         agentServiceText.setText(mainMenuService.getServicioNombre());
         agentCargoText.setText(mainMenuService.getCargoUsuario());
         agentProfileImage.setImage(mainMenuService.getProfileImage());
-        positionLabel.setText("En construcción");
+
+        // Actualizar la información de conexión
+        currentConnDateTimeText.setText(mainMenuService.getCurrentConnDateTime());
+        currentConnHostnameText.setText(mainMenuService.getCurrentConnHostname());
+        currentConnIPAddressText.setText(mainMenuService.getCurrentConnIPAddress());
 
         // Configurar visibilidad del mosaico "Alta, Baja y Modificación de Agentes"
         altaBajaVBox.setVisible(mainMenuService.puedeAccederAltaBajaAgentes());
         // Configurar la visibilidad de otros mosaicos según el servicio
 
-        setupConnectionInfo();  // Muestra la información de la conexión actual.
+        // Actualizar el estado del servidor y comenzar el chequeo periódico
+        if (databaseConnector == null) {
+            throw new IllegalStateException("MainMenuMosaicoController: DatabaseConnector no está configurado. No se puede verificar el estado del servidor.");
+        }
+        updateServerStatus(databaseConnector, serverStatusLabel, serverStatusIcon);
+        startPeriodicServerCheck(databaseConnector, serverStatusLabel, serverStatusIcon);
+
     }
 
     /**
@@ -119,39 +133,4 @@ public class MainMenuMosaicoController {
         AlertUtils.showInfo("Estamos trabajando para Usted\nMódulo en construcción");
     }
 
-    /**
-     * Configura la barra de estado para actualizar el estado del servidor.
-     * <p>
-     * Se puede reutilizar la lógica implementada en la pantalla de inicio de sesión para mantener
-     * actualizada esta información.
-     */
-    public void updateServerStatus() {
-        // Similar a LoginController
-        if (databaseConnector != null) {
-            String[] serverStatus = databaseConnector.checkServerStatus();
-            connectionStatusLabel.setText(serverStatus[0]);
-            connectionStatusIcon.setImage(new Image(getClass().getResourceAsStream(serverStatus[2])));
-        }
-    }
-
-    /**
-     * Obtiene la información de conexión actual y previa, como hora de inicio de sesión,
-     * nombre del host, e IP.
-     */
-    public void setupConnectionInfo() {
-        String currentConnectionTime = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss").format(new Date());
-        String hostname = "Desconocido";
-        String ipAddress = "Desconocida";
-
-        try {
-            InetAddress inetAddress = InetAddress.getLocalHost();
-            hostname = inetAddress.getHostName();
-            ipAddress = inetAddress.getHostAddress();
-        } catch (UnknownHostException e) {
-            e.printStackTrace(); // EImprimir mensaje completo del error por consola.
-            System.err.println("No se pudo obtener la información de la conexión actual: " + e.getMessage());
-        }
-
-        connectionStatusLabel.setText("Conexión: " + currentConnectionTime + " | " + hostname + " | " + ipAddress);
-    }
 }
