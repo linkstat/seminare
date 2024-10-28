@@ -7,7 +7,7 @@ import ar.com.hmu.model.Usuario;
 import ar.com.hmu.repository.DatabaseConnector;
 import ar.com.hmu.utils.AlertUtils;
 import ar.com.hmu.utils.SessionUtils;
-import static ar.com.hmu.utils.SessionUtils.handleLogout;
+import static ar.com.hmu.utils.ServerStatusUtils.*;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -66,9 +66,6 @@ public class LoginController {
     private static final String LAST_USER_CUIL_KEY = "lastUserCuil";
     private Preferences preferences;
 
-    private Timeline serverCheckTimeline;
-    private int checkIntervalInSeconds = 4;  // Intervalo inicial de 4 segundos
-
     private LoginService loginService;  // LoginService para la autenticación del usuario
     private DatabaseConnector databaseConnector;  // DatabaseConnector para la verificación del estado del servidor de BD
 
@@ -93,7 +90,7 @@ public class LoginController {
      */
     @FXML
     public void initialize() {
-        updateServerStatus(); // Llamar a la función para verificar el estado del servidor al iniciar la ventana.
+        updateServerStatus(databaseConnector, serverStatusLabel, serverStatusIcon); // Llamar al método de utilería para verificar el estado del servidor al iniciar la ventana.
         configureCuilField(); // Configurar el campo de CUIL
         configureShowPassword(); // Configurar el checkbox de mostrar/ocultar contraseña
         loadUserCuil();
@@ -134,71 +131,10 @@ public class LoginController {
             throw new IllegalStateException("Las dependencias no han sido configuradas correctamente.");
         }
 
-        updateServerStatus();  // Actualizar el estado del servidor
-        configureCuilField();  // Configurar el campo de CUIL después de configurar las dependencias
-        startPeriodicServerCheck();  // Iniciar chequeo periódico del servidor
+        //boolean b = updateServerStatus();// Actualizar el estado del servidor
+        updateServerStatus(databaseConnector, serverStatusLabel, serverStatusIcon);  // Actualizar el estado del servidor
+        startPeriodicServerCheck(databaseConnector, serverStatusLabel, serverStatusIcon);  // Iniciar chequeo periódico del servidor
     }
-
-    /**
-     * Ajusta el intervalo de chequeo según el estado del servidor.
-     *
-     * @param serverIsFunctional true si el servidor está operativo; false si hay algún problema.
-     */
-    private void adjustCheckInterval(boolean serverIsFunctional) {
-        if (serverIsFunctional) {
-            // Si el servidor está en línea y funcional, aumentar el intervalo de chequeo a 16 segundos
-            checkIntervalInSeconds = 16;
-        } else {
-            // Si el servidor tiene problemas, reducir el intervalo de chequeo a 4 segundos
-            checkIntervalInSeconds = 4;
-        }
-        // Reiniciar el Timeline con el nuevo intervalo
-        serverCheckTimeline.stop();
-        serverCheckTimeline.getKeyFrames().setAll(new KeyFrame(Duration.seconds(checkIntervalInSeconds), event -> {
-            boolean updatedServerStatus = updateServerStatus();
-            adjustCheckInterval(updatedServerStatus);
-        }));
-        serverCheckTimeline.play();
-    }
-
-    /**
-     * Inicia un chequeo periódico del estado del servidor con un intervalo dinámico.
-     */
-    private void startPeriodicServerCheck() {
-        serverCheckTimeline = new Timeline(new KeyFrame(Duration.seconds(checkIntervalInSeconds), event -> {
-            boolean serverIsFunctional = updateServerStatus();
-            adjustCheckInterval(serverIsFunctional);
-        }));
-        serverCheckTimeline.setCycleCount(Timeline.INDEFINITE); // Se ejecuta indefinidamente
-        serverCheckTimeline.play(); // Inicia el Timeline
-    }
-
-    /**
-     * Verifica el estado del servidor y actualiza el Label e ícono correspondientes.
-     */
-    private boolean updateServerStatus() {
-        if (databaseConnector != null) {
-            String[] serverStatus = databaseConnector.checkServerStatus();
-            serverStatusLabel.setText(serverStatus[0]);
-            serverStatusLabel.setStyle("-fx-text-fill: " + serverStatus[1] + ";");
-            try {
-                Image icon = new Image(Objects.requireNonNull(getClass().getResourceAsStream(serverStatus[2])));
-                serverStatusIcon.setImage(icon);
-            } catch (NullPointerException | IllegalArgumentException e) {
-                e.printStackTrace(); // Imprimir mensaje completo del error por consola
-                System.err.println("Error al cargar el icono de estado del servidor: " + e.getMessage());
-                serverStatusIcon.setImage(new Image(getClass().getResourceAsStream("serverStatus_icon_blue_question.png")));
-            }
-            return serverStatus[0].equals("Servidor en línea y funcional.");
-        } else {
-            serverStatusLabel.setText("Error al inicializar la conexión al servidor");
-            serverStatusLabel.setStyle("-fx-text-fill: red;");
-            Image icon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("serverStatus_icon_blue_question.png")));
-            serverStatusIcon.setImage(icon);
-            return false;
-        }
-    }
-
 
     /**
      * Configura el campo de texto para el CUIL para que solo acepte números y formatee el texto automáticamente.
@@ -465,7 +401,8 @@ public class LoginController {
                 throw new IllegalStateException("El controlador del menú principal no fue inicializado correctamente.");
             }
 
-            controller.setUsuarioActual(usuario);
+            controller.postInitialize(usuario,databaseConnector);
+            //controller.setUsuarioActual(usuario);
 
             Stage stage = (Stage) loginButton.getScene().getWindow();
             Scene scene = new Scene(root);

@@ -41,7 +41,7 @@
             </HBox>
             <HBox>
                <children>
-                  <ImageView fx:id="connectionStatusIcon" fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                  <ImageView fx:id="serverStatusIcon" fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
                      <HBox.margin>
                         <Insets left="4.0" />
                      </HBox.margin>
@@ -49,7 +49,7 @@
                         <Image url="@serverStatus_icon_blue_question.png" />
                      </image>
                   </ImageView>
-                  <Label fx:id="connectionStatusLabel" text="Estado de conexión del servidor">
+                  <Label fx:id="serverStatusLabel" text="Estado de conexión del servidor">
                      <HBox.margin>
                         <Insets left="4.0" />
                      </HBox.margin>
@@ -226,17 +226,17 @@
                                     <Insets top="8.0" />
                                  </padding>
                               </Label>
-                              <Text layoutX="290.0" layoutY="42.0" stroke="RED" strokeWidth="0.1" text="vie 04, oct 2024 23:40 Hs" textAlignment="RIGHT">
+                              <Text fx:id="currentConnDateTimeText" layoutX="290.0" layoutY="42.0" stroke="RED" strokeWidth="0.1" text="vie 04, oct 2024 23:40 Hs" textAlignment="RIGHT">
                                  <font>
                                     <Font name="System Bold" size="12.0" />
                                  </font>
                               </Text>
-                              <Text fx:id="positionLabel" layoutX="58.0" layoutY="89.0" stroke="RED" strokeWidth="0.1" text="inv.553.urgencias.local" textAlignment="RIGHT">
+                              <Text fx:id="currentConnHostnameText" layoutX="58.0" layoutY="89.0" stroke="RED" strokeWidth="0.1" text="inv.553.urgencias.local" textAlignment="RIGHT">
                                  <font>
                                     <Font name="System Bold" size="12.0" />
                                  </font>
                               </Text>
-                              <Text layoutX="172.0" layoutY="66.0" stroke="RED" strokeWidth="0.1" text="10.22.9.2" textAlignment="RIGHT">
+                              <Text fx:id="currentConnIPAddressText" layoutX="172.0" layoutY="66.0" stroke="RED" strokeWidth="0.1" text="10.22.9.2" textAlignment="RIGHT">
                                  <font>
                                     <Font name="System Bold" size="12.0" />
                                  </font>
