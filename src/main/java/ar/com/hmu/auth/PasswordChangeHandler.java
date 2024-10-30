@@ -7,6 +7,8 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.PasswordField;
 import javafx.scene.layout.VBox;
 
+import java.util.Arrays;
+
 /**
  * Clase encargada de gestionar el cambio de contraseñas de los usuarios.
  * <p>
@@ -49,9 +51,14 @@ public class PasswordChangeHandler {
         // Procesar el resultado del diálogo
         dialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
+                // Convertir las contraseñas a char[]
+                char[] currentPassword = currentPasswordField.getText().toCharArray();
+                char[] newPassword = newPasswordField.getText().toCharArray();
+                char[] confirmPassword = confirmPasswordField.getText().toCharArray();
+
                 try {
                     // Intentar cambiar la contraseña usando el método changePassword en Usuario
-                    usuario.changePassword(currentPasswordField.getText(), newPasswordField.getText(), confirmPasswordField.getText());
+                    usuario.changePassword(currentPassword, newPassword, confirmPassword);
                     AlertUtils.showInfo("Contraseña cambiada exitosamente.");
 
                     // Llamar al callback onSuccess para proceder con la lógica después del cambio exitoso
@@ -62,6 +69,11 @@ public class PasswordChangeHandler {
                     AlertUtils.showErr(e.getMessage());
                     // Reabrir el diálogo si hay un error
                     showChangePasswordDialog(usuario, onSuccess, onCancel);
+                } finally {
+                    // Limpiar las contraseñas del arreglo para mayor seguridad
+                    Arrays.fill(currentPassword, '\0');
+                    Arrays.fill(newPassword, '\0');
+                    Arrays.fill(confirmPassword, '\0');
                 }
             } else {
                 // Llamar al callback onCancel si el usuario cancela el diálogo

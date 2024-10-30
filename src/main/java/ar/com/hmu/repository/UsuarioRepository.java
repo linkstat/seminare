@@ -72,8 +72,8 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
         Usuario usuario = null;
         String query = "SELECT *, BIN_TO_UUID2(cargoID) AS cargoUUID FROM Usuario WHERE cuil = ?";
 
-        try (Connection connection = databaseConnector.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(query)) {
+        try (Connection conn = databaseConnector.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setLong(1, cuil);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {

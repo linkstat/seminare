@@ -55,6 +55,11 @@ import java.sql.SQLException;
         usuario.setCuil(resultSet.getLong("cuil"));
         usuario.setApellidos(resultSet.getString("apellidos"));
         usuario.setNombres(resultSet.getString("nombres"));
+        // Cargar el hash de la contraseña almacenado
+        String passwordHash = resultSet.getString("passwd");
+        if (passwordHash != null && !passwordHash.isEmpty()) {
+            usuario.setPasswordHash(passwordHash);
+        }
         // Obtener la imagen de perfil (si existe)
         Blob profileImageBlob = resultSet.getBlob("profile_image");
         if (profileImageBlob != null) {
