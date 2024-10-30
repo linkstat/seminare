@@ -19,6 +19,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.util.Arrays;
 import java.util.prefs.Preferences;
 import java.io.IOException;
 
@@ -278,14 +279,30 @@ public class LoginController {
         try {
             // Obtener el CUIL y la contraseña ingresados
             String cuil = usernameField.getText().replaceAll("[^\\d]", "");  // Remover guiones para obtener solo números
-            String password = passwordField.getText();
+//            String rawPassword = passwordField.getText(); //método inseguro porque String es inmutable. Usamos char[]
+//            char[] passwordCharArray = passwordField.getCharacters();
+//            char[] passwordCharArrayTest = rawPassword.toCharArray();
+            // Obtener la contraseña ingresada como un CharSequence
+            CharSequence passwordChars = passwordField.getCharacters();
+            if (passwordChars == null || passwordChars.length() == 0) {
+                AlertUtils.showErr("El campo de contraseña está vacío. Por favor, ingrese su contraseña.");
+                return;
+            }
+            // Convertir CharSequence a char[] para poder manipular y luego limpiar
+            char[] passwordCharArray = new char[passwordChars.length()];
+            for (int i = 0; i < passwordChars.length(); i++) {
+                passwordCharArray[i] = passwordChars.charAt(i);
+            }
 
             if (loginService == null) {
                 throw new IllegalStateException("LoginService no está configurado. No se puede validar la autenticación.");
             }
 
-            // Validar el usuario con LoginService
-            boolean isValidUser = loginService.validateUser(Long.parseLong(cuil), password);
+            boolean isValidUser = loginService.validateUser(Long.parseLong(cuil), passwordCharArray);
+
+            // Limpiar la contraseña después de la validación
+            Arrays.fill(passwordCharArray, '\0');  // Limpiar el char[] para eliminar datos sensibles de la memoria
+
             if (isValidUser) {
                 saveUserCuil(cuil); // Guardar el CUIL (si correspondiese)
                 Usuario usuario = loginService.getUsuarioByCuil(Long.parseLong(cuil));
@@ -358,9 +375,13 @@ public class LoginController {
         // Procesar el resultado del diálogo
         dialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
+                // Convertir el valor de los TextField a char[] (usando variables temporales para luego limpiarlas)
+                char[] currentPassword = currentPasswordField.getText().toCharArray();
+                char[] newPassword = newPasswordField.getText().toCharArray();
+                char[] confirmNewPassword = confirmPasswordField.getText().toCharArray();
                 try {
                     // Intentar cambiar la contraseña usando el método changePassword en Usuario
-                    usuario.changePassword(currentPasswordField.getText(), newPasswordField.getText(), confirmPasswordField.getText());
+                    usuario.changePassword(currentPassword, newPassword, confirmNewPassword);
                     AlertUtils.showInfo("Contraseña cambiada exitosamente.");
 
                     // Redirigir al menú principal después del cambio de contraseña exitoso
@@ -369,6 +390,11 @@ public class LoginController {
                     AlertUtils.showErr(e.getMessage());
                     // Reabrir el diálogo si hay un error
                     showChangePasswordDialog(usuario);
+                } finally {
+                // Limpiar los arreglos de caracteres después de usarlos para mayor seguridad
+                Arrays.fill(currentPassword, '\0');
+                Arrays.fill(newPassword, '\0');
+                Arrays.fill(confirmNewPassword, '\0');
                 }
             } else {
                 // Si el usuario cancela el diálogo, cerramos la sesión
