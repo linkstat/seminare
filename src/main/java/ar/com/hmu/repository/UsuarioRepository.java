@@ -146,4 +146,16 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
         }
     }
 
+    public void updatePassword(long cuil, String hashedPassword) throws SQLException {
+        String query = "UPDATE Usuario SET password = ? WHERE cuil = ?";
+
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, hashedPassword);
+            stmt.setLong(2, cuil);
+            stmt.executeUpdate();
+        }
+    }
+
+
 }

@@ -23,7 +23,7 @@ public class PasswordDialogUtils {
     public static void showChangePasswordDialog(Usuario usuario, Consumer<String> onSuccess, Runnable onCancel) {
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Cambiar Contraseña");
-        dialog.setHeaderText("Cambio de contraseña.");
+        dialog.setHeaderText("Debe introducir su contraseña actual\nY luego, repetir dos veces su nueva contraseña.\n");
 
         // Campos de contraseña
         PasswordField currentPasswordField = new PasswordField();
