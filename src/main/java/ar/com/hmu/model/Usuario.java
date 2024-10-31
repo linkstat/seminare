@@ -1,6 +1,7 @@
 package ar.com.hmu.model;
 
 import ar.com.hmu.utils.PasswordUtils;
+import ar.com.hmu.repository.UsuarioRepository;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.UUID;
@@ -233,7 +234,12 @@ public abstract class Usuario {
 			}
 
 			// Paso 3: Establecer la nueva contraseña cifrada
-			setPassword(newPassword);
+			setPassword(newPassword); // Esto solo actualiza el objeto Usuario
+
+			// Paso 4: Actualizar la contraseña en la base de datos
+			UsuarioRepository usuarioRepository = new UsuarioRepository();
+			usuarioRepository.updatePassword(this.cuil, hashedPassword);
+
 			return true; // Si el cambio es exitoso, retorna true
 		} finally {
 			// Paso 4: Limpiar los arrays de contraseñas para evitar que permanezcan en memoria

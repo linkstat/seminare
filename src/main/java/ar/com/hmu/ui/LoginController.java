@@ -277,12 +277,8 @@ public class LoginController {
         try {
             // Obtener el CUIL y la contraseña ingresados
             String cuil = usernameField.getText().replaceAll("[^\\d]", "");  // Remover guiones para obtener solo números
-//            String rawPassword = passwordField.getText(); //método inseguro porque String es inmutable. Usamos char[]
-//            char[] passwordCharArray = passwordField.getCharacters();
-//            char[] passwordCharArrayTest = rawPassword.toCharArray();
             // Obtener la contraseña ingresada como un CharSequence
             CharSequence passwordChars = passwordField.getCharacters();
-            //if (passwordChars == null || passwordChars.length() == 0) {
             if (passwordChars == null || passwordChars.isEmpty()) {
                 AlertUtils.showErr("El campo de contraseña está vacío. Por favor, ingrese su contraseña.");
                 return;

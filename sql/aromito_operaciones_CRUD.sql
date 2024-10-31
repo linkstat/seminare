@@ -116,7 +116,7 @@ SET @TraumatoID = UUID_TO_BIN(UUID());
 SET @ToxicologiaID = UUID_TO_BIN(UUID());
 
 -- Generar una contraseña inicial usando Bcrypt
-/* Por defecto, utlizaremos la contraseña Aromito2024
+/* Por defecto, utlizaremos la contraseña Aromito1
  * En GNU/Linux, la herramienta 'htpasswd' (parte de Apache HTTP Server tools), genera un hash de bcrypt con:
  *
  *   htpasswd -bnBC 10 "" "miContraseñaSegura123" | tr -d ':\n'
@@ -124,8 +124,15 @@ SET @ToxicologiaID = UUID_TO_BIN(UUID());
  * De forma online, Bcrypt-Generator.com (en https://bcrypt-generator.com/ ), puede generar contraseñas.
  * String: Aromito1
  * Rounds: 12
+ *
+ * Además, a dos usuarios les estableceremos su contraseña por defecto (el nro de CUIL). A saber:
+ * UserA: CUIL / Pass: 27284644443 (Florencia Maurino)
+ * UserB: CUIL / Pass: 24554978443 (Sebastian Bustos)
+ * El objetivo de esto, es probar las funcionalidades de detección de contraseña por defecto en el software.
  */
 SET @initPass = '$2a$12$dUczG8OtzxElYH.qAXbtUOHVKORj4zJH2eoy5WXfXqXUm0vRq3obO';
+SET @userAPass = '$2a$12$TCAy.mqVsaRIwjQs0imr/uD0xNoUq/W3LSVys3EISI5hdBREwZW5a';
+SET @userBPass = '$2a$12$x9SDga8sk3DyjvdeIwkhl.2e9wcWHewfHEFQFKkFp1.FiAKcyRZUG';
 
 
 -- Insertar en Usuario
@@ -148,7 +155,7 @@ VALUES
     (@JefeNutricionID, 'Alejandra', 'Boqué', 'aleboque@hmu.com.ar', 27174444446, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio', @initPass),
     (@JefeTraumatoID, 'Omar Wenceslao', 'Sánchez', 'owsanchez@hmu.com.ar', 20124644445, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio', @initPass),
     (@JefeToxicologiaID, 'Andrea', 'Vilkelis', 'avilkelis@hmu.com.ar', 27214434447, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'JefaturaDeServicio', @initPass),
-    (UUID_TO_BIN(UUID()), 'Florencia', 'Maurino', 'flormaurino@hmu.com.ar', 27284644443, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'OficinaDePersonal', @initPass),
+    (UUID_TO_BIN(UUID()), 'Florencia', 'Maurino', 'flormaurino@hmu.com.ar', 27284644443, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'OficinaDePersonal', @userAPass),
     (UUID_TO_BIN(UUID()), 'Baltazar', 'Garzón', 'baltig@hmu.com.ar', 20554644448, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
     (UUID_TO_BIN(UUID()), 'Pedro', 'Taborda', 'pltaborda@hmu.com.ar', 20154786445, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
     (UUID_TO_BIN(UUID()), 'María Laura', 'Vargas Ruíz', 'mlvargas@hmu.com.ar', 27554664563, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
@@ -169,7 +176,7 @@ VALUES
     (UUID_TO_BIN(UUID()), 'Damian', 'Rabbat', 'drabbat@hmu.com.ar', 20558244443, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
     (UUID_TO_BIN(UUID()), 'Ismael', 'Puig', 'ipuig@hmu.com.ar', 20567974443, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
     (UUID_TO_BIN(UUID()), 'Diego', 'Pascolo', 'dpascolo@hmu.com.ar', 20456645843, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), 'Empleado', @initPass),
-    (UUID_TO_BIN(UUID()), 'Sebastián', 'Bustos', 'sebustos@hmu.com.ar', 24554978443, CURDATE(), 'OTRO', TRUE, (SELECT id FROM Domicilio WHERE calle = 'Av. Siempre Viva' LIMIT 1), 'Empleado', @initPass);
+    (UUID_TO_BIN(UUID()), 'Sebastián', 'Bustos', 'sebustos@hmu.com.ar', 24554978443, CURDATE(), 'OTRO', TRUE, (SELECT id FROM Domicilio WHERE calle = 'Av. Siempre Viva' LIMIT 1), 'Empleado', @userBPass);
 
 -- Insertar en la tabla 'Direccion' utilizando los 'id' guardados previamente para esos usuarios
 INSERT INTO Direccion (id)
