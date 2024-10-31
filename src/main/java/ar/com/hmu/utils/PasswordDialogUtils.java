@@ -1,6 +1,7 @@
 package ar.com.hmu.utils;
 
 import ar.com.hmu.model.Usuario;
+import ar.com.hmu.service.UsuarioService;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.PasswordField;
@@ -20,7 +21,7 @@ public class PasswordDialogUtils {
      * @param onSuccess  Acción a ejecutar después de un cambio de contraseña exitoso.
      * @param onCancel   Acción a ejecutar si el usuario cancela el cambio de contraseña.
      */
-    public static void showChangePasswordDialog(Usuario usuario, Consumer<String> onSuccess, Runnable onCancel) {
+    public static void showChangePasswordDialog(Usuario usuario, UsuarioService usuarioService, Consumer<String> onSuccess, Runnable onCancel) {
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Cambiar Contraseña");
         dialog.setHeaderText("Debe introducir su contraseña actual\nY luego, repetir dos veces su nueva contraseña.\n");
@@ -48,8 +49,8 @@ public class PasswordDialogUtils {
                 char[] confirmPassword = confirmPasswordField.getText().toCharArray();
 
                 try {
-                    // Intentar cambiar la contraseña usando el método changePassword en Usuario
-                    usuario.changePassword(currentPassword, newPassword, confirmPassword);
+                    // Intentar cambiar la contraseña usando UsuarioService
+                    usuarioService.changePassword(usuario, currentPassword, newPassword, confirmPassword);
 
                     // Llamar al callback onSuccess para proceder con la lógica después del cambio exitoso
                     if (onSuccess != null) {
@@ -58,7 +59,10 @@ public class PasswordDialogUtils {
                 } catch (IllegalArgumentException e) {
                     AlertUtils.showErr(e.getMessage());
                     // Reabrir el diálogo si hay un error
-                    showChangePasswordDialog(usuario, onSuccess, onCancel);
+                    showChangePasswordDialog(usuario, usuarioService, onSuccess, onCancel);
+                } catch (RuntimeException e) {
+                    AlertUtils.showErr("Ocurrió un error al actualizar la contraseña: " + e.getMessage());
+                    // Podríamos reabrir el diálogo; pero mejor lo dejamos así nomás...
                 } finally {
                     // Limpiar las contraseñas del arreglo para mayor seguridad
                     Arrays.fill(currentPassword, '\0');
@@ -74,15 +78,4 @@ public class PasswordDialogUtils {
         });
     }
 
-    /**
-     * Método auxiliar para limpiar un array de caracteres, asegurando que los datos sensibles
-     * (como contraseñas) no permanezcan en memoria.
-     *
-     * @param array El array de caracteres a limpiar.
-     */
-    private static void clearCharArray(char[] array) {
-        if (array != null) {
-            java.util.Arrays.fill(array, '\0');
-        }
-    }
 }

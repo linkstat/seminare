@@ -222,8 +222,8 @@ public abstract class Usuario {
 	 * en texto plano queden en la memoria.
 	 */
 	public boolean changePassword(char[] currentPassword, char[] newPassword, char[] confirmNewPassword) {
-		// Paso 1: Validar la contraseña actual
 		try {
+			// Paso 1: Validar la contraseña actual
 			if (!validatePassword(currentPassword)) {
 				throw new IllegalArgumentException("La contraseña actual no es correcta.");
 			}
@@ -233,12 +233,8 @@ public abstract class Usuario {
 				throw new IllegalArgumentException("Las nuevas contraseñas no coinciden.");
 			}
 
-			// Paso 3: Establecer la nueva contraseña cifrada
-			setPassword(newPassword); // Esto solo actualiza el objeto Usuario
-
-			// Paso 4: Actualizar la contraseña en la base de datos
-			UsuarioRepository usuarioRepository = new UsuarioRepository();
-			usuarioRepository.updatePassword(this.cuil, hashedPassword);
+			// Paso 3: Establecer la nueva contraseña cifrada (solo actualiza el objeto Usuario)
+			setPassword(newPassword);
 
 			return true; // Si el cambio es exitoso, retorna true
 		} finally {
@@ -248,6 +244,8 @@ public abstract class Usuario {
 			Arrays.fill(confirmNewPassword, '\0');
 		}
 	}
+
+
 
 	/**
 	 * Obtiene el servicio al que pertenece el usuario.
