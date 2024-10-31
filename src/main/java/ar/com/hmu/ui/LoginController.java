@@ -3,6 +3,8 @@ package ar.com.hmu.ui;
 import ar.com.hmu.auth.LoginService;
 import ar.com.hmu.model.Usuario;
 import ar.com.hmu.repository.DatabaseConnector;
+import ar.com.hmu.repository.UsuarioRepository;
+import ar.com.hmu.service.UsuarioService;
 import ar.com.hmu.utils.AlertUtils;
 import ar.com.hmu.utils.PasswordDialogUtils;
 import ar.com.hmu.utils.SessionUtils;
@@ -63,6 +65,8 @@ public class LoginController {
     private LoginService loginService;  // LoginService para la autenticación del usuario
     private DatabaseConnector databaseConnector;  // DatabaseConnector para la verificación del estado del servidor de BD
 
+    private UsuarioService usuarioService; // objeto para persistencia en la BD
+
     /**
      * Método para establecer el {@link LoginService} que se utilizará para la autenticación.
      *
@@ -84,7 +88,9 @@ public class LoginController {
      */
     @FXML
     public void initialize() {
-        updateServerStatus(databaseConnector, serverStatusLabel, serverStatusIcon); // Llamar al método de utilería para verificar el estado del servidor al iniciar la ventana.
+        preferences = Preferences.userNodeForPackage(LoginController.class);
+        //Mueve la llamada a updateServerStatus() desde initialize() a postInitialize(), donde databaseConnector ya está configurado.
+        //updateServerStatus(databaseConnector, serverStatusLabel, serverStatusIcon); // Llamar al método de utilería para verificar el estado del servidor al iniciar la ventana.
         configureCuilField(); // Configurar el campo de CUIL
         configureShowPassword(); // Configurar el checkbox de mostrar/ocultar contraseña
         loadUserCuil();
@@ -121,12 +127,15 @@ public class LoginController {
      * verificaciones necesarias para el estado del servidor.
      */
     public void postInitialize() {
+        updateServerStatus(databaseConnector, serverStatusLabel, serverStatusIcon); // Llamar al método de utilería para verificar el estado del servidor al iniciar la ventana.
         if (databaseConnector == null || loginService == null) {
             throw new IllegalStateException("Las dependencias no han sido configuradas correctamente.");
         }
 
-        //boolean b = updateServerStatus();// Actualizar el estado del servidor
-        updateServerStatus(databaseConnector, serverStatusLabel, serverStatusIcon);  // Actualizar el estado del servidor
+        // Inicializar UsuarioService
+        this.usuarioService = new UsuarioService(new UsuarioRepository(databaseConnector));
+
+        boolean b = updateServerStatus(databaseConnector, serverStatusLabel, serverStatusIcon);  // Actualizar el estado del servidor
         startPeriodicServerCheck(databaseConnector, serverStatusLabel, serverStatusIcon);  // Iniciar chequeo periódico del servidor
     }
 
@@ -198,7 +207,8 @@ public class LoginController {
      * sus credenciales manualmente.
      */
     private void loadUserCuil() {
-        preferences = Preferences.userNodeForPackage(LoginController.class);
+        // Mejor inicializar preferences en initialize() una vez para evitar posibles inconsistencias.
+        //preferences = Preferences.userNodeForPackage(LoginController.class);
         String lastUserCuil = preferences.get(LAST_USER_CUIL_KEY, "");
 
         if (!lastUserCuil.isEmpty()) {
@@ -219,7 +229,8 @@ public class LoginController {
      * @param cuil el CUIL del usuario que se debe almacenar para recordar en futuros inicios de sesión.
      */
     private void saveUserCuil(String cuil) {
-        preferences = Preferences.userNodeForPackage(LoginController.class);
+        // Mejor inicializar preferences en initialize() una vez para evitar posibles inconsistencias.
+        //preferences = Preferences.userNodeForPackage(LoginController.class);
 
         if (rememberMeCheckBox.isSelected()) {
             preferences.put(LAST_USER_CUIL_KEY, cuil);
@@ -274,6 +285,7 @@ public class LoginController {
      */
     @FXML
     private void handleLoginButtonClick() {
+        char[] passwordCharArray = null; // Inicializar a null
         try {
             // Obtener el CUIL y la contraseña ingresados
             String cuil = usernameField.getText().replaceAll("[^\\d]", "");  // Remover guiones para obtener solo números
@@ -284,7 +296,7 @@ public class LoginController {
                 return;
             }
             // Convertir CharSequence a char[] para poder manipular y luego limpiar
-            char[] passwordCharArray = new char[passwordChars.length()];
+            passwordCharArray = new char[passwordChars.length()];
             for (int i = 0; i < passwordChars.length(); i++) {
                 passwordCharArray[i] = passwordChars.charAt(i);
             }
@@ -295,16 +307,19 @@ public class LoginController {
 
             boolean isValidUser = loginService.validateUser(Long.parseLong(cuil), passwordCharArray);
 
-            // Limpiar la contraseña después de la validación
-            Arrays.fill(passwordCharArray, '\0');  // Limpiar el char[] para eliminar datos sensibles de la memoria
-
             if (isValidUser) {
                 saveUserCuil(cuil); // Guardar el CUIL (si correspondiese)
+                // Obtener el usuario autenticado para realizar verificaciones adicionales
                 Usuario usuario = loginService.getUsuarioByCuil(Long.parseLong(cuil));
+                if (usuario == null) {
+                    throw new IllegalStateException("No se pudo recuperar el usuario después de la autenticación.");
+                }
+
+                UsuarioService usuarioService = new UsuarioService(new UsuarioRepository(databaseConnector));
                 // Verificar si el usuario tiene la contraseña predeterminada
                 if (usuario.isDefaultPassword()) {
                     // Mostrar ventana para que el usuario cambie la contraseña
-                    PasswordDialogUtils.showChangePasswordDialog(usuario,
+                    PasswordDialogUtils.showChangePasswordDialog(usuario, usuarioService,
                             (message) -> showMainMenu(usuario), // Callback para continuar al menú principal
                             () -> SessionUtils.handleLogout((Stage) loginButton.getScene().getWindow()) // Callback para cerrar la sesión si se cancela
                     );
@@ -323,6 +338,11 @@ public class LoginController {
             AlertUtils.showErr("Error de configuración: " + e.getMessage());
         } catch (Exception e) {
             AlertUtils.showErr("Ocurrió un error inesperado: " + e.getMessage());
+        } finally {
+            // Limpiar la contraseña después de la validación
+            if (passwordCharArray != null) {
+                Arrays.fill(passwordCharArray, '\0');  // Limpiar la memoria del char[]
+            }
         }
     }
 
@@ -351,7 +371,7 @@ public class LoginController {
      */
     private void showChangePasswordDialog(Usuario usuario) {
         // Utilizar PasswordDialogUtils para mostrar el diálogo de cambio de contraseña
-        PasswordDialogUtils.showChangePasswordDialog(usuario,
+        PasswordDialogUtils.showChangePasswordDialog(usuario, usuarioService,
                 successMessage -> {
                     // Mostrar el mensaje de éxito al cambiar la contraseña
                     AlertUtils.showInfo(successMessage);

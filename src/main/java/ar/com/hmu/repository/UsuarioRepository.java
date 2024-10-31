@@ -21,13 +21,13 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
     @Override
     public void create(Usuario usuario) {
         try (Connection connection = databaseConnector.getConnection()) {
-            String query = "INSERT INTO Usuario (cuil, nombre, mail, passwd) VALUES (?, ?, ?, ?)";
+            String query = "INSERT INTO Usuario (cuil, apellidos, nombres, mail, passwd) VALUES (?, ?, ?, ?, ?)";
             try (PreparedStatement stmt = connection.prepareStatement(query)) {
                 stmt.setLong(1, usuario.getCuil());
                 stmt.setString(2, usuario.getApellidos());
-                stmt.setString(2, usuario.getNombres());
-                stmt.setString(3, usuario.getMail());
-                stmt.setString(4, usuario.getEncryptedPassword());
+                stmt.setString(3, usuario.getNombres());
+                stmt.setString(4, usuario.getMail());
+                stmt.setString(5, usuario.getEncryptedPassword());
                 stmt.executeUpdate();
             }
         } catch (SQLException e) {
@@ -147,13 +147,16 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
     }
 
     public void updatePassword(long cuil, String hashedPassword) throws SQLException {
-        String query = "UPDATE Usuario SET password = ? WHERE cuil = ?";
+        String query = "UPDATE Usuario SET passwd = ? WHERE cuil = ?";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, hashedPassword);
             stmt.setLong(2, cuil);
-            stmt.executeUpdate();
+            int rowsUpdated = stmt.executeUpdate();
+            if (rowsUpdated == 0) {
+                throw new SQLException("No se pudo actualizar la contraseña; el usuario con CUIL " + cuil + " no existe.\nHash: " + hashedPassword);
+            }
         }
     }
 
