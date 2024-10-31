@@ -70,7 +70,9 @@ public class ServerStatusUtils {
             statusLabel.setText(serverStatus[0]);
             statusLabel.setStyle("-fx-text-fill: " + serverStatus[1] + ";");
             try {
-                Image icon = new Image(Objects.requireNonNull(ServerStatusUtils.class.getResourceAsStream(serverStatus[2])));
+                Image icon = new Image(Objects.requireNonNull(
+                        ServerStatusUtils.class.getResourceAsStream(serverStatus[2])
+                ));
                 statusIcon.setImage(icon);
             } catch (NullPointerException | IllegalArgumentException e) {
                 System.err.println("Error al cargar el icono de estado del servidor: " + e.getMessage());
