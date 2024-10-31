@@ -1,12 +1,12 @@
 package ar.com.hmu.ui;
 
 import ar.com.hmu.service.MainMenuMosaicoService;
-import ar.com.hmu.auth.PasswordChangeHandler;
 import ar.com.hmu.model.Usuario;
 import ar.com.hmu.repository.DatabaseConnector;
 import ar.com.hmu.utils.AlertUtils;
 import static ar.com.hmu.utils.SessionUtils.handleLogout;
 import static ar.com.hmu.utils.ServerStatusUtils.*;
+import ar.com.hmu.utils.PasswordDialogUtils;
 import ar.com.hmu.utils.SessionUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -119,11 +119,11 @@ public class MainMenuMosaicoController {
      * Maneja la opción "Modificar Contraseña" abriendo una nueva ventana para cambiar la contraseña.
      */
     private void handleChangePassword() {
-        PasswordChangeHandler passwordChangeHandler = new PasswordChangeHandler();
-        passwordChangeHandler.showChangePasswordDialog(usuarioActual,
-                () -> {}, // Callback vacío para continuar después del cambio de contraseña exitoso
+        PasswordDialogUtils.showChangePasswordDialog(usuarioActual,
+                (message) -> {}, // Callback vacío para continuar después del cambio de contraseña exitoso
                 () -> SessionUtils.handleLogout((Stage) logoutButton.getScene().getWindow()) // Callback para cerrar la sesión si se cancela
         );
+
     }
 
     /**

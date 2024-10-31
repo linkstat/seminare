@@ -1,12 +1,11 @@
 package ar.com.hmu.utils;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
 import java.util.Arrays;
 
 /**
  * Clase utilitaria para gestionar el hash y la validación de contraseñas.
- *
+ * <p>
  * La clase `PasswordUtils` proporciona métodos estáticos para realizar operaciones relacionadas
  * con la seguridad de contraseñas, tales como el hashing de contraseñas antes de almacenarlas
  * y la validación de contraseñas ingresadas por los usuarios. Utiliza el algoritmo BCrypt,
@@ -15,11 +14,11 @@ import java.util.Arrays;
  */
 public class PasswordUtils {
 
-    private static BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private static final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     /**
      * Genera el hash de una contraseña antes de almacenarla.
-     *
+     * <p>
      * Este método recibe una contraseña en texto plano y la transforma en una versión
      * hasheada utilizando el algoritmo BCrypt. Esta versión hasheada se puede almacenar
      * de forma segura en la base de datos.
@@ -41,7 +40,7 @@ public class PasswordUtils {
 
     /**
      * Valida una contraseña ingresada contra el hash almacenado.
-     *
+     * <p>
      * Este método compara una contraseña ingresada por el usuario en texto plano con
      * el hash almacenado previamente en la base de datos. Utiliza BCrypt para realizar
      * la comparación y determinar si la contraseña es correcta.

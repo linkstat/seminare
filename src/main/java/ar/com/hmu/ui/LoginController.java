@@ -1,10 +1,10 @@
 package ar.com.hmu.ui;
 
 import ar.com.hmu.auth.LoginService;
-import ar.com.hmu.auth.PasswordChangeHandler;
 import ar.com.hmu.model.Usuario;
 import ar.com.hmu.repository.DatabaseConnector;
 import ar.com.hmu.utils.AlertUtils;
+import ar.com.hmu.utils.PasswordDialogUtils;
 import ar.com.hmu.utils.SessionUtils;
 import static ar.com.hmu.utils.ServerStatusUtils.*;
 import javafx.application.Platform;
@@ -16,9 +16,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
 import java.util.Arrays;
 import java.util.prefs.Preferences;
 import java.io.IOException;
@@ -118,7 +116,7 @@ public class LoginController {
 
     /**
      * Método que se debe llamar después de establecer todas las dependencias necesarias.
-     *
+     * <p>
      * Este método se encarga de realizar todas las inicializaciones de la interfaz de usuario y de las
      * verificaciones necesarias para el estado del servidor.
      */
@@ -174,14 +172,14 @@ public class LoginController {
         StringBuilder formatted = new StringBuilder();
 
         if (digits.length() >= 2) {
-            formatted.append(digits.substring(0, 2)).append("-");
+            formatted.append(digits, 0, 2).append("-");
         } else {
             formatted.append(digits);
             return formatted.toString();
         }
 
         if (digits.length() >= 10) {
-            formatted.append(digits.substring(2, 10)).append("-");
+            formatted.append(digits, 2, 10).append("-");
             formatted.append(digits.substring(10));
         } else if (digits.length() > 2) {
             formatted.append(digits.substring(2));
@@ -269,7 +267,7 @@ public class LoginController {
 
     /**
      * Gestiona el evento del botón de inicio de sesión.
-     *
+     * <p>
      * Este método es invocado cuando el usuario hace clic en el botón de "Iniciar Sesión".
      * Valida las credenciales ingresadas por el usuario consultando la base de datos.
      * Si las credenciales son correctas, se muestra un mensaje de éxito; si no lo son, se muestra una advertencia.
@@ -284,7 +282,8 @@ public class LoginController {
 //            char[] passwordCharArrayTest = rawPassword.toCharArray();
             // Obtener la contraseña ingresada como un CharSequence
             CharSequence passwordChars = passwordField.getCharacters();
-            if (passwordChars == null || passwordChars.length() == 0) {
+            //if (passwordChars == null || passwordChars.length() == 0) {
+            if (passwordChars == null || passwordChars.isEmpty()) {
                 AlertUtils.showErr("El campo de contraseña está vacío. Por favor, ingrese su contraseña.");
                 return;
             }
@@ -309,9 +308,8 @@ public class LoginController {
                 // Verificar si el usuario tiene la contraseña predeterminada
                 if (usuario.isDefaultPassword()) {
                     // Mostrar ventana para que el usuario cambie la contraseña
-                    PasswordChangeHandler passwordChangeHandler = new PasswordChangeHandler();
-                    passwordChangeHandler.showChangePasswordDialog(usuario,
-                            () -> showMainMenu(usuario), // Callback para continuar al menú principal
+                    PasswordDialogUtils.showChangePasswordDialog(usuario,
+                            (message) -> showMainMenu(usuario), // Callback para continuar al menú principal
                             () -> SessionUtils.handleLogout((Stage) loginButton.getScene().getWindow()) // Callback para cerrar la sesión si se cancela
                     );
                 } else {
@@ -333,74 +331,43 @@ public class LoginController {
     }
 
     /**
-     * Muestra un diálogo para cambiar la contraseña del usuario.
+     * Muestra un diálogo para cambiar la contraseña del usuario utilizando el método centralizado en `PasswordDialogUtils`.
      * <p>
-     * Este método presenta una ventana emergente con los campos necesarios para cambiar la contraseña,
-     * obligando al usuario a proporcionar la contraseña actual y una nueva contraseña. Es utilizado
-     * especialmente para forzar al usuario a cambiar la contraseña predeterminada antes de continuar
-     * usando el sistema.
+     * Este método delega la lógica de presentación del diálogo y validación de las contraseñas a la clase utilitaria
+     * {@link PasswordDialogUtils}. Es utilizado especialmente para forzar al usuario a cambiar la contraseña predeterminada
+     * antes de continuar usando el sistema.
      * <p>
-     * El diálogo contiene los siguientes elementos:
+     * `PasswordDialogUtils` presenta una ventana emergente que contiene los siguientes elementos:
      * <ul>
      *     <li>Un campo para ingresar la contraseña actual.</li>
      *     <li>Un campo para la nueva contraseña.</li>
      *     <li>Un campo para confirmar la nueva contraseña.</li>
      * </ul>
-     * Si el cambio es exitoso, el usuario puede proceder al menú principal; en caso contrario, se muestra
-     * un mensaje de error indicando la razón (contraseña actual incorrecta o no coinciden las nuevas contraseñas).
      * <p>
-     * Si el usuario cancela el cambio de contraseña, la sesión es cerrada automáticamente.
+     * Si el cambio es exitoso, el callback de éxito (`onSuccess`) es llamado para proceder con la lógica posterior
+     * (en este caso, redirigir al menú principal). Si hay un error (como la contraseña actual incorrecta o si las nuevas contraseñas
+     * no coinciden), se muestra un mensaje de error y se reabre el diálogo.
+     * <p>
+     * Si el usuario cancela el cambio de contraseña, se llama al callback de cancelación (`onCancel`), el cual cierra la sesión
+     * y vuelve a la pantalla de inicio de sesión.
      *
      * @param usuario El usuario autenticado que necesita cambiar su contraseña.
      */
     private void showChangePasswordDialog(Usuario usuario) {
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Cambiar Contraseña");
-        dialog.setHeaderText("Debe cambiar su contraseña antes de continuar.");
-
-        // Campos de contraseña
-        PasswordField currentPasswordField = new PasswordField();
-        currentPasswordField.setPromptText("Contraseña actual");
-
-        PasswordField newPasswordField = new PasswordField();
-        newPasswordField.setPromptText("Nueva contraseña");
-
-        PasswordField confirmPasswordField = new PasswordField();
-        confirmPasswordField.setPromptText("Repetir nueva contraseña");
-
-        // Añadir campos a la ventana
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-        dialog.getDialogPane().setContent(new VBox(10, currentPasswordField, newPasswordField, confirmPasswordField));
-
-        // Procesar el resultado del diálogo
-        dialog.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                // Convertir el valor de los TextField a char[] (usando variables temporales para luego limpiarlas)
-                char[] currentPassword = currentPasswordField.getText().toCharArray();
-                char[] newPassword = newPasswordField.getText().toCharArray();
-                char[] confirmNewPassword = confirmPasswordField.getText().toCharArray();
-                try {
-                    // Intentar cambiar la contraseña usando el método changePassword en Usuario
-                    usuario.changePassword(currentPassword, newPassword, confirmNewPassword);
-                    AlertUtils.showInfo("Contraseña cambiada exitosamente.");
+        // Utilizar PasswordDialogUtils para mostrar el diálogo de cambio de contraseña
+        PasswordDialogUtils.showChangePasswordDialog(usuario,
+                successMessage -> {
+                    // Mostrar el mensaje de éxito al cambiar la contraseña
+                    AlertUtils.showInfo(successMessage);
 
                     // Redirigir al menú principal después del cambio de contraseña exitoso
                     showMainMenu(usuario);
-                } catch (IllegalArgumentException e) {
-                    AlertUtils.showErr(e.getMessage());
-                    // Reabrir el diálogo si hay un error
-                    showChangePasswordDialog(usuario);
-                } finally {
-                // Limpiar los arreglos de caracteres después de usarlos para mayor seguridad
-                Arrays.fill(currentPassword, '\0');
-                Arrays.fill(newPassword, '\0');
-                Arrays.fill(confirmNewPassword, '\0');
+                },
+                () -> {
+                    // Si el usuario cancela el diálogo, cerramos la sesión
+                    SessionUtils.handleLogout((Stage) loginButton.getScene().getWindow());
                 }
-            } else {
-                // Si el usuario cancela el diálogo, cerramos la sesión
-                SessionUtils.handleLogout((Stage) loginButton.getScene().getWindow());
-            }
-        });
+        );
     }
 
     /**

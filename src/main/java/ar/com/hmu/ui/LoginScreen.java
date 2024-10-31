@@ -11,6 +11,8 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
+import java.util.Objects;
+
 /**
  * Clase principal que representa la pantalla de inicio de sesión de la aplicación.
  * <p>
@@ -92,7 +94,9 @@ public class LoginScreen extends Application {
      */
     private void setStageIcon(Stage stage, String iconPath) {
         try {
-            Image icon = new Image(getClass().getResourceAsStream(iconPath));
+            Image icon = new Image(Objects.requireNonNull(
+                    getClass().getResourceAsStream(iconPath)
+            ));
             if (icon.isError()) {
                 throw new IllegalArgumentException("Error al cargar el icono: " + iconPath);
             }

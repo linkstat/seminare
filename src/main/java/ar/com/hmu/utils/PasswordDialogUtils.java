@@ -1,35 +1,26 @@
-package ar.com.hmu.auth;
+package ar.com.hmu.utils;
 
 import ar.com.hmu.model.Usuario;
-import ar.com.hmu.utils.AlertUtils;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.PasswordField;
 import javafx.scene.layout.VBox;
-
 import java.util.Arrays;
+import java.util.function.Consumer;
 
-/**
- * Clase encargada de gestionar el cambio de contraseñas de los usuarios.
- * <p>
- * Esta clase proporciona una interfaz para solicitar al usuario su contraseña actual,
- * la nueva contraseña, y su confirmación. Si el cambio es exitoso, la contraseña se actualiza
- * en el objeto {@link Usuario}. Si el usuario cancela el proceso, se puede implementar una lógica
- * para cerrar la sesión u obligarlo a cambiar la contraseña más adelante.
- */
-public class PasswordChangeHandler {
+public class PasswordDialogUtils {
 
     /**
      * Muestra un diálogo para cambiar la contraseña del usuario.
      * <p>
      * Este método presenta una ventana emergente con los campos necesarios para cambiar la contraseña.
-     * Si el cambio es exitoso, la contraseña se actualiza en el objeto {@link Usuario}.
+     * Si el cambio es exitoso, se llama al callback onSuccess; de lo contrario, se llama a onCancel.
      *
-     * @param usuario El usuario autenticado que necesita cambiar su contraseña.
-     * @param onSuccess Runnable que se ejecutará si el cambio de contraseña es exitoso.
-     * @param onCancel Runnable que se ejecutará si el usuario cancela el cambio de contraseña.
+     * @param usuario    El usuario autenticado que necesita cambiar su contraseña.
+     * @param onSuccess  Acción a ejecutar después de un cambio de contraseña exitoso.
+     * @param onCancel   Acción a ejecutar si el usuario cancela el cambio de contraseña.
      */
-    public void showChangePasswordDialog(Usuario usuario, Runnable onSuccess, Runnable onCancel) {
+    public static void showChangePasswordDialog(Usuario usuario, Consumer<String> onSuccess, Runnable onCancel) {
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Cambiar Contraseña");
         dialog.setHeaderText("Cambio de contraseña.");
@@ -59,11 +50,10 @@ public class PasswordChangeHandler {
                 try {
                     // Intentar cambiar la contraseña usando el método changePassword en Usuario
                     usuario.changePassword(currentPassword, newPassword, confirmPassword);
-                    AlertUtils.showInfo("Contraseña cambiada exitosamente.");
 
                     // Llamar al callback onSuccess para proceder con la lógica después del cambio exitoso
                     if (onSuccess != null) {
-                        onSuccess.run();
+                        onSuccess.accept("Contraseña cambiada exitosamente.");
                     }
                 } catch (IllegalArgumentException e) {
                     AlertUtils.showErr(e.getMessage());
@@ -82,5 +72,17 @@ public class PasswordChangeHandler {
                 }
             }
         });
+    }
+
+    /**
+     * Método auxiliar para limpiar un array de caracteres, asegurando que los datos sensibles
+     * (como contraseñas) no permanezcan en memoria.
+     *
+     * @param array El array de caracteres a limpiar.
+     */
+    private static void clearCharArray(char[] array) {
+        if (array != null) {
+            java.util.Arrays.fill(array, '\0');
+        }
     }
 }

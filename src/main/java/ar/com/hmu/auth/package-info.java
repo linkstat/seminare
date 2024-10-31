@@ -6,7 +6,6 @@
  * Clases incluidas:
  * <ul>
  *   <li>{@link ar.com.hmu.auth.LoginService}: Proporciona métodos para la autenticación de usuarios.</li>
- *   <li>{@link ar.com.hmu.auth.PasswordChangeHandler}: Gestiona el proceso de cambio de contraseña para los usuarios.</li>
  * </ul>
  */
 package ar.com.hmu.auth;
