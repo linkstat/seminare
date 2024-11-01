@@ -411,9 +411,10 @@ public class LoginController {
             Scene scene = new Scene(root);
             stage.setScene(scene);
 
-            // Hacer que el Stage sea redimensionable
+            // Establecer propiedades Hacer que el Stage sea redimensionable
             stage.setResizable(true);
-            
+            stage.setTitle("Menú Principal :: Sistema de Gestión de Ausentismo HMU");
+
         } catch (IOException e) {
             e.printStackTrace(); // Para imprimir todo el stack trace y facilitar el diagnóstico.
             AlertUtils.showErr("Error al cargar el menú principal:\n" + e.getMessage());

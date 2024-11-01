@@ -50,7 +50,41 @@ public class MainMenuMosaicoController {
     @FXML
     private Text currentConnIPAddressText;
     @FXML
-    private VBox altaBajaVBox;
+    private VBox aprobacionSolicitudesVBox;
+    @FXML
+    private VBox notasMemosVBox;
+    @FXML
+    private VBox partesDiariosVBox;
+    @FXML
+    private VBox consultaDiagramasDeServicioVBox;
+    @FXML
+    private VBox diagramacionDeServicioVBox;
+    @FXML
+    private VBox controlMarcacionesVBox;
+    @FXML
+    private VBox pasesDeSalidaVBox;
+    @FXML
+    private VBox omisionesIngresEgresoVBox;
+    @FXML
+    private VBox faltasJustificadasVBox;
+    @FXML
+    private VBox faltasInjustificadasVBox;
+    @FXML
+    private VBox faltasRazonFuerzaMayorVBox;
+    @FXML
+    private VBox solicitudHorasExtraFCVBox;
+    @FXML
+    private VBox francosCompensatoriosVBox;
+    @FXML
+    private VBox reportesVBox;
+    @FXML
+    private VBox listadoDeAgentesVBox;
+    @FXML
+    private VBox listadoDeServiciosVBox;
+    @FXML
+    private VBox abmAgentesVBox;
+    @FXML
+    private VBox abmServiciosVBox;
 
     private MainMenuMosaicoService mainMenuMosaicoService; // Servicio para gestionar la lógica del menú principal
     private DatabaseConnector databaseConnector; // Necesario para la verificación del estado del servidor.
@@ -92,7 +126,7 @@ public class MainMenuMosaicoController {
         currentConnIPAddressText.setText(mainMenuMosaicoService.getCurrentConnIPAddress());
 
         // Configurar visibilidad del mosaico "Alta, Baja y Modificación de Agentes"
-        altaBajaVBox.setVisible(mainMenuMosaicoService.puedeAccederAltaBajaAgentes());
+        abmAgentesVBox.setVisible(mainMenuMosaicoService.puedeAccederAltaBajaAgentes());
         // Configurar la visibilidad de otros mosaicos según el servicio
 
         // Actualizar el estado del servidor y comenzar el chequeo periódico
@@ -118,9 +152,25 @@ public class MainMenuMosaicoController {
         changePasswordMenuItem.setOnAction(event -> handleChangePassword());
 
         // Configura los mosaicos para mostrar una alerta de "Módulo en construcción"
-        altaBajaVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
+        aprobacionSolicitudesVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
+        notasMemosVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
+        partesDiariosVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
+        consultaDiagramasDeServicioVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
+        diagramacionDeServicioVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
+        controlMarcacionesVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
+        pasesDeSalidaVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
+        omisionesIngresEgresoVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
+        faltasJustificadasVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
+        faltasInjustificadasVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
+        faltasRazonFuerzaMayorVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
+        solicitudHorasExtraFCVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
+        francosCompensatoriosVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
+        reportesVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
+        listadoDeAgentesVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
+        listadoDeServiciosVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
+        abmAgentesVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
+        abmServiciosVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
 
-        // Repetir para los otros mosaicos...
     }
 
     /**

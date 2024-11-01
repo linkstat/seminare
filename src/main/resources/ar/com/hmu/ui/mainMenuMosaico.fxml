@@ -70,6 +70,7 @@
                 <Menu mnemonicParsing="false" text="Archivo">
                   <items>
                     <MenuItem fx:id="changePasswordMenuItem" mnemonicParsing="false" text="Modificar contraseña" />
+                        <MenuItem fx:id="changePasswordMenuItem1" mnemonicParsing="false" text="Modificar imagen de perfil" />
                         <MenuItem mnemonicParsing="false" text="Cerrar sesión" />
                         <MenuItem fx:id="exitMenuItem" mnemonicParsing="false" text="Salir" />
                   </items>
@@ -276,7 +277,7 @@
          <content>
             <TilePane hgap="24.0" prefColumns="1" prefHeight="480.0" prefRows="1" prefWidth="720.0" vgap="16.0">
                <children>
-                  <VBox alignment="TOP_CENTER" layoutX="586.0" layoutY="354.0">
+                  <VBox fx:id="aprobacionSolicitudesVBox" alignment="TOP_CENTER" layoutX="586.0" layoutY="354.0">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -296,7 +297,7 @@
                         </Text>
                      </children>
                   </VBox>
-                  <VBox alignment="TOP_CENTER" layoutX="298.0" layoutY="354.0">
+                  <VBox fx:id="notasMemosVBox" alignment="TOP_CENTER" layoutX="298.0" layoutY="354.0">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -316,7 +317,7 @@
                         </Text>
                      </children>
                   </VBox>
-                  <VBox alignment="TOP_CENTER">
+                  <VBox fx:id="partesDiariosVBox" alignment="TOP_CENTER">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -339,7 +340,7 @@
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                      </TilePane.margin>
                   </VBox>
-                  <VBox alignment="TOP_CENTER">
+                  <VBox fx:id="consultaDiagramasDeServicioVBox" alignment="TOP_CENTER">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -362,7 +363,7 @@
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                      </TilePane.margin>
                   </VBox>
-                  <VBox alignment="TOP_CENTER">
+                  <VBox fx:id="diagramacionDeServicioVBox" alignment="TOP_CENTER">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -385,7 +386,7 @@
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                      </TilePane.margin>
                   </VBox>
-                  <VBox alignment="TOP_CENTER">
+                  <VBox fx:id="controlMarcacionesVBox" alignment="TOP_CENTER">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -395,7 +396,7 @@
                               <Cursor fx:constant="HAND" />
                            </cursor>
                         </ImageView>
-                        <Text stroke="GREY" strokeWidth="0.2" text="Control de marcaciones" textAlignment="CENTER" wrappingWidth="112.0">
+                        <Text stroke="GREY" strokeWidth="0.2" text="Marcaciones" textAlignment="CENTER" wrappingWidth="112.0">
                            <font>
                               <Font name="System Bold" size="13.0" />
                            </font>
@@ -408,7 +409,7 @@
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                      </TilePane.margin>
                   </VBox>
-                  <VBox alignment="TOP_CENTER">
+                  <VBox fx:id="pasesDeSalidaVBox" alignment="TOP_CENTER">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -418,7 +419,7 @@
                               <Cursor fx:constant="HAND" />
                            </cursor>
                         </ImageView>
-                        <Text stroke="GREY" strokeWidth="0.2" text="Gestión de Pases de Salida" textAlignment="CENTER" wrappingWidth="112.0">
+                        <Text stroke="GREY" strokeWidth="0.2" text="Pases de Salida" textAlignment="CENTER" wrappingWidth="112.0">
                            <font>
                               <Font name="System Bold" size="13.0" />
                            </font>
@@ -431,7 +432,7 @@
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                      </TilePane.margin>
                   </VBox>
-                  <VBox alignment="TOP_CENTER">
+                  <VBox fx:id="omisionesIngresEgresoVBox" alignment="TOP_CENTER">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -441,7 +442,7 @@
                               <Cursor fx:constant="HAND" />
                            </cursor>
                         </ImageView>
-                        <Text stroke="GREY" strokeWidth="0.2" text="Omisión de Ingreso/Egreso" textAlignment="CENTER" wrappingWidth="112.0">
+                        <Text stroke="GREY" strokeWidth="0.2" text="Omisiones de Ingreso / Egreso" textAlignment="CENTER" wrappingWidth="112.0">
                            <font>
                               <Font name="System Bold" size="13.0" />
                            </font>
@@ -454,7 +455,7 @@
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                      </TilePane.margin>
                   </VBox>
-                  <VBox alignment="TOP_CENTER">
+                  <VBox fx:id="faltasJustificadasVBox" alignment="TOP_CENTER">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -477,7 +478,7 @@
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                      </TilePane.margin>
                   </VBox>
-                  <VBox alignment="TOP_CENTER">
+                  <VBox fx:id="faltasInjustificadasVBox" alignment="TOP_CENTER">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -500,7 +501,7 @@
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                      </TilePane.margin>
                   </VBox>
-                  <VBox alignment="TOP_CENTER" layoutX="14.0" layoutY="358.0">
+                  <VBox fx:id="faltasRazonFuerzaMayorVBox" alignment="TOP_CENTER" layoutX="14.0" layoutY="358.0">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -520,7 +521,7 @@
                         </Text>
                      </children>
                   </VBox>
-                  <VBox alignment="TOP_CENTER" layoutX="158.0" layoutY="358.0">
+                  <VBox fx:id="solicitudHorasExtraFCVBox" alignment="TOP_CENTER" layoutX="158.0" layoutY="358.0">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -540,7 +541,7 @@
                         </Text>
                      </children>
                   </VBox>
-                  <VBox alignment="TOP_CENTER">
+                  <VBox fx:id="francosCompensatoriosVBox" alignment="TOP_CENTER">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -560,7 +561,7 @@
                         </Text>
                      </children>
                   </VBox>
-                  <VBox alignment="TOP_CENTER" layoutX="586.0" layoutY="354.0">
+                  <VBox fx:id="reportesVBox" alignment="TOP_CENTER" layoutX="586.0" layoutY="354.0">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -580,7 +581,7 @@
                         </Text>
                      </children>
                   </VBox>
-                  <VBox alignment="TOP_CENTER">
+                  <VBox fx:id="listadoDeAgentesVBox" alignment="TOP_CENTER">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -603,7 +604,7 @@
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                      </TilePane.margin>
                   </VBox>
-                  <VBox fx:id="altaBajaVBox" alignment="TOP_CENTER">
+                  <VBox fx:id="abmAgentesVBox" alignment="TOP_CENTER">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -626,7 +627,7 @@
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                      </TilePane.margin>
                   </VBox>
-                  <VBox alignment="TOP_CENTER">
+                  <VBox fx:id="listadoDeServiciosVBox" alignment="TOP_CENTER">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -649,7 +650,7 @@
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                      </TilePane.margin>
                   </VBox>
-                  <VBox alignment="TOP_CENTER" layoutX="158.0" layoutY="526.0">
+                  <VBox fx:id="abmServiciosVBox" alignment="TOP_CENTER" layoutX="158.0" layoutY="526.0">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true">
                            <image>
