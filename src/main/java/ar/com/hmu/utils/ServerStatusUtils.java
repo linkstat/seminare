@@ -7,7 +7,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.control.Label;
 import javafx.util.Duration;
 import javafx.scene.image.Image;
-
 import java.util.Objects;
 
 public class ServerStatusUtils {
