@@ -406,11 +406,14 @@ public class LoginController {
             }
 
             controller.postInitialize(usuario,databaseConnector);
-            //controller.setUsuarioActual(usuario);
 
             Stage stage = (Stage) loginButton.getScene().getWindow();
             Scene scene = new Scene(root);
             stage.setScene(scene);
+
+            // Hacer que el Stage sea redimensionable
+            stage.setResizable(true);
+            
         } catch (IOException e) {
             e.printStackTrace(); // Para imprimir todo el stack trace y facilitar el diagnóstico.
             AlertUtils.showErr("Error al cargar el menú principal:\n" + e.getMessage());
