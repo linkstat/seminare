@@ -54,4 +54,12 @@ public class UsuarioService {
         }
     }
 
+    public void updateProfileImage(Usuario usuario) {
+        try {
+            usuarioRepository.updateProfileImage(usuario.getCuil(), usuario.getProfileImage());
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al actualizar la imagen de perfil en la base de datos", e);
+        }
+    }
+
 }

@@ -75,13 +75,13 @@ public class ServerStatusUtils {
                 statusIcon.setImage(icon);
             } catch (NullPointerException | IllegalArgumentException e) {
                 System.err.println("Error al cargar el icono de estado del servidor: " + e.getMessage());
-                statusIcon.setImage(new Image(ServerStatusUtils.class.getResourceAsStream("/ar/com/hmu/images/icon_circle_blue_question_52x52.png")));
+                statusIcon.setImage(new Image(ServerStatusUtils.class.getResourceAsStream("/images/icon_circle_blue_question_52x52.png")));
             }
             return serverStatus[0].equals("Servidor en línea y funcional.");
         } else {
             statusLabel.setText("Error al inicializar la conexión al servidor");
             statusLabel.setStyle("-fx-text-fill: red;");
-            statusIcon.setImage(new Image(Objects.requireNonNull(ServerStatusUtils.class.getResourceAsStream("/ar/com/hmu/images/icon_circle_blue_question_52x52.png"))));
+            statusIcon.setImage(new Image(Objects.requireNonNull(ServerStatusUtils.class.getResourceAsStream("/images/icon_circle_blue_question_52x52.png"))));
             return false;
         }
     }

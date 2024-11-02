@@ -70,12 +70,12 @@
                 <Menu mnemonicParsing="false" text="Archivo">
                   <items>
                     <MenuItem fx:id="changePasswordMenuItem" mnemonicParsing="false" text="Modificar contraseña" />
-                        <MenuItem fx:id="changePasswordMenuItem1" mnemonicParsing="false" text="Modificar imagen de perfil" />
+                        <MenuItem fx:id="changeProfileImageMenuItem" mnemonicParsing="false" text="Modificar imagen de perfil" />
                         <MenuItem mnemonicParsing="false" text="Cerrar sesión" />
                         <MenuItem fx:id="exitMenuItem" mnemonicParsing="false" text="Salir" />
                   </items>
                 </Menu>
-                  <Menu mnemonicParsing="false" text="Agente">
+                  <Menu fx:id="agenteMenu" mnemonicParsing="false" text="Agente">
                      <items>
                         <MenuItem mnemonicParsing="false" text="Control de marcaciones" />
                         <MenuItem mnemonicParsing="false" text="Notas y Memorandums" />
@@ -96,7 +96,7 @@
                         </Menu>
                      </items>
                   </Menu>
-                  <Menu mnemonicParsing="false" text="Jefatura de Servicio">
+                  <Menu fx:id="jefaturaDeServicioMenu" mnemonicParsing="false" text="Jefatura de Servicio">
                      <items>
                         <MenuItem mnemonicParsing="false" text="Aprobación de Solicitudes" />
                         <MenuItem mnemonicParsing="false" text="Diagramación de mi Servicio" />
@@ -104,7 +104,7 @@
                         <MenuItem mnemonicParsing="false" text="Listado de mis Agentes" />
                      </items>
                   </Menu>
-                <Menu mnemonicParsing="false" text="Oficina de Personal">
+                <Menu fx:id="oficinaDePersonalMenu" mnemonicParsing="false" text="Oficina de Personal">
                   <items>
                         <MenuItem mnemonicParsing="false" text="Aprobación de Solicitudes" />
                     <MenuItem mnemonicParsing="false" text="Módulo de Partes Diarios" />
@@ -124,7 +124,7 @@
                         </Menu>
                   </items>
                 </Menu>
-                  <Menu mnemonicParsing="false" text="Dirección">
+                  <Menu fx:id="direccionMenu" mnemonicParsing="false" text="Dirección">
                      <items>
                         <MenuItem mnemonicParsing="false" text="Aprobación de Solicitudes" />
                         <MenuItem mnemonicParsing="false" text="Listado de Agentes" />
@@ -135,8 +135,8 @@
                   </Menu>
                   <Menu mnemonicParsing="false" text="Ayuda">
                      <items>
-                        <MenuItem mnemonicParsing="false" text="Licencias de uso" />
-                        <MenuItem mnemonicParsing="false" text="Acerca de Aromito" />
+                        <MenuItem fx:id="licenciasDeUsoMenuItem" mnemonicParsing="false" text="Licencias de uso" />
+                        <MenuItem fx:id="acercaDeMenuItem" mnemonicParsing="false" text="Acerca de Aromito" />
                      </items>
                   </Menu>
               </menus>
