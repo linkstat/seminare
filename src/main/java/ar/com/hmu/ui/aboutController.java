@@ -4,9 +4,9 @@ import ar.com.hmu.utils.AppInfo;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import javafx.scene.web.WebView;
-import javafx.scene.web.WebEngine;
 import javafx.scene.image.ImageView;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import org.w3c.dom.*;
@@ -48,7 +48,7 @@ public class aboutController {
         // Establecer el productInfoWebView del Acerca de (y el comportamiento de links)
         WebEngine webEngine = productInfoWebView.getEngine();  // Obtiene el WebEngine
         webEngine.loadContent(AppInfo.PRODUCT_INFO);  // Carga el contenido HTML
-        webEngine.setJavaScriptEnabled(false);  // Deshabilita JavaScript (opcional, pero seguro)
+        webEngine.setJavaScriptEnabled(true);  // Utilizo JavaScript para deshabilitar el menú contextual dentro del WebView
         // Agregar un listener para cuando el contenido haya cargado completamente
         webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue == Worker.State.SUCCEEDED) {
