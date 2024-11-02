@@ -11,11 +11,18 @@ import static ar.com.hmu.utils.ServerStatusUtils.*;
 import ar.com.hmu.utils.PasswordDialogUtils;
 import ar.com.hmu.utils.SessionUtils;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.scene.text.Text;
+
+import java.io.IOException;
 
 /**
  * Controlador para gestionar el comportamiento del menú principal en forma de mosaico.
@@ -38,11 +45,29 @@ public class MainMenuMosaicoController {
     @FXML
     private ImageView agentProfileImage;
     @FXML
+    private Button logoutButton;
+
+    // Elementos del Menú
+    @FXML
+    private Menu agenteMenu;
+    @FXML
+    private Menu jefaturaDeServicioMenu;
+    @FXML
+    private Menu oficinaDePersonalMenu;
+    @FXML
+    private Menu direccionMenu;
+    @FXML
+    private MenuItem changeProfileImageMenuItem;
+    @FXML
     private MenuItem changePasswordMenuItem;
     @FXML
     private MenuItem exitMenuItem;
     @FXML
-    private Button logoutButton;
+    private MenuItem licenciasDeUsoMenuItem;
+    @FXML
+    private MenuItem acercaDeMenuItem;
+
+    // Elementos del Mosaico
     @FXML
     private Text currentConnDateTimeText;
     @FXML
@@ -142,14 +167,18 @@ public class MainMenuMosaicoController {
      * Configura los manejadores de eventos para los componentes del menú y mosaicos.
      */
     private void setupEventHandlers() {
-        // Configura la funcionalidad del botón "Cerrar sesión"
-        logoutButton.setOnAction(event -> handleLogout((Stage) logoutButton.getScene().getWindow()));
-
-        // Configura la funcionalidad del menú: Archivo -> Salir
-        exitMenuItem.setOnAction(event -> System.exit(0));
-
         // Configura la funcionalidad del menú: Archivo -> Modificar contraseña
         changePasswordMenuItem.setOnAction(event -> handleChangePassword());
+        // Configura la funcionalidad del menú: Archivo -> Modificar imagen de perfil
+        changeProfileImageMenuItem.setOnAction(event -> handleAcercaDeAromito());
+        // Configura la funcionalidad del botón "Cerrar sesión"
+        logoutButton.setOnAction(event -> handleLogout((Stage) logoutButton.getScene().getWindow()));
+        // Configura la funcionalidad del menú: Archivo -> Salir
+        exitMenuItem.setOnAction(event -> System.exit(0));
+        // Configura la funcionalidad del menú: Ayuda -> Licencias de uso
+        licenciasDeUsoMenuItem.setOnAction(event -> handleLicenciasDeUso());
+        // Configura la funcionalidad del menú: Ayuda -> Acerca de
+        acercaDeMenuItem.setOnAction(event -> handleAcercaDeAromito());
 
         // Configura los mosaicos para mostrar una alerta de "Módulo en construcción"
         aprobacionSolicitudesVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
@@ -189,6 +218,74 @@ public class MainMenuMosaicoController {
      */
     private void showModuleUnderConstructionAlert() {
         AlertUtils.showInfo("Estamos trabajando para Usted\nMódulo en construcción");
+    }
+
+    private void handleLicenciasDeUso() {
+        // Crear y mostrar el diálogo de licencias
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Licencias de Uso");
+        alert.setHeaderText("Información sobre las licencias de uso");
+        String licenciasDeUsoContentText = "Atribuciones de iconos:\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/list\" title=\"list icons\">List icons created by Freepik - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/contact-list\" title=\"contact list icons\">Contact list icons created by Uniconlabs - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/files-and-folders\" title=\"files and folders icons\">Files and folders icons created by zero_wing - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/taking\" title=\"taking icons\">Taking icons created by Chanut-is-Industries - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/list\" title=\"list icons\">List icons created by Uniconlabs - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/time-sheet\" title=\"time sheet icons\">Time sheet icons created by zafdesign - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/spreadsheet\" title=\"spreadsheet icons\">Spreadsheet icons created by Freepik - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/timetable\" title=\"timetable icons\">Timetable icons created by Freepik - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/calendar\" title=\"calendar icons\">Calendar icons created by Freepik - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/timetable\" title=\"timetable icons\">Timetable icons created by monkik - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/personal-information\" title=\"personal information icons\">Personal information icons created by Freepik - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/software-engineer\" title=\"software engineer icons\">Software engineer icons created by Dewi Sari - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/discipline\" title=\"discipline icons\">Discipline icons created by Uniconlabs - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/clock\" title=\"clock icons\">Clock icons created by Freepik - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/missed\" title=\"missed icons\">Missed icons created by Freepik - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/user-interface\" title=\"user interface icons\">User interface icons created by Elzicon - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/no\" title=\"No icons\">No icons created by ekays.dsgn - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/part-time\" title=\"part time icons\">Part time icons created by gravisio - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/absence\" title=\"absence icons\">Absence icons created by Freepik - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/absence\" title=\"absence icons\">Absence icons created by Freepik - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/absence\" title=\"absence icons\">Absence icons created by Freepik - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/overtime\" title=\"overtime icons\">Overtime icons created by Freepik - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/recruitment\" title=\"recruitment icons\">Recruitment icons created by Freepik - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/businessman\" title=\"businessman icons\">Businessman icons created by Vectors Market - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/employment\" title=\"employment icons\">Employment icons created by Freepik - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/seo-report\" title=\"seo report icons\">Seo report icons created by Freepik - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/organization\" title=\"organization icons\">Organization icons created by Freepik - Flaticon</a>\n" +
+                "<a href=\"https://www.flaticon.com/free-icons/family-tree\" title=\"family tree icons\">Family tree icons created by Freepik - Flaticon</a>\n" +
+                "\n";
+        alert.setContentText(licenciasDeUsoContentText);
+        // Cambiar el texto del botón "OK" a "Aceptar"
+        ((Button) alert.getDialogPane().lookupButton(ButtonType.OK)).setText("Aceptar");
+
+        alert.showAndWait();
+    }
+
+    private void handleAcercaDeAromito() {
+        try {
+            // Cargar el FXML de la ventana "Acerca de"
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ar/com/hmu/ui/about.fxml"));
+            Parent root = loader.load();
+
+            // Crear una nueva ventana (Stage)
+            Stage stage = new Stage();
+            stage.setTitle("Acerca de Aromito :: Sistema de Gestión Hospitalario HMU");
+            stage.initModality(Modality.APPLICATION_MODAL); // Bloquear la ventana principal hasta que se cierre esta
+            stage.setResizable(false);
+            // Establecer el ícono de la aplicación
+            stage.getIcons().add(new Image(getClass().getResourceAsStream("app-icon.png")));
+
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+
+            // Mostrar la ventana
+            stage.showAndWait();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            AlertUtils.showErr("Error al cargar la ventana 'Acerca de':\n" + e.getMessage());
+        }
     }
 
 }

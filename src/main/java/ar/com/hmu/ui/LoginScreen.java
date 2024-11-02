@@ -9,6 +9,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import java.util.Objects;
@@ -35,6 +36,10 @@ public class LoginScreen extends Application {
     @Override
     public void start(Stage primaryStage) {
         try {
+            // Cargar las fuentes personalizadas
+            Font.loadFont(getClass().getResourceAsStream("/fonts/pristina.ttf"), 10);
+            Font.loadFont(getClass().getResourceAsStream("/fonts/BarlowCondensed-Regular.ttf"), 10);
+
             // Configurar servicios necesarios
             //LoginService loginService = initializeLoginService();
             AppConfigReader appConfigReader = new AppConfigReader();

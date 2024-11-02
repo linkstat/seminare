@@ -160,5 +160,19 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
         }
     }
 
+    public void updateProfileImage(long cuil, byte[] imageBytes) throws SQLException {
+        String query = "UPDATE Usuario SET profile_image = ? WHERE cuil = ?";
+
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setBytes(1, imageBytes);
+            stmt.setLong(2, cuil);
+            int rowsUpdated = stmt.executeUpdate();
+            if (rowsUpdated == 0) {
+                throw new SQLException("No se pudo actualizar la imagen de perfil; el usuario con CUIL " + cuil + " no existe.");
+            }
+        }
+    }
+
 
 }
