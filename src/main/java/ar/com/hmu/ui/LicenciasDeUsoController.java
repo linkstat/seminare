@@ -5,64 +5,50 @@ import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-import org.w3c.dom.*;
-import org.w3c.dom.events.*;
-import java.awt.Desktop;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.events.Event;
+import org.w3c.dom.events.EventListener;
+import org.w3c.dom.events.EventTarget;
+
+import java.awt.*;
 import java.net.URI;
 
-public class aboutController {
+public class LicenciasDeUsoController {
     @FXML
     private ImageView logoImageView;
-
-    @FXML
-    private Label versionLabel;
-
-    @FXML
-    private Label buildLabel;
-
-    @FXML
-    private Label dateLabel;
-
-    @FXML
-    private WebView productInfoWebView;
 
     @FXML
     private Text titleText;
 
     @FXML
-    private Text subtitleText;
-
-    @FXML
     private Text descriptionText;
 
     @FXML
+    private WebView licenceInfoWebView;
+
+    @FXML
     public void initialize() {
-        // Los siguientes valores los establecimos por defecto en el fxml, pero luego vinculamos los elementos gráficos para que puedan ser seteados desde el controlador
+        // Establecer los valores de las etiquetas utilizando las constantes
 
         titleText.setText("Aromito");
-        titleText.setFont(Font.font("pristina", 72));
+        titleText.setFont(javafx.scene.text.Font.font("pristina", 72));
 
-        subtitleText.setText("Sistema de Gestión de Ausentismo Hospitalario");
-        subtitleText.setFont(Font.font("Barlow Condensed", 26));
-
-        descriptionText.setText("Solución especializada para la Administración de novedades");
-        descriptionText.setFont(Font.font("Barlow Condensed", 19));
+        descriptionText.setText("Este software hace uso de los siguientes elementos externos");
+        descriptionText.setFont(Font.font("Barlow Condensed", 18));
 
         // Opcionalmente, también se podría setear la imagen del logo (pero usamos la que se estableció por defecto en el fxml)
         // logoImageView.setImage(new Image(getClass().getResourceAsStream("mosaic_default_image.png")));
 
-        // Establecer los valores de las etiquetas utilizando las constantes
-        versionLabel.setText("Versión: " + AppInfo.VERSION);
-        buildLabel.setText("Build: " + AppInfo.BUILD);
-        dateLabel.setText("Fecha: " + AppInfo.PRODUCTION_DATE);
-
         // Establecer el productInfoWebView del Acerca de (y el comportamiento de links)
-        WebEngine webEngine = productInfoWebView.getEngine();  // Obtiene el WebEngine
-        webEngine.loadContent(AppInfo.PRODUCT_INFO);  // Carga el contenido HTML
+        WebEngine webEngine = licenceInfoWebView.getEngine();  // Obtiene el WebEngine
+        webEngine.loadContent(AppInfo.LICENSES_OF_USE);  // Carga el contenido HTML
         webEngine.setJavaScriptEnabled(true);  // Utilizo JavaScript para deshabilitar el menú contextual dentro del WebView
         // Agregar un listener para cuando el contenido haya cargado completamente
         webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {

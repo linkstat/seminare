@@ -65,13 +65,13 @@
    <top>
       <VBox BorderPane.alignment="CENTER_LEFT">
          <children>
-            <MenuBar>
+            <MenuBar fx:id="menuBar">
               <menus>
                 <Menu mnemonicParsing="false" text="Archivo">
                   <items>
                     <MenuItem fx:id="changePasswordMenuItem" mnemonicParsing="false" text="Modificar contraseña" />
                         <MenuItem fx:id="changeProfileImageMenuItem" mnemonicParsing="false" text="Modificar imagen de perfil" />
-                        <MenuItem mnemonicParsing="false" text="Cerrar sesión" />
+                        <MenuItem fx:id="logoutMenuItem" mnemonicParsing="false" text="Cerrar sesión" />
                         <MenuItem fx:id="exitMenuItem" mnemonicParsing="false" text="Salir" />
                   </items>
                 </Menu>
