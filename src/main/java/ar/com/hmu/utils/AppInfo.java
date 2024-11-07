@@ -11,6 +11,7 @@ public class AppInfo {
             + "        document.addEventListener('contextmenu', function(e) { e.preventDefault(); });"
             + "    </script>"
             + "</head>"
+            + "<body style=\"background-color:GAINSBORO;\">"
             + "<h3>Informaci&oacute;n del Producto</h3>"
             + "<div>"
             + "    <blockquote>"
@@ -38,6 +39,7 @@ public class AppInfo {
             + "</ul>"
             + "<p>&nbsp;</p>"
             + "<div style=\"text-align: right;\"><em>Copyleft&nbsp;&copy; </em>2024 - desarrollado bajo licencia <a href=\"https://www.gnu.org/licenses/lgpl-3.0.html#license-text\">LGPLv3. </a></div>"
+            + "</body>"
             + "</html>";
 
     public static final String LICENSES_OF_USE = "<html>"
@@ -46,6 +48,7 @@ public class AppInfo {
             + "        document.addEventListener('contextmenu', function(e) { e.preventDefault(); });"
             + "    </script>"
             + "</head>"
+            + "<body style=\"background-color:GAINSBORO;\">"
             + "<h3><span style=\"color: #333333;\">Atribuci&oacute;n de im&aacute;genes:</span></h3>"
             + "<p>"
             + "    <span style=\"color: #333333;\">"
@@ -53,8 +56,6 @@ public class AppInfo {
             + "    </span>"
             + "</p>"
             + "<ul>"
-            + "    <li><a title=\"absence icons\" href=\"https://www.flaticon.com/free-icons/absence\">Absence icons created by Freepik - Flaticon</a></li>"
-            + "    <li><a title=\"absence icons\" href=\"https://www.flaticon.com/free-icons/absence\">Absence icons created by Freepik - Flaticon</a></li>"
             + "    <li><a title=\"absence icons\" href=\"https://www.flaticon.com/free-icons/absence\">Absence icons created by Freepik - Flaticon</a></li>"
             + "    <li><a title=\"calendar icons\" href=\"https://www.flaticon.com/free-icons/calendar\">Calendar icons created by Freepik - Flaticon</a></li>"
             + "    <li><a title=\"clock icons\" href=\"https://www.flaticon.com/free-icons/clock\">Clock icons created by Freepik - Flaticon</a></li>"
@@ -88,7 +89,10 @@ public class AppInfo {
             + "<ul>"
             + "    <li><a href=\"https://html5-editor.net/\">HTML Editor - Online Web Content Composer</a></li>"
             + "    <li><a href=\"https://webformatter.com/html\">HTML Formatter</a></li>"
+            + "    <li><a href=\"https://www.w3schools.com/html/\">W3Schools HTML Tutorial</a></li>"
+            + "    <li><a href=\"https://openjfx.io/javadoc/23/javafx.graphics/javafx/scene/paint/Color.html\">Color (JavaFX 23)</a></li>"
             + "</ul>"
             + "<p>&nbsp;</p>"
+            + "</body>"
             + "</html>";
 }

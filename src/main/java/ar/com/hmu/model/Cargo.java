@@ -10,46 +10,51 @@ import java.util.UUID;
 public class Cargo {
 
 	private UUID id;
-	private Agrupacion agrupacion;
-	private String descripcion;
 	private Integer numero;
+	private String descripcion;
+	private Agrupacion agrupacion;
 
-	public Cargo(UUID id, int numero, String descripcion, Agrupacion agrupacion) {
+	public Cargo(UUID id, Integer numero, String descripcion, Agrupacion agrupacion) {
 		this.id = id;
 		this.numero = numero;
 		this.descripcion = descripcion;
 		this.agrupacion = agrupacion;
 	}
 
-	public Integer getNumero() {
-		return numero;
+	// Getters
+
+	public UUID getId() {
+		return id;
 	}
 
-	public void setNumero(Integer numero) {
-		this.numero = numero;
+	public Integer getNumero() {
+		return numero;
 	}
 
 	public String getDescripcion() {
 		return descripcion;
 	}
 
-	public void setDescripcion(String descripcion) {
-		this.descripcion = descripcion;
-	}
-
 	public Agrupacion getAgrupacion() {
 		return agrupacion;
+	}
+
+	// Setters
+
+	public void setId(UUID id) {
+		this.id = id;
+	}
+
+	public void setNumero(Integer numero) {
+		this.numero = numero;
+	}
+
+	public void setDescripcion(String descripcion) {
+		this.descripcion = descripcion;
 	}
 
 	public void setAgrupacion(Agrupacion agrupacion) {
 		this.agrupacion = agrupacion;
 	}
 
-	/**
-	 * 
-	 * @param cargo
-	 */
-	public void setCargo(String cargo){
-
-	}
-}//end Cargo
+}

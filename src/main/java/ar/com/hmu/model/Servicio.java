@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * @author Pablo Alejandro Hamann
- * @version 1.0
-  */
+ * Clase para representar Servicios (esto es: áreas, oficinas)
+ *
+ */
 public class Servicio {
 
 	private UUID id;
@@ -17,30 +17,22 @@ public class Servicio {
 	private List<Empleado> empleados;
 	private List<DiagramaDeServicio> diagramas;
 
-	public Servicio(){
-
+	public Servicio(UUID id, String nombre, Agrupacion agrupacion, List<Empleado> empleados, List<DiagramaDeServicio> diagramas) {
+		this.id = id;
+		this.nombre = nombre;
+		this.agrupacion = agrupacion;
+		this.empleados = empleados;
+		this.diagramas = diagramas;
 	}
 
-	// Getters y Setters
-
-	public UUID getId() {
-		return id;
-	}
+	// Setters
 
 	public void setId(UUID id) {
 		this.id = id;
 	}
 
-	public String getNombre() {
-		return nombre;
-	}
-
 	public void setNombre(String nombre) {
 		this.nombre = nombre;
-	}
-
-	public Agrupacion getAgrupacion() {
-		return agrupacion;
 	}
 
 	public void setAgrupacion(Agrupacion agrupacion) {
@@ -51,17 +43,32 @@ public class Servicio {
 		this.empleados = empleados;
 	}
 
-	public List<DiagramaDeServicio> getDiagramas() {
-		return diagramas;
-	}
-
 	public void setDiagramas(List<DiagramaDeServicio> diagramas) {
 		this.diagramas = diagramas;
 	}
 
+	// Getters
+
+	public UUID getId() {
+		return id;
+	}
+
+	public String getNombre() {
+		return nombre;
+	}
+
+	public Agrupacion getAgrupacion() {
+		return agrupacion;
+	}
+
+	public List<DiagramaDeServicio> getDiagramas() {
+		return diagramas;
+	}
+
+
 	/**
 	 * 
-	 * @param empleado
+	 * Método para agregar empleado a un servicio
 	 */
 	public void addEmpleado(Empleado empleado){
 
