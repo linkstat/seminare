@@ -180,9 +180,9 @@ CREATE TABLE Cargo (
     calle VARCHAR(255) NOT NULL,
     numeracion INT,
     barrio VARCHAR(255),
-    localidad VARCHAR(255),
     ciudad VARCHAR(255),
-    provincia VARCHAR(255)
+    localidad VARCHAR(255),
+    provincia VARCHAR(255),
 );
 
 /* Tabla Usuarios
@@ -567,7 +567,30 @@ CREATE TABLE RegistroJornadaLaboral (
 CREATE INDEX idx_empleado_jefatura ON Empleado (jefaturaID);
 CREATE INDEX idx_servicio_direccion ON Servicio (direccionID);
 
-/*
+
+/** 
+ * Creación de índices en Domicilio
+ * Agregamos índices en los elementos de búsquedas rápidas frecuentes.
+ */
+ ALTER TABLE Usuario
+	ADD INDEX `idx_calle` (`calle`),
+	ADD INDEX `idx_barrio` (`barrio`),
+	ADD INDEX `idx_ciudad` (`ciudad`),
+	ADD INDEX `idx_localidad` (`localidad`);
+
+
+/** 
+ * Creación de índices en Usuario
+ * Agregamos índices en los elementos de búsquedas rápidas frecuentes.
+ */
+ ALTER TABLE Usuario
+	ADD INDEX `idx_apellidos`(`apellidos`),
+	ADD INDEX `idx_nombres`(`nombres`),
+	ADD UNIQUE INDEX `idx_mail`(`mail`),
+	ADD UNIQUE INDEX `idx_tel`(`tel`);
+
+
+/**
  * Creación de un usuario propietario para la BD (acceso localhost unicamente)
  * user: aromito
  * pass: aromitoSuperSecretDBPass

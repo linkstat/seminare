@@ -49,103 +49,55 @@ public abstract class Usuario {
 		this.cargo = cargo;
 	}
 
-	// Getters y Setters
+	// Getters
+
 	public UUID getId() {
 		return id;
-	}
-
-	public void setId(UUID id) {
-		this.id = id;
 	}
 
 	public LocalDate getFechaAlta() {
 		return fechaAlta;
 	}
 
-	public void setFechaAlta(LocalDate fechaAlta) {
-		this.fechaAlta = fechaAlta;
-	}
-
 	public long getCuil() {
 		return cuil;
-	}
-
-	public void setCuil(long cuil) {
-		this.cuil = cuil;
 	}
 
 	public String getApellidos() {
 		return apellidos;
 	}
 
-	public void setApellidos(String apellidos) {
-		this.apellidos = apellidos;
-	}
-
 	public String getNombres() {
 		return nombres;
 	}
 
-	public void setNombres(String nombres) {
-		this.nombres = nombres;
+	public String getNombreCompleto() {
+		return nombres + " " + apellidos;
 	}
 
 	public Sexo getSexo() {
 		return sexo;
 	}
 
-	public void setSexo(Sexo sexo) {
-		this.sexo = sexo;
-	}
-
-	public boolean isEstado() {
-		return estado;
-	}
-
-	public void setEstado(boolean estado) {
-		this.estado = estado;
-	}
-
 	public String getMail() {
 		return mail;
-	}
-
-	public void setMail(String mail) {
-		this.mail = mail;
 	}
 
 	public Domicilio getDomicilio() {
 		return domicilio;
 	}
 
-	public void setDomicilio(Domicilio domicilio) {
-		this.domicilio = domicilio;
-	}
-
 	public int getTel() {
 		return tel;
-	}
-
-	public void setTel(int tel) {
-		this.tel = tel;
 	}
 
 	public Cargo getCargo() {
 		return cargo;
 	}
 
-	public void setCargo(Cargo cargo) {
-		this.cargo = cargo;
-	}
-
 	public byte[] getProfileImage() {
 		return profileImage;
 	}
-
-	public void setProfileImage(byte[] profileImage) {
-		this.profileImage = profileImage;
-	}
-
 
 	// Método para obtener la contraseña cifrada (solo para uso interno de la base de datos)
 	/**
@@ -157,6 +109,98 @@ public abstract class Usuario {
 	 */
 	public String getEncryptedPassword() {
 		return this.password;
+	}
+
+	/**
+	 * Obtiene el servicio al que pertenece el usuario.
+	 *
+	 * @return el servicio asociado al usuario.
+	 */
+	public Servicio getServicio() {
+		return servicio;
+	}
+
+	public boolean isEstado() {
+		return estado;
+	}
+
+	/**
+	 * Verifica si la contraseña actual del usuario es la predeterminada.
+	 * La contraseña predeterminada es la que coincide con el número de CUIL del usuario cifrado con BCrypt.
+	 *
+	 * @return true si la contraseña es la predeterminada, false en caso contrario.
+	 */
+	public boolean isDefaultPassword() {
+		// Convertimos el CUIL a cadena de caracteres para comprobar
+		char[] defaultPasswordArray = String.valueOf(this.cuil).toCharArray();
+		try {
+			// Validar la contraseña usando el método actualizado de PasswordUtils
+			return PasswordUtils.validatePassword(defaultPasswordArray, this.password);
+		} finally {
+			// Limpiar la memoria del `char[]` después de usarlo
+			Arrays.fill(defaultPasswordArray, '\0');
+		}
+	}
+
+	// Método para validar la contraseña sin exponerla
+	/**
+	 * Valida si la contraseña proporcionada coincide con la contraseña cifrada almacenada.
+	 *
+	 * @param rawPasswordArray Contraseña en texto plano proporcionada por el usuario.
+	 * @return true si la contraseña coincide, false de lo contrario.
+	 */
+	public boolean validatePassword(char[] rawPasswordArray) {
+		return PasswordUtils.validatePassword(rawPasswordArray, this.password);
+	}
+
+	// Setters
+
+	public void setId(UUID id) {
+		this.id = id;
+	}
+
+	public void setFechaAlta(LocalDate fechaAlta) {
+		this.fechaAlta = fechaAlta;
+	}
+
+	public void setCuil(long cuil) {
+		this.cuil = cuil;
+	}
+
+	public void setApellidos(String apellidos) {
+		this.apellidos = apellidos;
+	}
+
+	public void setNombres(String nombres) {
+		this.nombres = nombres;
+	}
+
+	public void setSexo(Sexo sexo) {
+		this.sexo = sexo;
+	}
+
+	public void setEstado(boolean estado) {
+		this.estado = estado;
+	}
+
+	public void setMail(String mail) {
+		this.mail = mail;
+	}
+
+	public void setDomicilio(Domicilio domicilio) {
+		this.domicilio = domicilio;
+	}
+
+	public void setTel(int tel) {
+		this.tel = tel;
+	}
+
+	public void setCargo(Cargo cargo) {
+		this.cargo = cargo;
+	}
+
+	public void setProfileImage(byte[] profileImage) {
+		this.profileImage = profileImage;
 	}
 
 	// Método para establecer la contraseña desde la base de datos
@@ -174,31 +218,15 @@ public abstract class Usuario {
 		this.password = PasswordUtils.hashPassword(rawPasswordArray);
 	}
 
-	// Método para validar la contraseña sin exponerla
-	/**
-	 * Valida si la contraseña proporcionada coincide con la contraseña cifrada almacenada.
-	 *
-	 * @param rawPasswordArray Contraseña en texto plano proporcionada por el usuario.
-	 * @return true si la contraseña coincide, false de lo contrario.
-	 */
-	public boolean validatePassword(char[] rawPasswordArray) {
-		return PasswordUtils.validatePassword(rawPasswordArray, this.password);
-	}
-
-	/**
-	 * Verifica si la contraseña actual del usuario es la predeterminada.
-	 * La contraseña predeterminada es la que coincide con el número de CUIL del usuario cifrado con BCrypt.
-	 *
-	 * @return true si la contraseña es la predeterminada, false en caso contrario.
-	 */
-	public boolean isDefaultPassword() {
-		// Convertimos el CUIL a cadena de caracteres para comprobar
+	public boolean setDefaultPassword() {
+		// Convertir CUIL a cadena de caracteres
 		char[] defaultPasswordArray = String.valueOf(this.cuil).toCharArray();
 		try {
-			// Validar la contraseña usando el método actualizado de PasswordUtils
-			return PasswordUtils.validatePassword(defaultPasswordArray, this.password);
+			// Establecer la contraseña por defecto cifrada (solo actualiza el objeto Usuario)
+			setPassword(defaultPasswordArray);
+			return true; // Si el cambio es exitoso, retorna true
 		} finally {
-			// Limpiar la memoria del `char[]` después de usarlo
+			// Limpiar los array con la contraseña por defecto para que no permanezca en memoria
 			Arrays.fill(defaultPasswordArray, '\0');
 		}
 	}
@@ -245,17 +273,6 @@ public abstract class Usuario {
 		}
 	}
 
-
-
-	/**
-	 * Obtiene el servicio al que pertenece el usuario.
-	 *
-	 * @return el servicio asociado al usuario.
-	 */
-	public Servicio getServicio() {
-		return servicio;
-	}
-
 	/**
 	 * Establece el servicio al que pertenece el usuario.
 	 *
@@ -289,7 +306,4 @@ public abstract class Usuario {
 		//void
 	}
 
-	public String getNombreCompleto() {
-		return nombres + " " + apellidos;
-	}
 }
