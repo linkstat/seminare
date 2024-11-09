@@ -17,6 +17,15 @@ public class Servicio {
 	private List<Empleado> empleados;
 	private List<DiagramaDeServicio> diagramas;
 
+	public Servicio() {
+	}
+
+	public Servicio(UUID id, String nombre, Agrupacion agrupacion) {
+		this.id = id;
+		this.nombre = nombre;
+		this.agrupacion = agrupacion;
+	}
+
 	public Servicio(UUID id, String nombre, Agrupacion agrupacion, List<Empleado> empleados, List<DiagramaDeServicio> diagramas) {
 		this.id = id;
 		this.nombre = nombre;
