@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AnalysisUIOptions">
+    <option name="ANALYZE_TEST_SOURCES" value="false" />
+  </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="11883b3d-c448-46b8-8081-3ebbff94fc58" name="Changes" comment="Renombradas algunas clases que manejan la configuración de la aplicación, de forma que sean más abarcativas, pensando que  en un futuro podría tener otras configuraciones más allá de las referidas a la BD" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Enum" />
+        <option value="package-info" />
+        <option value="FxmlFile" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/src/main/resources/config.properties" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="ProjectErrors" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0
+}</component>
+  <component name="ProjectId" id="2nBTbw27u0fyk0AiJ2K5SevvFDv" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.Aromito.executor": "Run",
+    "Downloaded.Files.Path.Enabled": "false",
+    "Maven.Ejecutar JavaFX.executor": "Run",
+    "Repository.Attach.Annotations": "false",
+    "Repository.Attach.JavaDocs": "false",
+    "Repository.Attach.Sources": "false",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "testing",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/amadeus/Downloads/VisualVMLauncher-1.23.1-IJ2023.3.zip",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "onboarding.tips.debug.path": "C:/Users/amadeus/OneDrive/UES21/seminare/src/Main.java",
+    "project.structure.last.edited": "Libraries",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "preferences.toDoOptions",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CreateClassDialog.RecentsKey">
+      <recent name="ar.com.hmu.model" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\amadeus\OneDrive\UES21\seminare\src\main\resources" />
+      <recent name="C:\Users\amadeus\OneDrive\UES21\seminare\src\main\java\ar\com\hmu\config" />
+      <recent name="C:\Users\amadeus\OneDrive\UES21\seminare\src\main\resources\ar\com\hmu\ui" />
+      <recent name="C:\Users\amadeus\OneDrive\UES21\seminare\src\main\java" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="ar.com.hmu.ui" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="Aromito" type="Application" factoryName="Application">
+      <option name="ALTERNATIVE_JRE_PATH" value="openjdk-23" />
+      <envs>
+        <env name="JAVAFX_SDK" value="&quot;$PROJECT_DIR$/../../../../../Portables/javafx-sdk-23.0.1&quot;" />
+      </envs>
+      <option name="MAIN_CLASS_NAME" value="ar.com.hmu.ui.LoginScreen" />
+      <module name="seminare" />
+      <option name="VM_PARAMETERS" value="--module-path $PROJECT_DIR$/../../../../../Portables/javafx-sdk-23.0.1/lib --add-modules javafx.controls,javafx.fxml,javafx.web" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-28b599e66164-intellij.indexing.shared.core-IU-242.23339.11" />
+        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-IU-242.23339.11" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="11883b3d-c448-46b8-8081-3ebbff94fc58" name="Changes" comment="" />
+      <created>1728445547327</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1728445547327</updated>
+      <workItem from="1728445548106" duration="2916000" />
+      <workItem from="1728678487323" duration="10371000" />
+      <workItem from="1728714094599" duration="576000" />
+      <workItem from="1728714686850" duration="1478000" />
+      <workItem from="1728843213620" duration="8409000" />
+      <workItem from="1728935555514" duration="3613000" />
+      <workItem from="1729007077477" duration="13329000" />
+      <workItem from="1729100238234" duration="16279000" />
+      <workItem from="1729177099583" duration="863000" />
+      <workItem from="1729177993788" duration="1253000" />
+      <workItem from="1729179325700" duration="5722000" />
+      <workItem from="1729388868852" duration="7465000" />
+      <workItem from="1729425775477" duration="8538000" />
+      <workItem from="1729515687061" duration="6597000" />
+      <workItem from="1729549757465" duration="2471000" />
+      <workItem from="1729552841849" duration="46000" />
+      <workItem from="1729555051860" duration="6383000" />
+      <workItem from="1729628375113" duration="9916000" />
+      <workItem from="1729685969431" duration="10837000" />
+      <workItem from="1729701190325" duration="4089000" />
+      <workItem from="1729718185741" duration="351000" />
+      <workItem from="1729718616687" duration="5630000" />
+      <workItem from="1729730520453" duration="15719000" />
+      <workItem from="1729748242399" duration="337000" />
+      <workItem from="1729812156730" duration="2274000" />
+      <workItem from="1729865333307" duration="2362000" />
+      <workItem from="1729906288416" duration="10779000" />
+      <workItem from="1729961106502" duration="2099000" />
+      <workItem from="1729963298578" duration="3097000" />
+      <workItem from="1729988944331" duration="2796000" />
+      <workItem from="1730039627638" duration="6453000" />
+      <workItem from="1730070178404" duration="10043000" />
+      <workItem from="1730083927025" duration="47000" />
+      <workItem from="1730084507402" duration="24754000" />
+      <workItem from="1730109628087" duration="1909000" />
+      <workItem from="1730111854450" duration="305000" />
+      <workItem from="1730112330117" duration="619000" />
+      <workItem from="1730157594650" duration="814000" />
+      <workItem from="1730248582844" duration="12939000" />
+      <workItem from="1730323588665" duration="2919000" />
+      <workItem from="1730329142230" duration="195000" />
+      <workItem from="1730330174147" duration="10628000" />
+      <workItem from="1730346183566" duration="3899000" />
+      <workItem from="1730370310758" duration="2737000" />
+      <workItem from="1730373109413" duration="686000" />
+      <workItem from="1730391229351" duration="8442000" />
+      <workItem from="1730404143923" duration="4071000" />
+      <workItem from="1730414620857" duration="2076000" />
+      <workItem from="1730421379422" duration="6895000" />
+      <workItem from="1730432195589" duration="334000" />
+      <workItem from="1730482453969" duration="16587000" />
+      <workItem from="1730522151291" duration="871000" />
+      <workItem from="1730523063117" duration="1988000" />
+      <workItem from="1730525326568" duration="1354000" />
+      <workItem from="1730526894026" duration="2303000" />
+      <workItem from="1730529855531" duration="2205000" />
+      <workItem from="1730571451785" duration="11406000" />
+      <workItem from="1730740292522" duration="15940000" />
+      <workItem from="1730839066577" duration="3570000" />
+      <workItem from="1731176330922" duration="582000" />
+      <workItem from="1731176940592" duration="268000" />
+      <workItem from="1731177287982" duration="331000" />
+      <workItem from="1731177860217" duration="255000" />
+      <workItem from="1731178128318" duration="390000" />
+      <workItem from="1731178533228" duration="564000" />
+      <workItem from="1731179565441" duration="244000" />
+      <workItem from="1731180168414" duration="319000" />
+    </task>
+    <task id="LOCAL-00001" summary="archivo de configuracion deprecado en favor de formato YAML, más reciente">
+      <option name="closed" value="true" />
+      <created>1729119185627</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1729119185627</updated>
+    </task>
+    <task id="LOCAL-00002" summary="archivo de configuración en formato YAML (reemplaza opción antigua usada comúnmente en proyectos Java legados)">
+      <option name="closed" value="true" />
+      <created>1729119239121</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1729119239121</updated>
+    </task>
+    <task id="LOCAL-00003" summary="clase encargada de leer el archivo de configuración YAML">
+      <option name="closed" value="true" />
+      <created>1729119285393</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1729119285393</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Clase POJO para la Configuración de la Base de Datos. Se corresponde con la estructura de los datos YAML para poder mapear la configuración">
+      <option name="closed" value="true" />
+      <created>1729119413679</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1729119413679</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Configuración de Maven. Se agregaron dependencias para SnakeYAML">
+      <option name="closed" value="true" />
+      <created>1729119449337</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1729119449337</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Clase que gestiona la lectura del archivo de configuración">
+      <option name="closed" value="true" />
+      <created>1729119494971</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1729119494971</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="archivo de configuracion deprecado en favor de formato YAML, más reciente" />
+    <MESSAGE value="archivo de configuración en formato YAML (reemplaza opción antigua usada comúnmente en proyectos Java legados)" />
+    <MESSAGE value="clase encargada de leer el archivo de configuración YAML" />
+    <MESSAGE value="Clase POJO para la Configuración de la Base de Datos. Se corresponde con la estructura de los datos YAML para poder mapear la configuración" />
+    <MESSAGE value="Configuración de Maven. Se agregaron dependencias para SnakeYAML" />
+    <MESSAGE value="Clase que gestiona la lectura del archivo de configuración" />
+    <MESSAGE value="Renombradas algunas clases que manejan la configuración de la aplicación, de forma que sean más abarcativas, pensando que  en un futuro podría tener otras configuraciones más allá de las referidas a la BD" />
+    <option name="LAST_COMMIT_MESSAGE" value="Renombradas algunas clases que manejan la configuración de la aplicación, de forma que sean más abarcativas, pensando que  en un futuro podría tener otras configuraciones más allá de las referidas a la BD" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/ar/com/hmu/repository/UsuarioRepository.java</url>
+          <line>116</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>

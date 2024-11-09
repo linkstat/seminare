@@ -8,6 +8,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="gestion-ausentismo" />
         <module name="aromito" />
+        <module name="seminare" />
       </profile>
     </annotationProcessing>
   </component>
