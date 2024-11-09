@@ -5,7 +5,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
-import ar.com.hmu.model.*;
+import javafx.util.StringConverter;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -16,6 +16,9 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
+import ar.com.hmu.model.*;
+import ar.com.hmu.utils.ImageUtils;
 
 public class AbmUsuariosController implements Initializable {
 
@@ -113,14 +116,18 @@ public class AbmUsuariosController implements Initializable {
     private void cargarCargos() {
         // Aquí se deberían cargar los cargos desde la base de datos o fuente de datos
         cargosList.add(new Cargo(UUID.randomUUID(), 1200, "Agrupamiento profesional", Agrupacion.SERVICIO));
-        cargosList.add(new Cargo(UUID.randomUUID(), 0513, "Administrativo Nivel 1", Agrupacion.ADMINISTRATIVO));
+        cargosList.add(new Cargo(UUID.randomUUID(), 513, "Administrativo Nivel 1", Agrupacion.ADMINISTRATIVO));
     }
 
     // Método para cargar servicios (simulado)
     private void cargarServicios() {
         // Aquí se deberían cargar los servicios desde la base de datos o fuente de datos
-        serviciosList.add(new Servicio(1, "Servicio 1"));
-        serviciosList.add(new Servicio(2, "Servicio 2"));
+        serviciosList.add(new Servicio(UUID.randomUUID(), "Servicio médico 1", Agrupacion.MEDICO));
+        serviciosList.add(new Servicio(UUID.randomUUID(), "Servicio médico 2", Agrupacion.MEDICO));
+        serviciosList.add(new Servicio(UUID.randomUUID(), "Oficina administrativa 1", Agrupacion.ADMINISTRATIVO));
+        serviciosList.add(new Servicio(UUID.randomUUID(), "Oficina administrativa 2", Agrupacion.ADMINISTRATIVO));
+        serviciosList.add(new Servicio(UUID.randomUUID(), "Informática", Agrupacion.TECNICO));
+        serviciosList.add(new Servicio(UUID.randomUUID(), "Dirección", Agrupacion.PLANTAPOLITICA));
     }
 
     // Método para filtrar usuarios en el ComboBox de búsqueda
@@ -314,13 +321,14 @@ public class AbmUsuariosController implements Initializable {
         mailTextField.setText(usuario.getMail());
         telTextField.setText(String.valueOf(usuario.getTel()));
         sexoComboBox.getSelectionModel().select(usuario.getSexo());
-        // Cargar imagen
-        if (usuario.getProfileImage() != null) {
-            imagenPerfilImageView.setImage(usuario.getProfileImage());
+        // Cargar imagen de perfil
+        Image image = ImageUtils.byteArrayToImage(usuario.getProfileImage());
+        if (image != null) {
+            imagenPerfilImageView.setImage(image);
         } else {
             imagenPerfilImageView.setImage(imagenPerfilOriginal);
         }
-        // Cargar otros campos...
+
     }
 
     // Método para crear un nuevo usuario desde los datos del formulario

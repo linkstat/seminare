@@ -1,10 +1,12 @@
 package ar.com.hmu.model;
 
-import ar.com.hmu.utils.PasswordUtils;
-import ar.com.hmu.repository.UsuarioRepository;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.UUID;
+
+import ar.com.hmu.utils.PasswordUtils;
+import static ar.com.hmu.utils.StringUtils.normalizar;
+import ar.com.hmu.repository.UsuarioRepository;
 
 /**
  * @author Pablo Alejandro Hamann
@@ -304,6 +306,36 @@ public abstract class Usuario {
 
 	public void solicitarFC(){
 		//void
+	}
+
+	/**
+	 * Método que verifica si el usuario coincide con el texto de búsqueda.
+	 * Compara el texto con CUIL, apellidos, nombres, mail y teléfono.
+	 *
+	 * @param textoBuscado El texto ingresado por el usuario para buscar.
+	 * @return true si hay coincidencia en alguno de los campos, false en caso contrario.
+	 */
+	public boolean coincideCon(String textoBuscado) {
+		if (textoBuscado == null || textoBuscado.isEmpty()) {
+			return false;
+		}
+
+		// Normalizar el texto buscado
+		textoBuscado = normalizar(textoBuscado);
+
+		// Normalizar los campos del usuario
+		String cuilStr = String.valueOf(cuil);
+		String telStr = String.valueOf(tel);
+		String apellidosNorm = normalizar(apellidos);
+		String nombresNorm = normalizar(nombres);
+		String mailNorm = normalizar(mail);
+
+		// Verificar coincidencias
+		return cuilStr.contains(textoBuscado)
+				|| (apellidos != null && apellidos.toLowerCase().contains(textoBuscado))
+				|| (nombres != null && nombres.toLowerCase().contains(textoBuscado))
+				|| (mail != null && mail.toLowerCase().contains(textoBuscado))
+				|| telStr.contains(textoBuscado);
 	}
 
 }
