@@ -29,6 +29,12 @@
             <artifactId>javafx-web</artifactId>
             <version>23.0.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-swing</artifactId>
+            <version>23.0.1</version>
+            <classifier>win</classifier>
+        </dependency>
         <!-- MariaDB JDBC Dependencies -->
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
@@ -50,8 +56,8 @@
     </dependencies>
     <repositories>
         <repository>
-            <id>gluon</id>
-            <url>https://nexus.gluonhq.com/nexus/content/repositories/releases/</url>
+            <id>central</id>
+            <url>https://repo1.maven.org/maven2/</url>
         </repository>
     </repositories>
 
