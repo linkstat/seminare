@@ -6,7 +6,6 @@ import java.util.UUID;
 
 import ar.com.hmu.utils.PasswordUtils;
 import static ar.com.hmu.utils.StringUtils.normalizar;
-import ar.com.hmu.repository.UsuarioRepository;
 
 /**
  * @author Pablo Alejandro Hamann
@@ -14,8 +13,6 @@ import ar.com.hmu.repository.UsuarioRepository;
  */
 public abstract class Usuario {
 
-	public static final String NOMBRE_SERVICIO_DIRECCION = "Dirección";
-	public static final String NOMBRE_SERVICIO_PERSONAL = "Personal";
 	private UUID id;
 	private LocalDate fechaAlta;
 	private long cuil;
@@ -25,7 +22,7 @@ public abstract class Usuario {
 	private boolean estado;
 	private String mail;
 	private Domicilio domicilio;
-	private int tel;
+	private long tel;
 	private Cargo cargo;
 	private String password;
 	private byte[] profileImage;
@@ -89,7 +86,7 @@ public abstract class Usuario {
 		return domicilio;
 	}
 
-	public int getTel() {
+	public long getTel() {
 		return tel;
 	}
 
@@ -193,7 +190,7 @@ public abstract class Usuario {
 		this.domicilio = domicilio;
 	}
 
-	public void setTel(int tel) {
+	public void setTel(long tel) {
 		this.tel = tel;
 	}
 
@@ -290,7 +287,7 @@ public abstract class Usuario {
 
 	/**
 	 * Genera un tipo de Reporte
-	 * @param reporte
+	 * @param reporte un objeto reporte
 	 */
 	public void generarReporte(int reporte){
 		//void
