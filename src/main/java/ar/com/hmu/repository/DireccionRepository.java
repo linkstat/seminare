@@ -1,13 +1,17 @@
 package ar.com.hmu.repository;
 
-import ar.com.hmu.model.Usuario;
-import ar.com.hmu.model.Direccion;
-import ar.com.hmu.model.Servicio;
+import java.util.UUID;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.UUID;
+
+import ar.com.hmu.constants.NombreServicio;
+import ar.com.hmu.model.Direccion;
+import ar.com.hmu.model.Servicio;
+import ar.com.hmu.model.Usuario;
+
 
 public class DireccionRepository {
 
@@ -28,7 +32,7 @@ public class DireccionRepository {
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
-            preparedStatement.setString(1, Usuario.NOMBRE_SERVICIO_DIRECCION);
+            preparedStatement.setString(1, NombreServicio.DIRECCION);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
                     Servicio servicio = new Servicio();

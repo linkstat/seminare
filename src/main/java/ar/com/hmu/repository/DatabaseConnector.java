@@ -2,6 +2,8 @@ package ar.com.hmu.repository;
 
 import ar.com.hmu.config.AppConfigReader;
 import ar.com.hmu.config.AppConfig;
+import ar.com.hmu.exceptions.DatabaseAuthenticationException;
+import ar.com.hmu.exceptions.DatabaseConnectionException;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -64,7 +66,15 @@ public class DatabaseConnector {
         }
 
         String url = String.format("jdbc:mariadb://%s:%d/%s", dbHost, dbPort, dbName);
-        return DriverManager.getConnection(url, dbUser, dbPass);
+        try {
+            return DriverManager.getConnection(url, dbUser, dbPass);
+        } catch (SQLException e) {
+            if (e.getMessage().contains("Unable to obtain Principal Name for authentication")) {
+                throw new DatabaseAuthenticationException("Error de autenticación: No se pudo autenticar con el servidor de base de datos " +dbType + " en " +dbHost +":" +dbPort +" con el usuario " +dbName +". Verificar credenciales en el archivo de configuración YAML.", e);
+            } else {
+                throw new DatabaseConnectionException("Error de conexión: No se pudo conectar a la base de datos. Verifica el estado de la red (el servidor es " +dbHost +":" +dbPort +"), y los parámetros de conexión (el usuario es: " +dbName +") en el archivo de configuración YAML.", e);
+            }
+        }
     }
 
     // Métodos para verificar estado de conectividad contra el servidor //
