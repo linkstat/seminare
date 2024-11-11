@@ -6,6 +6,7 @@ import ar.com.hmu.repository.DatabaseConnector;
 import ar.com.hmu.repository.UsuarioRepository;
 import ar.com.hmu.service.UsuarioService;
 import ar.com.hmu.utils.AlertUtils;
+import ar.com.hmu.utils.AppInfo;
 import ar.com.hmu.utils.PasswordDialogUtils;
 import ar.com.hmu.utils.SessionUtils;
 import static ar.com.hmu.utils.ServerStatusUtils.*;
@@ -127,7 +128,7 @@ public class LoginController {
      * verificaciones necesarias para el estado del servidor.
      */
     public void postInitialize() {
-        updateServerStatus(databaseConnector, serverStatusLabel, serverStatusIcon); // Llamar al método de utilería para verificar el estado del servidor al iniciar la ventana.
+        updateServerStatusUI(databaseConnector, serverStatusLabel, serverStatusIcon); // Llamar al método de utilería para verificar el estado del servidor al iniciar la ventana.
         if (databaseConnector == null || loginService == null) {
             throw new IllegalStateException("Las dependencias no han sido configuradas correctamente.");
         }
@@ -135,7 +136,7 @@ public class LoginController {
         // Inicializar UsuarioService
         this.usuarioService = new UsuarioService(new UsuarioRepository(databaseConnector));
 
-        boolean b = updateServerStatus(databaseConnector, serverStatusLabel, serverStatusIcon);  // Actualizar el estado del servidor
+        boolean b = updateServerStatusUI(databaseConnector, serverStatusLabel, serverStatusIcon);  // Actualizar el estado del servidor
         startPeriodicServerCheck(databaseConnector, serverStatusLabel, serverStatusIcon);  // Iniciar chequeo periódico del servidor
     }
 
@@ -327,7 +328,7 @@ public class LoginController {
                     // Continuar al menú principal
                     showMainMenu(usuario);
                 }
-                //MANT.: AlertUtils.showInfo("Inicio de sesión exitoso para el CUIL: " + cuil + "\nPero el sistema está en mantenimiento en este momento.\nIntente nuevamente más tarde.");
+                //MANTENIMIENTO: AlertUtils.showInfo("Inicio de sesión exitoso para el CUIL: " + cuil + "\nPero el sistema está en mantenimiento en este momento.\nIntente nuevamente más tarde.");
             } else {
                 AlertUtils.showWarn("¡Contraseña incorrecta o usuario no encontrado!\n[ CUIL ingresado: " + formatCuil(cuil) + " ]");
             }
@@ -413,7 +414,7 @@ public class LoginController {
 
             // Establecer propiedades Hacer que el Stage sea redimensionable
             stage.setResizable(true);
-            stage.setTitle("Menú Principal :: Sistema de Gestión de Ausentismo HMU");
+            stage.setTitle("Menú Principal" + " :: " + AppInfo.PRG_LONG_TITLE);
 
         } catch (IOException e) {
             e.printStackTrace(); // Para imprimir todo el stack trace y facilitar el diagnóstico.

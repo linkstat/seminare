@@ -8,6 +8,8 @@ import ar.com.hmu.service.UsuarioService;
 import ar.com.hmu.utils.AlertUtils;
 import static ar.com.hmu.utils.SessionUtils.handleLogout;
 import static ar.com.hmu.utils.ServerStatusUtils.*;
+
+import ar.com.hmu.utils.AppInfo;
 import ar.com.hmu.utils.PasswordDialogUtils;
 import ar.com.hmu.utils.SessionUtils;
 import javafx.fxml.FXML;
@@ -168,7 +170,7 @@ public class MainMenuMosaicoController {
         if (databaseConnector == null) {
             throw new IllegalStateException("MainMenuMosaicoController: DatabaseConnector no está configurado. No se puede verificar el estado del servidor.");
         }
-        updateServerStatus(databaseConnector, serverStatusLabel, serverStatusIcon);
+        updateServerStatusUI(databaseConnector, serverStatusLabel, serverStatusIcon);
         startPeriodicServerCheck(databaseConnector, serverStatusLabel, serverStatusIcon);
 
     }
@@ -220,7 +222,7 @@ public class MainMenuMosaicoController {
         reportesVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
         listadoDeAgentesVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
         listadoDeServiciosVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
-        abmAgentesVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
+        abmAgentesVBox.setOnMouseClicked(event -> handleAbmAgentes());
         abmServiciosVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
 
         // Configura la funcionalidad del botón "Cerrar sesión"
@@ -246,6 +248,42 @@ public class MainMenuMosaicoController {
         AlertUtils.showInfo("Estamos trabajando para Usted\nMódulo en construcción");
     }
 
+
+    /**
+     * Método para el alta, baja, modificación de usuarios (agentes).
+     * Este método carga la ventana de ABM de usuarios y la muestra al usuario.
+     */
+    private void handleAbmAgentes() {
+        try {
+            // Cargar el archivo FXML del ABM de Usuarios
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ar/com/hmu/ui/abmUsuarios.fxml"));
+            Parent abmUsuariosRoot = loader.load();
+
+            // Obtener el controlador de la nueva vista
+            AbmUsuariosController abmUsuariosController = loader.getController();
+
+            // TODO: pasar el usuario logueado para verificación adicional
+            // Por ejemplo, si el usuario es de tipo empleado, no debería poder ingresar, o bien permitirle modificar solo sus propios datos
+            // abmUsuariosController.setUsuarioActual(usuarioActual);  // meditarlo...
+
+            // Crear una nueva escena y un nuevo Stage (ventana)
+            Stage stage = new Stage();
+            Scene scene = new Scene(abmUsuariosRoot);
+            stage.setScene(scene);
+            stage.setTitle("Alta, Baja y Modificación de Agentes" + " :: " + AppInfo.PRG_LONG_TITLE);
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initOwner(abmAgentesVBox.getScene().getWindow()); // Con esto, establecemos la ventana actual como propietaria, evitando múltiples instancias
+
+            // Mostrar la nueva ventana
+            stage.show();
+        } catch (IOException e) {
+            // Mostrar un error si no se puede cargar la vista
+            AlertUtils.showErr("Error al cargar la pantalla de ABM de Usuarios: " + e.getMessage());
+            e.printStackTrace(); // Imprimir la excepción para más detalles en la consola
+        }
+    }
+
+
     /**
      * Muestra la ventana de "Licencias de uso".
      */
@@ -257,7 +295,7 @@ public class MainMenuMosaicoController {
 
             // Crear una nueva ventana (Stage)
             Stage stage = new Stage();
-            stage.setTitle("Licencias de uso :: Sistema de Gestión Hospitalario HMU");
+            stage.setTitle("Licencias de uso" + " :: " + AppInfo.PRG_LONG_TITLE);
             stage.initModality(Modality.APPLICATION_MODAL); // Bloquear la ventana principal hasta que se cierre esta
             stage.setResizable(false);
             // Establecer el ícono de la aplicación
@@ -286,7 +324,7 @@ public class MainMenuMosaicoController {
 
             // Crear una nueva ventana (Stage)
             Stage stage = new Stage();
-            stage.setTitle("Acerca de Aromito :: Sistema de Gestión Hospitalario HMU");
+            stage.setTitle("Acerca de " + AppInfo.PRG_SHORT_TITLE + " :: " + AppInfo.PRG_LONG_TITLE);
             stage.initModality(Modality.APPLICATION_MODAL); // Bloquear la ventana principal hasta que se cierre esta
             stage.setResizable(false);
             // Establecer el ícono de la aplicación

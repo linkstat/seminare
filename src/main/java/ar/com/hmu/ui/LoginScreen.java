@@ -4,6 +4,7 @@ import ar.com.hmu.auth.LoginService;
 import ar.com.hmu.config.AppConfigReader;
 import ar.com.hmu.repository.DatabaseConnector;
 import ar.com.hmu.repository.UsuarioRepository;
+import ar.com.hmu.utils.AppInfo;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -64,7 +65,7 @@ public class LoginScreen extends Application {
 
             // Configurar la ventana principal
             Scene scene = new Scene(root);
-            primaryStage.setTitle("Inicio de sesión :: Sistema de Gestión de Ausentismo HMU");
+            primaryStage.setTitle("Inicio de sesión" + " :: " + AppInfo.PRG_LONG_TITLE);
             primaryStage.setResizable(false);
 
             // Establecer el icono de la aplicación
