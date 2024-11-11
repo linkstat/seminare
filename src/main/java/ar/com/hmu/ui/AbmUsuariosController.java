@@ -20,6 +20,7 @@ import javafx.stage.Stage;
 import ar.com.hmu.constants.NombreServicio;
 import ar.com.hmu.constants.TipoUsuario;
 import ar.com.hmu.model.*;
+import ar.com.hmu.utils.CuilUtils;
 import ar.com.hmu.utils.ImageUtils;
 
 public class AbmUsuariosController implements Initializable {
@@ -79,29 +80,30 @@ public class AbmUsuariosController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+
+        // Cargar datos necesarios
+        cargarCargos();
+        cargarServicios();
+
+        // Configurar el campo de texto para el CUIL
+        CuilUtils.configureCuilField(cuilTextField);
+
         // Inicializar ComboBoxes
         sexoComboBox.setItems(sexosList);
         tipoUsuarioComboBox.setItems(tiposUsuarioList);
-
-        // Simulación de datos para cargos y servicios
-        cargarCargos();
         cargoComboBox.setItems(cargosList);
-        cargarServicios();
         servicioComboBox.setItems(serviciosList);
-
         // Configurar busquedaComboBox
         busquedaComboBox.setItems(usuariosList);
         busquedaComboBox.setEditable(true);
         busquedaComboBox.setOnKeyTyped(event -> filtrarUsuarios());
         busquedaComboBox.setConverter(new UsuarioStringConverter());
 
-        // Inicializar estado de los ComboBox
+        // Inicializar estado de ComboBoxes y botones
         servicioComboBox.setDisable(false);
         gestionarServiciosButton.setDisable(false);
         cargoComboBox.setDisable(false);
         gestionarCargosButton.setDisable(false);
-
-        // Inicializar estado de botones
         altaButton.setDisable(true);
         modificarButton.setDisable(true);
         eliminarButton.setDisable(true);

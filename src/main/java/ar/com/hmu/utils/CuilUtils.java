@@ -80,4 +80,19 @@ public class CuilUtils {
         return formatted.toString();
     }
 
+
+    /**
+     * Remueve cualquier caracter que no sea un dígito.
+     *
+     * @param text El texto a procesar.
+     * @return Una cadena que contiene solo dígitos.
+     */
+    public static String getDigitsOnly(String text) {
+        if (text == null) {
+            return "";
+        }
+        return text.replaceAll("[^\\d]", "");
+    }
+
+
 }
