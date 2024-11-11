@@ -1,15 +1,9 @@
 package ar.com.hmu.ui;
 
-import ar.com.hmu.auth.LoginService;
-import ar.com.hmu.model.Usuario;
-import ar.com.hmu.repository.DatabaseConnector;
-import ar.com.hmu.repository.UsuarioRepository;
-import ar.com.hmu.service.UsuarioService;
-import ar.com.hmu.utils.AlertUtils;
-import ar.com.hmu.utils.AppInfo;
-import ar.com.hmu.utils.PasswordDialogUtils;
-import ar.com.hmu.utils.SessionUtils;
-import static ar.com.hmu.utils.ServerStatusUtils.*;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.prefs.Preferences;
+
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -20,9 +14,18 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
-import java.util.Arrays;
-import java.util.prefs.Preferences;
-import java.io.IOException;
+
+import ar.com.hmu.auth.LoginService;
+import ar.com.hmu.model.Usuario;
+import ar.com.hmu.repository.DatabaseConnector;
+import ar.com.hmu.repository.UsuarioRepository;
+import ar.com.hmu.service.UsuarioService;
+import ar.com.hmu.utils.AlertUtils;
+import ar.com.hmu.utils.AppInfo;
+import ar.com.hmu.utils.CuilUtils;
+import ar.com.hmu.utils.PasswordDialogUtils;
+import static ar.com.hmu.utils.ServerStatusUtils.*;
+import ar.com.hmu.utils.SessionUtils;
 
 /**
  * Controlador encargado de gestionar la interfaz de usuario de la pantalla de login.
@@ -91,8 +94,12 @@ public class LoginController {
     public void initialize() {
         preferences = Preferences.userNodeForPackage(LoginController.class);
         //Mueve la llamada a updateServerStatus() desde initialize() a postInitialize(), donde databaseConnector ya está configurado.
-        //updateServerStatus(databaseConnector, serverStatusLabel, serverStatusIcon); // Llamar al método de utilería para verificar el estado del servidor al iniciar la ventana.
-        configureCuilField(); // Configurar el campo de CUIL
+        //updateServerStatus(databaseConnector, serverStatusLabel, serverStatusIcon); // Esto llamaba al método de utilería para verificar el estado del servidor al iniciar la ventana.
+
+        // Configurar el campo de texto para el CUIL
+        CuilUtils.configureCuilField(usernameField);
+        //configureCuilField();  // el método fue movido a la clase CuilUtils del paquete utils
+
         configureShowPassword(); // Configurar el checkbox de mostrar/ocultar contraseña
         loadUserCuil();
 
@@ -140,63 +147,6 @@ public class LoginController {
         startPeriodicServerCheck(databaseConnector, serverStatusLabel, serverStatusIcon);  // Iniciar chequeo periódico del servidor
     }
 
-    /**
-     * Configura el campo de texto para el CUIL para que solo acepte números y formatee el texto automáticamente.
-     */
-    private void configureCuilField() {
-        // Limitar el input a solo dígitos numéricos
-        usernameField.addEventFilter(KeyEvent.KEY_TYPED, event -> {
-            if (!event.getCharacter().matches("\\d")) {
-                event.consume();  // Ignora el input si no es un número
-            }
-        });
-
-        // Añadir un listener para formatear el texto mientras se escribe
-        usernameField.textProperty().addListener((observable, oldValue, newValue) -> {
-            // Remover cualquier caracter que no sea un dígito
-            String digitsOnly = newValue.replaceAll("[^\\d]", "");
-
-            // Limitar la longitud máxima a 11 dígitos
-            if (digitsOnly.length() > 11) {
-                digitsOnly = digitsOnly.substring(0, 11);
-            }
-
-            // Aplicar el formato NN-NNNNNNNN-N
-            String formattedText = formatCuil(digitsOnly);
-
-            // Actualizar el campo de texto con el texto formateado
-            usernameField.setText(formattedText);
-
-            // Mover el cursor al final del texto
-            usernameField.positionCaret(formattedText.length());
-        });
-    }
-
-    /**
-     * Aplica el formato NN-NNNNNNNN-N a una cadena de números.
-     *
-     * @param digits cadena de dígitos que representan el CUIL.
-     * @return el CUIL formateado como NN-NNNNNNNN-N.
-     */
-    private String formatCuil(String digits) {
-        StringBuilder formatted = new StringBuilder();
-
-        if (digits.length() >= 2) {
-            formatted.append(digits, 0, 2).append("-");
-        } else {
-            formatted.append(digits);
-            return formatted.toString();
-        }
-
-        if (digits.length() >= 10) {
-            formatted.append(digits, 2, 10).append("-");
-            formatted.append(digits.substring(10));
-        } else if (digits.length() > 2) {
-            formatted.append(digits.substring(2));
-        }
-
-        return formatted.toString();
-    }
 
     /**
      * Carga el último CUIL utilizado por el usuario desde las preferencias del sistema y
@@ -330,7 +280,7 @@ public class LoginController {
                 }
                 //MANTENIMIENTO: AlertUtils.showInfo("Inicio de sesión exitoso para el CUIL: " + cuil + "\nPero el sistema está en mantenimiento en este momento.\nIntente nuevamente más tarde.");
             } else {
-                AlertUtils.showWarn("¡Contraseña incorrecta o usuario no encontrado!\n[ CUIL ingresado: " + formatCuil(cuil) + " ]");
+                AlertUtils.showWarn("¡Contraseña incorrecta o usuario no encontrado!\n[ CUIL ingresado: " + CuilUtils.formatCuil(cuil) + " ]");
             }
 
         } catch (NumberFormatException e) {
