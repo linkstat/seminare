@@ -1,16 +1,18 @@
 package ar.com.hmu.repository;
 
-import ar.com.hmu.config.AppConfigReader;
-import ar.com.hmu.config.AppConfig;
-import ar.com.hmu.exceptions.DatabaseAuthenticationException;
-import ar.com.hmu.exceptions.DatabaseConnectionException;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+
+import ar.com.hmu.config.AppConfig;
+import ar.com.hmu.config.AppConfigReader;
+import ar.com.hmu.constants.DatabaseConnectorStatus;
+import ar.com.hmu.exceptions.DatabaseAuthenticationException;
+import ar.com.hmu.exceptions.DatabaseConnectionException;
+import ar.com.hmu.exceptions.DatabaseErrorType;
 
 /**
  * Clase responsable de gestionar la conexión a la base de datos.
@@ -60,7 +62,7 @@ public class DatabaseConnector {
      * @throws SQLException si ocurre un error al intentar conectar a la base de datos.
      * @throws UnsupportedOperationException si el tipo de base de datos no es soportado.
      */
-    public Connection getConnection() throws SQLException {
+    public Connection getConnection() throws SQLException, DatabaseAuthenticationException, DatabaseConnectionException {
         if (!dbType.equalsIgnoreCase("mariadb")) {
             throw new UnsupportedOperationException("Motor de base de datos no implementado: " + dbType);
         }
@@ -70,9 +72,10 @@ public class DatabaseConnector {
             return DriverManager.getConnection(url, dbUser, dbPass);
         } catch (SQLException e) {
             if (e.getMessage().contains("Unable to obtain Principal Name for authentication")) {
-                throw new DatabaseAuthenticationException("Error de autenticación: No se pudo autenticar con el servidor de base de datos " +dbType + " en " +dbHost +":" +dbPort +" con el usuario " +dbName +". Verificar credenciales en el archivo de configuración YAML.", e);
+                String exceptionMessage = "Error de autenticación: No se pudo autenticar con el servidor de base de datos " +dbType + " en " +dbHost +":" +dbPort +" con el usuario " +dbName +". Verificar credenciales en el archivo de configuración YAML.";
+                throw new DatabaseAuthenticationException(exceptionMessage, e, DatabaseErrorType.AUTHENTICATION_FAILURE);
             } else {
-                throw new DatabaseConnectionException("Error de conexión: No se pudo conectar a la base de datos. Verifica el estado de la red (el servidor es " +dbHost +":" +dbPort +"), y los parámetros de conexión (el usuario es: " +dbName +") en el archivo de configuración YAML.", e);
+                throw new DatabaseConnectionException(e, dbHost, dbPort, dbName, dbUser);
             }
         }
     }
@@ -157,21 +160,21 @@ public class DatabaseConnector {
     public String[] checkServerStatus() {
         // Nivel 1: Intentar conexión con las credenciales
         if (canConnectToDatabase()) {
-            return new String[] {"Servidor en línea y funcional.", "green", "serverStatus_icon_green_ok.png"};
+            return new String[] {DatabaseConnectorStatus.FUNCTIONAL_MSG, DatabaseConnectorStatus.FUNCTIONAL_COLOR, DatabaseConnectorStatus.FUNCTIONAL_ICON};
         }
 
         // Nivel 2: Si la conexión con las credenciales falla, intentamos conectar al puerto directamente
         if (isDatabaseServiceAvailable()) {
-            return new String[] {"Servidor en línea, pero error de validación para la conexión a la base de datos.", "orange", "serverStatus_icon_blue_question.png"};
+            return new String[] {DatabaseConnectorStatus.AUTH_PROBLEM_MSG, DatabaseConnectorStatus.AUTH_PROBLEM_COLOR, DatabaseConnectorStatus.AUTH_PROBLEM_ICON};
         }
 
         // Nivel 3: Si la conexión al puerto falla, intentamos un ping ICMP
         if (isHostReachable()) {
-            return new String[] {"Servidor parcialmente en línea: el servicio de base de datos no está en ejecución.", "orange", "serverStatus_icon_orange_warning.png"};
+            return new String[] {DatabaseConnectorStatus.DB_SERVICE_PROBLEM_MSG, DatabaseConnectorStatus.DB_SERVICE_PROBLEM_COLOR, DatabaseConnectorStatus.DB_SERVICE_PROBLEM_ICON};
         }
 
         // Si ninguna verificación tiene éxito, el servidor está completamente fuera de línea
-        return new String[] {"Servidor completamente fuera de línea.", "red", "serverStatus_icon_red_error.png"};
+        return new String[] {DatabaseConnectorStatus.UNREACHABLE_SERVER_MSG, DatabaseConnectorStatus.UNREACHABLE_SERVER_COLOR, DatabaseConnectorStatus.UNREACHABLE_SERVER_ICON};
     }
 
 }
