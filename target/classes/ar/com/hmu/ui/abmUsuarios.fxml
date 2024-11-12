@@ -16,7 +16,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Line?>
 
-<BorderPane xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ar.com.hmu.ui.AbmUsuariosController">
+<BorderPane fx:id="rootPane" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ar.com.hmu.ui.AbmUsuariosController">
 
     <!-- Sección de Búsqueda -->
     <top>
@@ -26,7 +26,7 @@
          </padding>
          <children>
             <ComboBox fx:id="busquedaComboBox" editable="true" maxWidth="1.7976931348623157E308" prefWidth="500.0" promptText="Búsqueda por CUIL, apellido, nombre, mail, tel" HBox.hgrow="ALWAYS" />
-            <Button fx:id="buscarButton" minWidth="66.4" mnemonicParsing="false" text="Buscar" textAlignment="CENTER" />
+            <Button fx:id="nuevoAgenteButton" minWidth="70.0" mnemonicParsing="false" text="Nuevo Agente" textAlignment="CENTER" />
          </children>
       </HBox>
     </top>
@@ -216,9 +216,9 @@
                    <RadioButton fx:id="usuarioDeshabilitadoCheckBox" text="Deshabilitado" toggleGroup="$estadoToggleGroup" />
             </children>
          </VBox>
-            <Button fx:id="altaButton" disable="true" minWidth="66.4" onAction="#onAlta" text="Alta" />
-            <Button fx:id="modificarButton" disable="true" minWidth="66.4" onAction="#onModificar" text="Modificar" />
-            <Button fx:id="eliminarButton" disable="true" minWidth="66.4" onAction="#onEliminar" text="Eliminar" />
+            <Button fx:id="altaModButton" disable="true" minWidth="70.0" onAction="#onAlta" text="Alta / Mod." />
+            <Button fx:id="cancelarButton" disable="true" minWidth="70.0" onAction="#onModificar" text="Cancelar" />
+            <Button fx:id="eliminarButton" disable="true" minWidth="70.0" onAction="#onEliminar" text="Eliminar" />
         </HBox>
     </bottom>
    <padding>

@@ -2,14 +2,13 @@ package ar.com.hmu.ui;
 
 import java.io.File;
 import java.net.URL;
-import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
-import javafx.application.Platform;
 import javafx.collections.transformation.FilteredList;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.util.StringConverter;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -30,9 +29,13 @@ import ar.com.hmu.utils.ImageUtils;
 
 public class AbmUsuariosController implements Initializable {
 
+    // Contenedor
+    @FXML
+    private BorderPane rootPane;
+
     // Sección de Búsqueda
     @FXML private ComboBox<Usuario> busquedaComboBox;
-    @FXML private Button buscarButton;
+    @FXML private Button nuevoAgenteButton;
 
     // Imagen de Perfil
     @FXML private ImageView imagenPerfilImageView;
@@ -69,8 +72,8 @@ public class AbmUsuariosController implements Initializable {
     @FXML private RadioButton usuarioHabilitadoCheckBox;
     @FXML private RadioButton usuarioDeshabilitadoCheckBox;
     @FXML private ToggleGroup estadoToggleGroup;
-    @FXML private Button altaButton;
-    @FXML private Button modificarButton;
+    @FXML private Button altaModButton;
+    @FXML private Button cancelarButton;
     @FXML private Button eliminarButton;
 
     // Variables auxiliares
@@ -84,22 +87,18 @@ public class AbmUsuariosController implements Initializable {
     private File imagenPerfilFile;
     private Image imagenPerfilOriginal;
 
-    // Una bandera que vamos a necesitar en filtrarUsuarios() para evitar una recursión infinita que se me daba
+    // Bandera para controlar el estado del botón "Alta"
+    private boolean isCancelMode = false;
+
+    // Bandera que vamos a necesitar en filtrarUsuarios() para evitar una recursión infinita que se me daba
     private boolean isFiltering = false;
 
-    /**
-     * Objeto especial que represente a un "NUEVO AGENTE".
-     * <p>
-     * El objetivo es asegurar que "NUEVO AGENTE" siempre esté presente en busquedaComboBox.
-     * Dado que Usuario es una clase abstracta, se crea una instancia anónima de una subclase como Empleado.
-     */
-    private final Usuario NUEVO_AGENTE = new Empleado() {
-        {
-            setCuil(0);
-            setApellidos("NUEVO AGENTE");
-            setNombres("DAR DE ALTA");
-        }
-    };
+    // Bandera para controlar la selección del usuario
+    private boolean isUserSelection = false;
+
+    // Banderas de modo
+    private boolean isAltaMode = false;
+    private boolean isModificacionMode = false;
 
 
     @Override
@@ -110,6 +109,14 @@ public class AbmUsuariosController implements Initializable {
         cargarCargos();
         cargarServicios();
 
+        // Event handler para la tecla ESC
+        rootPane.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() == KeyCode.ESCAPE) {
+                onCancelar(null);
+                event.consume();
+            }
+        });
+
         // Configurar el campo de texto para el CUIL
         CuilUtils.configureCuilField(cuilTextField);
 
@@ -118,9 +125,6 @@ public class AbmUsuariosController implements Initializable {
         tipoUsuarioComboBox.setItems(tiposUsuarioList);
         cargoComboBox.setItems(cargosList);
         servicioComboBox.setItems(serviciosList);
-
-        // Agregar NUEVO_AGENTE a la lista de usuarios
-        usuariosList.add(NUEVO_AGENTE);
 
         // Create the FilteredList
         filteredUsuariosList = new FilteredList<>(usuariosList, p -> true);
@@ -134,11 +138,12 @@ public class AbmUsuariosController implements Initializable {
         // Deshabilitar controles al inicio
         setControlsEnabled(false);
 
-        // Deshabilitar botones de acción
-        altaButton.setDisable(true);
-        modificarButton.setDisable(true);
-        eliminarButton.setDisable(true);
-        resetPasswdButton.setDisable(true);
+        // Estado inicial de los botones de acción
+        altaModButton.setVisible(false);    // Oculto al comienzo
+        eliminarButton.setVisible(false);   // Oculto al comienzo
+
+        cancelarButton.setVisible(true);    // Visible al comienzo
+        cancelarButton.setText("Salir");    // Pero con el texto "Salir"
 
         // Configurar ToggleGroup
         estadoToggleGroup = new ToggleGroup();
@@ -150,6 +155,13 @@ public class AbmUsuariosController implements Initializable {
 
         // Eventos adicionales
         tipoUsuarioComboBox.setOnAction(this::onTipoUsuarioSelected);
+        nuevoAgenteButton.setOnAction(this::onNuevoAgente);
+        altaModButton.setOnAction(this::onAltaMod);
+        cancelarButton.setOnAction(this::onCancelar);
+
+        // Habilitar solo el ComboBox y el botón "Nuevo Agente"
+        busquedaComboBox.setDisable(false);
+        nuevoAgenteButton.setDisable(false);
 
     }
 
@@ -162,15 +174,43 @@ public class AbmUsuariosController implements Initializable {
                     setCuil(20123456789L);
                     setApellidos("Pérez");
                     setNombres("Juan");
-                    setMail("juan.perez@example.com");
-                    setTel(123456789);
+                    setMail("juan.perez@datanet.com.ar");
+                    setTel(1123456789L);
+                }},
+                new Empleado() {{
+                    setCuil(27163556788L);
+                    setApellidos("Teresa");
+                    setNombres("Páez");
+                    setMail("tere.paez@gmail.com");
+                    setTel(1143436719L);
+                }},
+                new Empleado() {{
+                    setCuil(20232467480L);
+                    setApellidos("Jorge Alejandro");
+                    setNombres("Marín");
+                    setMail("ja_marin@hotmail.com");
+                    setTel(0);
+                }},
+                new Empleado() {{
+                    setCuil(20326473281L);
+                    setApellidos("Nidia Marina");
+                    setNombres("Dellamea");
+                    setMail("nmd87@latinmail.net");
+                    setTel(3518779654L);
+                }},
+                new Empleado() {{
+                    setCuil(20123339222L);
+                    setApellidos("Pirín");
+                    setNombres("Fariña");
+                    setMail("pf.car@imail.ar");
+                    setTel(2667672233L);
                 }},
                 new Empleado() {{
                     setCuil(20987654321L);
                     setApellidos("García");
                     setNombres("María");
-                    setMail("maria.garcia@example.com");
-                    setTel(987654321);
+                    setMail("maria.garcia@tuto.net.ar");
+                    setTel(9876654321L);
                 }}
         );
 
@@ -200,14 +240,9 @@ public class AbmUsuariosController implements Initializable {
      */
     private void configurarBusquedaComboBox() {
 
-        // Configurar busquedaComboBox
+        // Inicializar
         busquedaComboBox.setEditable(true);
         busquedaComboBox.setConverter(new UsuarioStringConverter());
-
-        // Listener para cambios en el valor seleccionado
-        busquedaComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
-            onSeleccionarUsuario();
-        });
 
         // Establecer un Custom Cell Factory para mostrar información adicional
         busquedaComboBox.setCellFactory(param -> new ListCell<Usuario>() {
@@ -238,7 +273,7 @@ public class AbmUsuariosController implements Initializable {
             }
         });
 
-        // Establecer un button cell para mostrar solo el nombre cuando se selecciona el resultado
+//        // Establecer un button cell para mostrar solo el nombre cuando se selecciona el resultado
         busquedaComboBox.setButtonCell(new ListCell<Usuario>() {
             @Override
             protected void updateItem(Usuario usuario, boolean empty) {
@@ -252,7 +287,7 @@ public class AbmUsuariosController implements Initializable {
             }
         });
 
-        // Agregar un listener para cambios en la entrada de texto (busqueda de coincidencias)
+        // Agregar un listener para cambios en la entrada de texto (búsqueda de coincidencias)
         busquedaComboBox.getEditor().textProperty().addListener((obs, oldText, newText) -> {
             if (isFiltering) {
                 return;
@@ -260,52 +295,80 @@ public class AbmUsuariosController implements Initializable {
 
             filtrarUsuarios();
 
-            boolean matchFound = false;
+            // Habilitar o deshabilitar el botón "Nuevo Agente" según el texto
+            if (newText == null || newText.isEmpty()) {
+                nuevoAgenteButton.setDisable(false);
 
-            // Buscar coincidencia exacta en los elementos filtrados
-            for (Usuario usuario : filteredUsuariosList) {
-                if (usuario.getNombreCompleto().equalsIgnoreCase(newText)) {
-                    Platform.runLater(() -> busquedaComboBox.getSelectionModel().select(usuario));
-                    matchFound = true;
-                    break;
-                }
-            }
+                // Limpiar la selección del ComboBox
+                busquedaComboBox.getSelectionModel().clearSelection();
 
-            if (!matchFound) {
-                Platform.runLater(() -> busquedaComboBox.getSelectionModel().clearSelection());
+                // Limpiar el formulario y deshabilitar controles
+                limpiarFormulario();
                 setControlsEnabled(false);
-                altaButton.setDisable(true);
-                modificarButton.setDisable(true);
+
+                // Deshabilitar botones de acción
+                altaModButton.setDisable(true);
+                cancelarButton.setDisable(true);
                 eliminarButton.setDisable(true);
                 resetPasswdButton.setDisable(true);
+            } else {
+                nuevoAgenteButton.setDisable(true);
             }
         });
 
-        // Agregar un listener para manejar eventos de teclas de flecha
+
+        // Manejar la confirmación de la selección mediante el ActionEvent
+        busquedaComboBox.setOnAction(event -> {
+            Usuario usuarioSeleccionado = busquedaComboBox.getSelectionModel().getSelectedItem();
+            if (usuarioSeleccionado != null) {
+                nuevoAgenteButton.setDisable(true);
+                onSeleccionarUsuario();
+            } else {
+                // Si no hay selección, verificar el texto del editor
+                String text = busquedaComboBox.getEditor().getText();
+                if (text == null || text.isEmpty()) {
+                    nuevoAgenteButton.setDisable(false);
+                }
+            }
+        });
+
+        // Agregar un listener para manejar eventos de teclas (flechas y TAB)
         busquedaComboBox.getEditor().addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             if (event.getCode() == KeyCode.DOWN || event.getCode() == KeyCode.UP) {
-                busquedaComboBox.show();
+                // Mostrar el menú desplegable si no está visible
+                if (!busquedaComboBox.isShowing()) {
+                    busquedaComboBox.show();
+                }
+                // Dejar que el ComboBox maneje el evento por defecto
+            } else if (event.getCode() == KeyCode.TAB) {
+
+                // cuando el ComboBox está vacío
+                if (busquedaComboBox.getEditor().getText().isEmpty()) {
+                    // Mover el foco al botón "Nuevo Agente"
+                    nuevoAgenteButton.requestFocus();
+                    event.consume();
+                }
+
+                // Si hay un elemento seleccionado, mantenerlo
+                if (busquedaComboBox.getSelectionModel().getSelectedItem() == null) {
+                    // No seleccionar automáticamente
+                }
+
+                // Mover el foco al siguiente campo
+                cuilTextField.requestFocus();
                 event.consume();
+
             }
         });
 
-        // Agregar un listener para la tecla TAB
-        busquedaComboBox.getEditor().addEventFilter(KeyEvent.KEY_PRESSED, event -> {
-            if (event.getCode() == KeyCode.TAB) {
-                busquedaComboBox.hide();
-                if (!event.isShiftDown()) {
-                    cuilTextField.requestFocus();
-                } else {
-                    // Handle Shift+Tab if necessary
-                }
-                event.consume();
-            }
-        });
 
     }
 
 
-    // Método para habilitar o deshabilitar los controles
+    /**
+     * Método para habilitar o deshabilitar los controles
+     * @param enabled bandera de habilitación
+     */
     private void setControlsEnabled(boolean enabled) {
         // Datos Personales
         cuilTextField.setDisable(!enabled);
@@ -344,10 +407,17 @@ public class AbmUsuariosController implements Initializable {
         usuarioHabilitadoCheckBox.setDisable(!enabled);
         usuarioDeshabilitadoCheckBox.setDisable(!enabled);
 
+        // Botones de acción
+        altaModButton.setDisable(!enabled);
+        cancelarButton.setDisable(!enabled);
+        eliminarButton.setDisable(!enabled);
+
     }
 
 
-    // Método para filtrar usuarios en el ComboBox de búsqueda
+    /**
+     * Método para filtrar usuarios en el ComboBox de búsqueda
+     */
     private void filtrarUsuarios() {
         if (isFiltering) {
             return;
@@ -356,11 +426,6 @@ public class AbmUsuariosController implements Initializable {
         isFiltering = true;
         try {
             String textoIngresado = busquedaComboBox.getEditor().getText().toLowerCase();
-
-            // Ocultar el menú desplegable antes de modificar el predicado
-            if (busquedaComboBox.isShowing()) {
-                busquedaComboBox.hide();
-            }
 
             filteredUsuariosList.setPredicate(usuario -> {
                 if (usuario == null) {
@@ -372,17 +437,37 @@ public class AbmUsuariosController implements Initializable {
                         String.valueOf(usuario.getTel()).contains(textoIngresado);
             });
 
-            // Mostrar el menú desplegable si hay elementos después de filtrar
-            if (!filteredUsuariosList.isEmpty()) {
+            // Mostrar el menú desplegable si hay elementos y no se está mostrando
+            if (!filteredUsuariosList.isEmpty() && !busquedaComboBox.isShowing()) {
                 busquedaComboBox.show();
             }
+
         } finally {
             isFiltering = false;
         }
+
+//        // Crear una lista limitada de los primeros N elementos
+//        int maxResults = 9;
+//        ObservableList<Usuario> limitedList = FXCollections.observableArrayList();
+//        for (int i = 0; i < Math.min(filteredUsuariosList.size(), maxResults); i++) {
+//            limitedList.add(filteredUsuariosList.get(i));
+//        }
+//
+//        busquedaComboBox.setItems(limitedList);
+//
+//        // Mostrar el menú desplegable si hay elementos y no se está mostrando
+//        if (!limitedList.isEmpty() && !busquedaComboBox.isShowing()) {
+//            busquedaComboBox.show();
+//        }
+
     }
 
 
-    // Evento al seleccionar un tipo de usuario
+
+    /**
+     * Evento al seleccionar un tipo de usuario
+     * @param event Evento
+     */
     @FXML
     private void onTipoUsuarioSelected(ActionEvent event) {
         String tipoUsuario = tipoUsuarioComboBox.getSelectionModel().getSelectedItem();
@@ -458,7 +543,12 @@ public class AbmUsuariosController implements Initializable {
         return 2; // Valor simulado
     }
 
-    // Método para buscar un servicio por nombre
+
+    /**
+     * Método para buscar un servicio por nombre
+     * @param nombre Nombre de servicio
+     * @return objeto de tipo Servicio
+     */
     private Servicio buscarServicioPorNombre(String nombre) {
         for (Servicio servicio : serviciosList) {
             if (servicio.getNombre().equalsIgnoreCase(nombre)) {
@@ -468,7 +558,12 @@ public class AbmUsuariosController implements Initializable {
         return null;
     }
 
-    // Método para buscar un Cargo por número
+
+    /**
+     * Método para buscar un Cargo por número
+     * @param numero Número de cargo
+     * @return objeto de tipo Cargo
+     */
     private Cargo buscarCargoPorNumero(int numero) {
         for (Cargo cargo : cargosList) {
             if (cargo.getNumero() == numero) {
@@ -478,7 +573,11 @@ public class AbmUsuariosController implements Initializable {
         return null;
     }
 
-    // Evento al hacer clic en "Cargar Imagen"
+
+    /**
+     * Evento al hacer clic en "Cargar Imagen"
+     * @param event Evento
+     */
     @FXML
     private void onCargarImagen(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
@@ -495,7 +594,11 @@ public class AbmUsuariosController implements Initializable {
         }
     }
 
-    // Evento al hacer clic en "Revertir Imagen"
+
+    /**
+     * Evento al hacer clic en "Revertir Imagen"
+     * @param event Evento
+     */
     @FXML
     private void onRevertirImagen(ActionEvent event) {
         imagenPerfilImageView.setImage(imagenPerfilOriginal);
@@ -503,14 +606,22 @@ public class AbmUsuariosController implements Initializable {
         revertirImagenButton.setDisable(true);
     }
 
-    // Evento al hacer clic en "Eliminar Imagen"
+
+    /**
+     * Evento al hacer clic en "Eliminar Imagen"
+     * @param event Evento
+     */
     @FXML
     private void onEliminarImagen(ActionEvent event) {
         imagenPerfilImageView.setImage(null);
         imagenPerfilFile = null;
     }
 
-    // Evento al hacer clic en "Resetear Contraseña"
+
+    /**
+     * Evento al hacer clic en "Resetear Contraseña"
+     * @param event Evento
+     */
     @FXML
     private void onResetearContrasena(ActionEvent event) {
         Usuario usuario = obtenerUsuarioActual();
@@ -530,20 +641,98 @@ public class AbmUsuariosController implements Initializable {
         }
     }
 
-    // Evento al hacer clic en "Alta"
+
+    /**
+     * Evento al hacer clic en "Alta"
+     * @param event Evento
+     */
     @FXML
-    private void onAlta(ActionEvent event) {
-        if (validarCamposObligatorios()) {
-            Usuario nuevoUsuario = crearOActualizarUsuarioDesdeFormulario(null);
-            if (nuevoUsuario != null) {
-                usuariosList.add(nuevoUsuario);
-                limpiarFormulario();
-                mostrarMensaje("Usuario agregado correctamente.");
+    public void onAlta(ActionEvent event) {
+        if (isCancelMode) {
+            // Confirmar si desea cancelar
+            Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
+            confirmacion.setTitle("Confirmación");
+            confirmacion.setHeaderText("¿Cancelar la carga actual?");
+            confirmacion.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.OK) {
+                    resetInterface();
+                }
+            });
+        } else {
+            // Lógica para dar de alta un nuevo usuario
+            if (validarCamposObligatorios()) {
+                Usuario nuevoUsuario = crearOActualizarUsuarioDesdeFormulario(null);
+                if (nuevoUsuario != null) {
+                    usuariosList.add(nuevoUsuario);
+                    resetInterface();
+                    mostrarMensaje("Usuario agregado correctamente.");
+                }
             }
         }
     }
 
-    // Evento al hacer clic en "Modificar"
+    /**
+     * Evento al hacer clic en "Dar de alta" (o "Modificar", según contexto)
+     * @param event Evento
+     */
+    @FXML
+    private void onAltaMod(ActionEvent event) {
+        if (isAltaMode) {
+            // "Dar de alta" mode
+            if (validarCamposObligatorios()) {
+                Usuario nuevoUsuario = crearOActualizarUsuarioDesdeFormulario(null);
+                if (nuevoUsuario != null) {
+                    usuariosList.add(nuevoUsuario);
+                    resetInterface();
+                    mostrarMensaje("Usuario agregado correctamente.");
+                }
+            }
+        } else if (isModificacionMode) {
+            // "Modificar" mode
+            Usuario usuarioSeleccionado = obtenerUsuarioActual();
+            if (usuarioSeleccionado != null && validarCamposObligatorios()) {
+                Usuario usuarioActualizado = crearOActualizarUsuarioDesdeFormulario(usuarioSeleccionado);
+                if (usuarioActualizado != null) {
+                    // Update in the list if necessary
+                    int index = usuariosList.indexOf(usuarioSeleccionado);
+                    usuariosList.set(index, usuarioActualizado);
+                    resetInterface();
+                    mostrarMensaje("Usuario modificado correctamente.");
+                }
+            }
+        }
+    }
+
+
+    /**
+     * Evento al hacer clic en Cancelar (o salir, según su estado)
+     * @param event Evento
+     */
+    @FXML
+    private void onCancelar(ActionEvent event) {
+        if (isAltaMode || isModificacionMode) {
+            // Operación "Cancelar"
+            Alert confirmacion = new Alert(AlertType.CONFIRMATION);
+            confirmacion.setTitle("Confirmación");
+            confirmacion.setHeaderText("¿Cancelar la operación actual?");
+            confirmacion.setContentText("Se perderán los cambios no guardados.");
+            confirmacion.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.OK) {
+                    resetInterface();
+                }
+            });
+        } else {
+            // Operación "Salir"
+            // Close the window and return to main menu
+            Stage stage = (Stage) cancelarButton.getScene().getWindow();
+            stage.close();
+        }
+    }
+
+    /**
+     * Evento al hacer clic en "Modificar"
+     * @param event Evento
+     */
     @FXML
     private void onModificar(ActionEvent event) {
         Usuario usuarioSeleccionado = busquedaComboBox.getSelectionModel().getSelectedItem();
@@ -553,13 +742,17 @@ public class AbmUsuariosController implements Initializable {
                 // Actualizar en la lista si es necesario
                 int index = usuariosList.indexOf(usuarioSeleccionado);
                 usuariosList.set(index, usuarioActualizado);
-                limpiarFormulario();
+                resetInterface();
                 mostrarMensaje("Usuario modificado correctamente.");
             }
         }
     }
 
-    // Evento al hacer clic en "Eliminar"
+
+    /**
+     * Evento al hacer clic en "Eliminar"
+     * @param event Evento
+     */
     @FXML
     private void onEliminar(ActionEvent event) {
         Usuario usuarioSeleccionado = busquedaComboBox.getSelectionModel().getSelectedItem();
@@ -570,50 +763,126 @@ public class AbmUsuariosController implements Initializable {
             confirmacion.showAndWait().ifPresent(response -> {
                 if (response == ButtonType.OK) {
                     usuariosList.remove(usuarioSeleccionado);
-                    limpiarFormulario();
+                    resetInterface();
                     mostrarMensaje("Usuario eliminado correctamente.");
                 }
             });
         }
     }
 
-    // Evento al seleccionar un usuario en el ComboBox de búsqueda
+
+    /**
+     * Evento al hacer clic en "Nuevo Agente"
+     * @param event Evento
+     */
+    @FXML
+    private void onNuevoAgente(ActionEvent event) {
+        // Deshabilitar el ComboBox y el botón "Nuevo Agente"
+        busquedaComboBox.setDisable(true);
+        nuevoAgenteButton.setDisable(true);
+
+        // Habilitar los controles del formulario
+        setControlsEnabled(true);
+
+        // Limpiar el formulario
+        limpiarFormulario();
+
+        // Enfocar el campo CUIL
+        cuilTextField.requestFocus();
+
+        // Update buttons
+        altaModButton.setVisible(true);
+        altaModButton.setText("Dar de alta");
+        altaModButton.setDisable(false);
+
+        cancelarButton.setVisible(true);
+        cancelarButton.setText("Cancelar");
+        cancelarButton.setDisable(false);
+
+        eliminarButton.setVisible(false);  // Ocultar eliminarButton si fuera visible
+
+        // Banderas de modo
+        isAltaMode = true;
+        isModificacionMode = false;
+
+    }
+
+
+    /**
+     * Deshabilita los controles adecuadamente cuando sea necesario
+     */
+    private void resetInterface() {
+        // Deshabilitar los controles del formulario
+        setControlsEnabled(false);
+
+        // Limpiar el formulario
+        limpiarFormulario();
+
+        // Habilitar el ComboBox y el botón "Nuevo Agente"
+        busquedaComboBox.setDisable(false);
+        nuevoAgenteButton.setDisable(false);
+
+        // Limpiar selección del ComboBox
+        busquedaComboBox.getSelectionModel().clearSelection();
+        busquedaComboBox.getEditor().clear();
+
+        // Resetear botones al estado inicial
+        altaModButton.setVisible(false);
+        eliminarButton.setVisible(false);
+
+        cancelarButton.setVisible(true);
+        cancelarButton.setText("Salir");
+        cancelarButton.setDisable(false);
+
+        resetPasswdButton.setDisable(true);
+
+        // Resetear banderas de modo
+        isAltaMode = false;
+        isModificacionMode = false;
+
+    }
+
+
+    /**
+     * Evento al seleccionar un usuario en el ComboBox de búsqueda
+     */
     @FXML
     private void onSeleccionarUsuario() {
-        Usuario usuarioSeleccionado = busquedaComboBox.getSelectionModel().getSelectedItem();
+        Usuario usuarioSeleccionado = busquedaComboBox.getValue();
         if (usuarioSeleccionado != null) {
-            if (usuarioSeleccionado == NUEVO_AGENTE) {
-                // Se ha seleccionado "DAR DE ALTA NUEVO AGENTE"
-                limpiarFormulario();
-                setControlsEnabled(true);
-                altaButton.setDisable(false);
-                modificarButton.setDisable(true);
-                eliminarButton.setDisable(true);
-                resetPasswdButton.setDisable(true);
-                buscarButton.setDisable(true); // Deshabilita el botón "Buscar"
-                cuilTextField.requestFocus();  // Enfoca el campo CUIL
-            } else {
-                // Se ha seleccionado un usuario existente
-                cargarUsuarioEnFormulario(usuarioSeleccionado);
-                setControlsEnabled(true);
-                altaButton.setDisable(true);
-                modificarButton.setDisable(false);
-                eliminarButton.setDisable(false);
-                resetPasswdButton.setDisable(false);
-                buscarButton.setDisable(false); // Habilita el botón "Buscar"
-            }
-        } else {
-            // Si la selección se ha limpiado
-            setControlsEnabled(false);
-            altaButton.setDisable(true);
-            modificarButton.setDisable(true);
-            eliminarButton.setDisable(true);
-            resetPasswdButton.setDisable(true);
+            cargarUsuarioEnFormulario(usuarioSeleccionado);
+            setControlsEnabled(true);
+
+            // Actualizar botones de acción
+            altaModButton.setVisible(true);
+            altaModButton.setText("Modificar");
+            altaModButton.setDisable(false);
+
+            cancelarButton.setVisible(true);
+            cancelarButton.setText("Cancelar");
+            cancelarButton.setDisable(false);
+
+            eliminarButton.setVisible(true);
+            eliminarButton.setDisable(false);
+
+            resetPasswdButton.setDisable(false);
+            nuevoAgenteButton.setDisable(true);
+            busquedaComboBox.setDisable(true);
+
+            // Set mode flags
+            isAltaMode = false;
+            isModificacionMode = true;
+
+            // Move focus to cuilTextField
+            cuilTextField.requestFocus();
         }
     }
 
 
-    // Método para cargar los datos del usuario en el formulario
+    /**
+     * Método para cargar los datos del usuario en el formulario
+     * @param usuario objeto de tipo Usuario
+     */
     private void cargarUsuarioEnFormulario(Usuario usuario) {
         // Actualizar la interfaz
         tipoUsuarioComboBox.getSelectionModel().select(obtenerTipoUsuario(usuario));
@@ -636,7 +905,12 @@ public class AbmUsuariosController implements Initializable {
 
     }
 
-    // Método para obtener el tipo de usuario como String
+
+    /**
+     * Método para obtener el tipo de usuario como String
+     * @param usuario objeto tipo Usuario
+     * @return cadena de texto que indicado el tipo de usuario
+     */
     private String obtenerTipoUsuario(Usuario usuario) {
         if (usuario instanceof Empleado) {
             return TipoUsuario.EMPLEADO;
@@ -651,7 +925,12 @@ public class AbmUsuariosController implements Initializable {
         }
     }
 
-    // Método para crear un nuevo usuario desde los datos del formulario
+
+    /**
+     * Método para crear un nuevo usuario desde los datos del formulario
+     * @param usuarioExistente un objeto de tipo Usuario
+     * @return un objeto de tipo Usuario
+     */
     private Usuario crearOActualizarUsuarioDesdeFormulario(Usuario usuarioExistente) {
         String tipoUsuarioSeleccionado = tipoUsuarioComboBox.getSelectionModel().getSelectedItem();
         Usuario usuario;
@@ -754,7 +1033,11 @@ public class AbmUsuariosController implements Initializable {
         return usuario;
     }
 
-    // Método para validar los campos obligatorios
+
+    /**
+     * Método para validar los campos obligatorios
+     * @return validación de los campos obligatorios
+     */
     private boolean validarCamposObligatorios() {
         if (cuilTextField.getText().isEmpty() || apellidosTextField.getText().isEmpty()
                 || nombresTextField.getText().isEmpty() || mailTextField.getText().isEmpty()
@@ -766,7 +1049,10 @@ public class AbmUsuariosController implements Initializable {
         return true;
     }
 
-    // Método para limpiar el formulario
+
+    /**
+     * Método para limpiar el formulario
+     */
     private void limpiarFormulario() {
         cuilTextField.clear();
         apellidosTextField.clear();
@@ -781,19 +1067,31 @@ public class AbmUsuariosController implements Initializable {
         // Limpiar domicilio...
     }
 
-    // Método para obtener el usuario actualmente cargado en el formulario
+
+    /**
+     * Método para obtener el usuario actualmente cargado en el formulario
+     * @return objeto de tipo Usuario
+     */
     private Usuario obtenerUsuarioActual() {
         return busquedaComboBox.getSelectionModel().getSelectedItem();
     }
 
-    // Método para mostrar mensajes de información
+
+    /**
+     * Método para mostrar mensajes de información
+     * @param mensaje Mensaje informativo
+     */
     private void mostrarMensaje(String mensaje) {
         Alert alert = new Alert(AlertType.INFORMATION);
         alert.setContentText(mensaje);
         alert.showAndWait();
     }
 
-    // Método para mostrar mensajes de error
+
+    /**
+     * Método para mostrar mensajes de error
+     * @param mensaje Mensaje de error
+     */
     private void mostrarError(String mensaje) {
         Alert alert = new Alert(AlertType.ERROR);
         alert.setTitle("Error");
@@ -802,35 +1100,55 @@ public class AbmUsuariosController implements Initializable {
         alert.showAndWait();
     }
 
-    // Obtener el Stage actual
+    /**
+     * Obtener el Stage actual
+     * @return Stage
+     */
     private Stage getStage() {
         return (Stage) busquedaComboBox.getScene().getWindow();
     }
 
-    // Clase interna para convertir Usuario a String en el ComboBox
+
+    /**
+     * Clase interna para convertir Usuario a String en el ComboBox
+     */
     private class UsuarioStringConverter extends StringConverter<Usuario> {
         @Override
         public String toString(Usuario usuario) {
             if (usuario == null) {
-                return "";
+                return busquedaComboBox.getEditor().getText();
             }
             return usuario.getNombreCompleto();
         }
 
         @Override
         public Usuario fromString(String string) {
-            return null;
+            return busquedaComboBox.getItems().stream()
+                    .filter(usuario -> usuario.getNombreCompleto().equalsIgnoreCase(string))
+                    .findFirst()
+                    .orElse(null);
         }
+
     }
 
-    // Eventos para gestionar cargos y servicios (en construcción)
+
+    /**
+     * Eventos para gestionar cargos (en construcción)
+     * @param event Evento
+     */
     @FXML
     private void onAbmCargo(ActionEvent event) {
         mostrarMensaje("Módulo de gestión de cargos en construcción.");
     }
 
+
+    /**
+     * Eventos para gestionar servicios (en construcción)
+     * @param event Evento
+     */
     @FXML
     private void onAbmServicio(ActionEvent event) {
         mostrarMensaje("Módulo de gestión de servicios en construcción.");
     }
+
 }
