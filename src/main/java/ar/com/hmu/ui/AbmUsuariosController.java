@@ -2,9 +2,14 @@ package ar.com.hmu.ui;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
+import javafx.application.Platform;
+import javafx.collections.transformation.FilteredList;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.util.StringConverter;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -62,7 +67,7 @@ public class AbmUsuariosController implements Initializable {
     // Sección de Acciones
     @FXML private Button resetPasswdButton;
     @FXML private RadioButton usuarioHabilitadoCheckBox;
-    @FXML private RadioButton usuariosDeshabilitadoCheckBox;
+    @FXML private RadioButton usuarioDeshabilitadoCheckBox;
     @FXML private ToggleGroup estadoToggleGroup;
     @FXML private Button altaButton;
     @FXML private Button modificarButton;
@@ -70,6 +75,7 @@ public class AbmUsuariosController implements Initializable {
 
     // Variables auxiliares
     private ObservableList<Usuario> usuariosList = FXCollections.observableArrayList();
+    private FilteredList<Usuario> filteredUsuariosList;
     private ObservableList<Sexo> sexosList = FXCollections.observableArrayList(Sexo.values());
     private ObservableList<String> tiposUsuarioList = FXCollections.observableArrayList(TipoUsuario.EMPLEADO, TipoUsuario.JEFATURA_DE_SERVICIO, TipoUsuario.OFICINA_DE_PERSONAL, TipoUsuario.DIRECCION);
     private ObservableList<Cargo> cargosList = FXCollections.observableArrayList();
@@ -78,10 +84,29 @@ public class AbmUsuariosController implements Initializable {
     private File imagenPerfilFile;
     private Image imagenPerfilOriginal;
 
+    // Una bandera que vamos a necesitar en filtrarUsuarios() para evitar una recursión infinita que se me daba
+    private boolean isFiltering = false;
+
+    /**
+     * Objeto especial que represente a un "NUEVO AGENTE".
+     * <p>
+     * El objetivo es asegurar que "NUEVO AGENTE" siempre esté presente en busquedaComboBox.
+     * Dado que Usuario es una clase abstracta, se crea una instancia anónima de una subclase como Empleado.
+     */
+    private final Usuario NUEVO_AGENTE = new Empleado() {
+        {
+            setCuil(0);
+            setApellidos("NUEVO AGENTE");
+            setNombres("DAR DE ALTA");
+        }
+    };
+
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
         // Cargar datos necesarios
+        cargarUsuarios();
         cargarCargos();
         cargarServicios();
 
@@ -93,17 +118,23 @@ public class AbmUsuariosController implements Initializable {
         tipoUsuarioComboBox.setItems(tiposUsuarioList);
         cargoComboBox.setItems(cargosList);
         servicioComboBox.setItems(serviciosList);
-        // Configurar busquedaComboBox
-        busquedaComboBox.setItems(usuariosList);
-        busquedaComboBox.setEditable(true);
-        busquedaComboBox.setOnKeyTyped(event -> filtrarUsuarios());
-        busquedaComboBox.setConverter(new UsuarioStringConverter());
 
-        // Inicializar estado de ComboBoxes y botones
-        servicioComboBox.setDisable(false);
-        gestionarServiciosButton.setDisable(false);
-        cargoComboBox.setDisable(false);
-        gestionarCargosButton.setDisable(false);
+        // Agregar NUEVO_AGENTE a la lista de usuarios
+        usuariosList.add(NUEVO_AGENTE);
+
+        // Create the FilteredList
+        filteredUsuariosList = new FilteredList<>(usuariosList, p -> true);
+
+        // Set the items of the ComboBox to the FilteredList
+        busquedaComboBox.setItems(filteredUsuariosList);
+
+        // Configurar busquedaComboBox
+        configurarBusquedaComboBox();
+
+        // Deshabilitar controles al inicio
+        setControlsEnabled(false);
+
+        // Deshabilitar botones de acción
         altaButton.setDisable(true);
         modificarButton.setDisable(true);
         eliminarButton.setDisable(true);
@@ -112,13 +143,36 @@ public class AbmUsuariosController implements Initializable {
         // Configurar ToggleGroup
         estadoToggleGroup = new ToggleGroup();
         usuarioHabilitadoCheckBox.setToggleGroup(estadoToggleGroup);
-        usuariosDeshabilitadoCheckBox.setToggleGroup(estadoToggleGroup);
+        usuarioDeshabilitadoCheckBox.setToggleGroup(estadoToggleGroup);
 
         // Cargar imagen por defecto
         imagenPerfilOriginal = imagenPerfilImageView.getImage();
 
         // Eventos adicionales
         tipoUsuarioComboBox.setOnAction(this::onTipoUsuarioSelected);
+
+    }
+
+
+    // Método para cargar usuarios (simulado)
+    private void cargarUsuarios() {
+        // Agregar usuarios de ejemplo a la lista
+        usuariosList.addAll(
+                new Empleado() {{
+                    setCuil(20123456789L);
+                    setApellidos("Pérez");
+                    setNombres("Juan");
+                    setMail("juan.perez@example.com");
+                    setTel(123456789);
+                }},
+                new Empleado() {{
+                    setCuil(20987654321L);
+                    setApellidos("García");
+                    setNombres("María");
+                    setMail("maria.garcia@example.com");
+                    setTel(987654321);
+                }}
+        );
 
     }
 
@@ -140,20 +194,193 @@ public class AbmUsuariosController implements Initializable {
         serviciosList.add(new Servicio(UUID.randomUUID(), NombreServicio.DIRECCION, Agrupacion.PLANTAPOLITICA));
     }
 
+
+    /**
+     * Método para inicializar el cuadro de búsqueda
+     */
+    private void configurarBusquedaComboBox() {
+
+        // Configurar busquedaComboBox
+        busquedaComboBox.setEditable(true);
+        busquedaComboBox.setConverter(new UsuarioStringConverter());
+
+        // Listener para cambios en el valor seleccionado
+        busquedaComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
+            onSeleccionarUsuario();
+        });
+
+        // Establecer un Custom Cell Factory para mostrar información adicional
+        busquedaComboBox.setCellFactory(param -> new ListCell<Usuario>() {
+            @Override
+            protected void updateItem(Usuario usuario, boolean empty) {
+                super.updateItem(usuario, empty);
+
+                if (empty || usuario == null) {
+                    setText(null);
+                } else {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(usuario.getNombreCompleto());
+
+                    if (usuario.getMail() != null && !usuario.getMail().isEmpty()) {
+                        sb.append(" <").append(usuario.getMail()).append(">");
+                    }
+
+                    if (usuario.getCuil() != 0) {
+                        sb.append("  CUIL: ").append(usuario.getCuil());
+                    }
+
+                    if (usuario.getTel() != 0) {
+                        sb.append("  Tel: ").append(usuario.getTel());
+                    }
+
+                    setText(sb.toString());
+                }
+            }
+        });
+
+        // Establecer un button cell para mostrar solo el nombre cuando se selecciona el resultado
+        busquedaComboBox.setButtonCell(new ListCell<Usuario>() {
+            @Override
+            protected void updateItem(Usuario usuario, boolean empty) {
+                super.updateItem(usuario, empty);
+
+                if (empty || usuario == null) {
+                    setText(null);
+                } else {
+                    setText(usuario.getNombreCompleto());
+                }
+            }
+        });
+
+        // Agregar un listener para cambios en la entrada de texto (busqueda de coincidencias)
+        busquedaComboBox.getEditor().textProperty().addListener((obs, oldText, newText) -> {
+            if (isFiltering) {
+                return;
+            }
+
+            filtrarUsuarios();
+
+            boolean matchFound = false;
+
+            // Buscar coincidencia exacta en los elementos filtrados
+            for (Usuario usuario : filteredUsuariosList) {
+                if (usuario.getNombreCompleto().equalsIgnoreCase(newText)) {
+                    Platform.runLater(() -> busquedaComboBox.getSelectionModel().select(usuario));
+                    matchFound = true;
+                    break;
+                }
+            }
+
+            if (!matchFound) {
+                Platform.runLater(() -> busquedaComboBox.getSelectionModel().clearSelection());
+                setControlsEnabled(false);
+                altaButton.setDisable(true);
+                modificarButton.setDisable(true);
+                eliminarButton.setDisable(true);
+                resetPasswdButton.setDisable(true);
+            }
+        });
+
+        // Agregar un listener para manejar eventos de teclas de flecha
+        busquedaComboBox.getEditor().addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() == KeyCode.DOWN || event.getCode() == KeyCode.UP) {
+                busquedaComboBox.show();
+                event.consume();
+            }
+        });
+
+        // Agregar un listener para la tecla TAB
+        busquedaComboBox.getEditor().addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() == KeyCode.TAB) {
+                busquedaComboBox.hide();
+                if (!event.isShiftDown()) {
+                    cuilTextField.requestFocus();
+                } else {
+                    // Handle Shift+Tab if necessary
+                }
+                event.consume();
+            }
+        });
+
+    }
+
+
+    // Método para habilitar o deshabilitar los controles
+    private void setControlsEnabled(boolean enabled) {
+        // Datos Personales
+        cuilTextField.setDisable(!enabled);
+        apellidosTextField.setDisable(!enabled);
+        nombresTextField.setDisable(!enabled);
+        mailTextField.setDisable(!enabled);
+        telTextField.setDisable(!enabled);
+        sexoComboBox.setDisable(!enabled);
+
+        // Domicilio
+        domCalleComboBox.setDisable(!enabled);
+        domNumeracionField.setDisable(!enabled);
+        domSinNumeroCheckBox.setDisable(!enabled);
+        domBarrioComboBox.setDisable(!enabled);
+        domCiudadComboBox.setDisable(!enabled);
+        domLocalidadComboBox.setDisable(!enabled);
+        domProvinciaComboBox.setDisable(!enabled);
+
+        // Tipo de Usuario y Asignaciones
+        tipoUsuarioComboBox.setDisable(!enabled);
+        cargoComboBox.setDisable(!enabled);
+        gestionarCargosButton.setDisable(!enabled);
+        servicioComboBox.setDisable(!enabled);
+        gestionarServiciosButton.setDisable(!enabled);
+
+        // Imagen de Perfil
+        imagenPerfilImageView.setDisable(!enabled);
+        cargarImagenButton.setDisable(!enabled);
+        revertirImagenButton.setDisable(!enabled);
+        eliminarImagenButton.setDisable(!enabled);
+
+        // Acciones
+        resetPasswdButton.setDisable(!enabled);
+
+        // CheckBoxes de Estado
+        usuarioHabilitadoCheckBox.setDisable(!enabled);
+        usuarioDeshabilitadoCheckBox.setDisable(!enabled);
+
+    }
+
+
     // Método para filtrar usuarios en el ComboBox de búsqueda
     private void filtrarUsuarios() {
-        String textoIngresado = busquedaComboBox.getEditor().getText().toLowerCase();
-        ObservableList<Usuario> filtrados = FXCollections.observableArrayList();
-
-        for (Usuario usuario : usuariosList) {
-            if (usuario.coincideCon(textoIngresado)) {
-                filtrados.add(usuario);
-            }
+        if (isFiltering) {
+            return;
         }
 
-        busquedaComboBox.setItems(filtrados);
-        busquedaComboBox.show();
+        isFiltering = true;
+        try {
+            String textoIngresado = busquedaComboBox.getEditor().getText().toLowerCase();
+
+            // Ocultar el menú desplegable antes de modificar el predicado
+            if (busquedaComboBox.isShowing()) {
+                busquedaComboBox.hide();
+            }
+
+            filteredUsuariosList.setPredicate(usuario -> {
+                if (usuario == null) {
+                    return false;
+                }
+                return usuario.getNombreCompleto().toLowerCase().contains(textoIngresado) ||
+                        String.valueOf(usuario.getCuil()).contains(textoIngresado) ||
+                        (usuario.getMail() != null && usuario.getMail().toLowerCase().contains(textoIngresado)) ||
+                        String.valueOf(usuario.getTel()).contains(textoIngresado);
+            });
+
+            // Mostrar el menú desplegable si hay elementos después de filtrar
+            if (!filteredUsuariosList.isEmpty()) {
+                busquedaComboBox.show();
+            }
+        } finally {
+            isFiltering = false;
+        }
     }
+
 
     // Evento al seleccionar un tipo de usuario
     @FXML
@@ -352,22 +579,39 @@ public class AbmUsuariosController implements Initializable {
 
     // Evento al seleccionar un usuario en el ComboBox de búsqueda
     @FXML
-    private void onSeleccionarUsuario(ActionEvent event) {
+    private void onSeleccionarUsuario() {
         Usuario usuarioSeleccionado = busquedaComboBox.getSelectionModel().getSelectedItem();
         if (usuarioSeleccionado != null) {
-            cargarUsuarioEnFormulario(usuarioSeleccionado);
-            modificarButton.setDisable(false);
-            eliminarButton.setDisable(false);
-            resetPasswdButton.setDisable(false);
-            altaButton.setDisable(true);
+            if (usuarioSeleccionado == NUEVO_AGENTE) {
+                // Se ha seleccionado "DAR DE ALTA NUEVO AGENTE"
+                limpiarFormulario();
+                setControlsEnabled(true);
+                altaButton.setDisable(false);
+                modificarButton.setDisable(true);
+                eliminarButton.setDisable(true);
+                resetPasswdButton.setDisable(true);
+                buscarButton.setDisable(true); // Deshabilita el botón "Buscar"
+                cuilTextField.requestFocus();  // Enfoca el campo CUIL
+            } else {
+                // Se ha seleccionado un usuario existente
+                cargarUsuarioEnFormulario(usuarioSeleccionado);
+                setControlsEnabled(true);
+                altaButton.setDisable(true);
+                modificarButton.setDisable(false);
+                eliminarButton.setDisable(false);
+                resetPasswdButton.setDisable(false);
+                buscarButton.setDisable(false); // Habilita el botón "Buscar"
+            }
         } else {
-            limpiarFormulario();
+            // Si la selección se ha limpiado
+            setControlsEnabled(false);
+            altaButton.setDisable(true);
             modificarButton.setDisable(true);
             eliminarButton.setDisable(true);
             resetPasswdButton.setDisable(true);
-            altaButton.setDisable(false);
         }
     }
+
 
     // Método para cargar los datos del usuario en el formulario
     private void cargarUsuarioEnFormulario(Usuario usuario) {
