@@ -213,7 +213,7 @@
                      <ToggleGroup fx:id="estadoToggleGroup" />
                   </toggleGroup>
                </RadioButton>
-                   <RadioButton fx:id="usuariosDeshabilitadoCheckBox" text="Deshabilitado" toggleGroup="$estadoToggleGroup" />
+                   <RadioButton fx:id="usuarioDeshabilitadoCheckBox" text="Deshabilitado" toggleGroup="$estadoToggleGroup" />
             </children>
          </VBox>
             <Button fx:id="altaButton" disable="true" minWidth="66.4" onAction="#onAlta" text="Alta" />
