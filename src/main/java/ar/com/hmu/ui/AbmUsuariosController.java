@@ -87,17 +87,16 @@ public class AbmUsuariosController implements Initializable {
     private File imagenPerfilFile;
     private Image imagenPerfilOriginal;
 
-    // Bandera para controlar el estado del botón "Alta"
-    private boolean isCancelMode = false;
+    // Banderas para saber cuando un campo de formulario cambió
+    private boolean isLoading = false;  // Indica si estamos cargando datos en el formulario
+    private boolean isFormModified = false;  // para cambios posteriores
 
     // Bandera que vamos a necesitar en filtrarUsuarios() para evitar una recursión infinita que se me daba
     private boolean isFiltering = false;
 
-    // Bandera para controlar la selección del usuario
-    private boolean isUserSelection = false;
-
     // Banderas de modo
     private boolean isAltaMode = false;
+    private boolean isCancelMode = false;
     private boolean isModificacionMode = false;
 
 
@@ -108,6 +107,11 @@ public class AbmUsuariosController implements Initializable {
         cargarUsuarios();
         cargarCargos();
         cargarServicios();
+
+        // Configuración inicial y carga de datos
+        addChangeListeners(); // Solo se llama aquí, antes de que cualquier dato se cargue
+        setControlsEnabled(false);
+        resetInterface();
 
         // Event handler para la tecla ESC
         rootPane.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
@@ -273,19 +277,19 @@ public class AbmUsuariosController implements Initializable {
             }
         });
 
-//        // Establecer un button cell para mostrar solo el nombre cuando se selecciona el resultado
-        busquedaComboBox.setButtonCell(new ListCell<Usuario>() {
-            @Override
-            protected void updateItem(Usuario usuario, boolean empty) {
-                super.updateItem(usuario, empty);
-
-                if (empty || usuario == null) {
-                    setText(null);
-                } else {
-                    setText(usuario.getNombreCompleto());
-                }
-            }
-        });
+        // Establecer un button cell para mostrar solo el nombre cuando se selecciona el resultado
+//        busquedaComboBox.setButtonCell(new ListCell<Usuario>() {
+//            @Override
+//            protected void updateItem(Usuario usuario, boolean empty) {
+//                super.updateItem(usuario, empty);
+//
+//                if (empty || usuario == null) {
+//                    setText(null);
+//                } else {
+//                    setText(usuario.getNombreCompleto());
+//                }
+//            }
+//        });
 
         // Agregar un listener para cambios en la entrada de texto (búsqueda de coincidencias)
         busquedaComboBox.getEditor().textProperty().addListener((obs, oldText, newText) -> {
@@ -462,6 +466,47 @@ public class AbmUsuariosController implements Initializable {
 
     }
 
+
+    /**
+     * Método para registrar listeners en los campos relevantes
+     */
+    private void addChangeListeners() {
+        // Escuchar en elementos TextField
+        cuilTextField.textProperty().addListener((observable, oldValue, newValue) -> onFormModified());
+        apellidosTextField.textProperty().addListener((observable, oldValue, newValue) -> onFormModified());
+        nombresTextField.textProperty().addListener((observable, oldValue, newValue) -> onFormModified());
+        mailTextField.textProperty().addListener((observable, oldValue, newValue) -> onFormModified());
+        telTextField.textProperty().addListener((observable, oldValue, newValue) -> onFormModified());
+
+        // Escuchar en elementos ComboBox
+        sexoComboBox.valueProperty().addListener((observable, oldValue, newValue) -> onFormModified());
+        tipoUsuarioComboBox.valueProperty().addListener((observable, oldValue, newValue) -> onFormModified());
+        cargoComboBox.valueProperty().addListener((observable, oldValue, newValue) -> onFormModified());
+        servicioComboBox.valueProperty().addListener((observable, oldValue, newValue) -> onFormModified());
+    }
+
+
+    /**
+     * Este método se llama cada vez que un campo cambia.
+     * pero solo habilitará el botón Dar de alta / Modificar (altaModButton) si no estamos en la fase de carga (isLoading)
+     */
+    private void checkForModifications() {
+        if (!isLoading) {
+            isFormModified = true;
+            altaModButton.setDisable(false); // Habilitar el botón de modificación
+        }
+    }
+
+
+    /**
+     * Método para Activar el Botón "Modificar" usuario
+     */
+    private void onFormModified() {
+        if (!isLoading) {  // Detecta cambios solo si no estamos en carga inicial
+            isFormModified = true;
+            altaModButton.setDisable(false);  // Habilitar botón cuando hay cambios
+        }
+    }
 
 
     /**
@@ -677,6 +722,11 @@ public class AbmUsuariosController implements Initializable {
      */
     @FXML
     private void onAltaMod(ActionEvent event) {
+        if (!isFormModified) {
+            mostrarMensaje("No se han realizado cambios para modificar.");
+            return;
+        }
+
         if (isAltaMode) {
             // "Dar de alta" mode
             if (validarCamposObligatorios()) {
@@ -710,20 +760,22 @@ public class AbmUsuariosController implements Initializable {
      */
     @FXML
     private void onCancelar(ActionEvent event) {
-        if (isAltaMode || isModificacionMode) {
-            // Operación "Cancelar"
+        if ((isAltaMode || isModificacionMode) && isFormModified) {
+            // Operación "Cancelar" con confirmación sólo si hubo modificaciones
             Alert confirmacion = new Alert(AlertType.CONFIRMATION);
             confirmacion.setTitle("Confirmación");
             confirmacion.setHeaderText("¿Cancelar la operación actual?");
-            confirmacion.setContentText("Se perderán los cambios no guardados.");
+            confirmacion.setContentText("Si ha realizado modificaciones, al cancelar ahora los cambios no se guardarán y se perderán.");
             confirmacion.showAndWait().ifPresent(response -> {
                 if (response == ButtonType.OK) {
                     resetInterface();
                 }
             });
+        } else if (isAltaMode || isModificacionMode) {
+            // Cancelar sin confirmación si no hubo modificaciones
+            resetInterface();
         } else {
-            // Operación "Salir"
-            // Close the window and return to main menu
+            // Operación "Salir" cuando no estamos en modo alta o modificación
             Stage stage = (Stage) cancelarButton.getScene().getWindow();
             stage.close();
         }
@@ -809,10 +861,10 @@ public class AbmUsuariosController implements Initializable {
 
 
     /**
-     * Deshabilita los controles adecuadamente cuando sea necesario
+     * Restablece los controles a un estado inicial cada vez que sea invocado
      */
     private void resetInterface() {
-        // Deshabilitar los controles del formulario
+        // Restablece todos los controles como antes
         setControlsEnabled(false);
 
         // Limpiar el formulario
@@ -827,18 +879,21 @@ public class AbmUsuariosController implements Initializable {
         busquedaComboBox.getEditor().clear();
 
         // Resetear botones al estado inicial
+        altaModButton.setDisable(true);
         altaModButton.setVisible(false);
-        eliminarButton.setVisible(false);
 
         cancelarButton.setVisible(true);
         cancelarButton.setText("Salir");
         cancelarButton.setDisable(false);
 
+        eliminarButton.setVisible(false);
+
         resetPasswdButton.setDisable(true);
 
-        // Resetear banderas de modo
+        // Resetear banderas...
         isAltaMode = false;
         isModificacionMode = false;
+        isFormModified = false;
 
     }
 
@@ -856,7 +911,7 @@ public class AbmUsuariosController implements Initializable {
             // Actualizar botones de acción
             altaModButton.setVisible(true);
             altaModButton.setText("Modificar");
-            altaModButton.setDisable(false);
+            altaModButton.setDisable(true); // Deshabilitado hasta que se detecte una modificación real
 
             cancelarButton.setVisible(true);
             cancelarButton.setText("Cancelar");
@@ -884,17 +939,21 @@ public class AbmUsuariosController implements Initializable {
      * @param usuario objeto de tipo Usuario
      */
     private void cargarUsuarioEnFormulario(Usuario usuario) {
-        // Actualizar la interfaz
+        // Indicar que estamos en la fase de carga
+        isLoading = true;
+
+        // Actualizar la interfaz con los datos del usuario
         tipoUsuarioComboBox.getSelectionModel().select(obtenerTipoUsuario(usuario));
         onTipoUsuarioSelected(null); // Aquí actualiza la interfaz
 
-        // Cargar datos...
+        // Cargar los datos...
         cuilTextField.setText(String.valueOf(usuario.getCuil()));
         apellidosTextField.setText(usuario.getApellidos());
         nombresTextField.setText(usuario.getNombres());
         mailTextField.setText(usuario.getMail());
         telTextField.setText(String.valueOf(usuario.getTel()));
         sexoComboBox.getSelectionModel().select(usuario.getSexo());
+
         // Cargar imagen de perfil
         Image image = ImageUtils.byteArrayToImage(usuario.getProfileImage());
         if (image != null) {
@@ -902,6 +961,13 @@ public class AbmUsuariosController implements Initializable {
         } else {
             imagenPerfilImageView.setImage(imagenPerfilOriginal);
         }
+
+        // Restablecer el estado del formulario a "sin modificaciones"
+        isFormModified = false;
+        altaModButton.setDisable(true);  // Solo se habilitará cuando haya una modificación
+
+        // Ahora, desactivar la fase de carga para detectar modificaciones a partir de aquí
+        isLoading = false;
 
     }
 
