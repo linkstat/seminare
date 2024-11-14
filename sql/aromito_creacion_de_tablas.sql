@@ -15,29 +15,29 @@ RETURNS BINARY(16)
 DETERMINISTIC
 BEGIN
   RETURN UNHEX(CONCAT(
-    SUBSTRING(uuid, 25, 12),
-    SUBSTRING(uuid, 20, 4),
-    SUBSTRING(uuid, 15, 4),
-    SUBSTRING(uuid, 10, 4),
-    SUBSTRING(uuid, 1, 8)
+    SUBSTRING(uuid, 1, 8),      -- aaaaaaaa
+    SUBSTRING(uuid, 10, 4),     -- bbbb
+    SUBSTRING(uuid, 15, 4),     -- cccc
+    SUBSTRING(uuid, 20, 4),     -- dddd
+    SUBSTRING(uuid, 25, 12)     -- eeeeeeeeeeee
   ));
 END$$
 DELIMITER ;
 
 -- Función  para recuperar y convertir de nuevo a UUID
 DELIMITER $$
-CREATE FUNCTION `BIN_TO_UUID2`(b BINARY(16))
+CREATE FUNCTION `BIN_TO_UUID`(b BINARY(16))
 RETURNS CHAR(36) CHARSET ascii
 DETERMINISTIC
 BEGIN
    DECLARE hexStr CHAR(32);
    SET hexStr = HEX(b);
    RETURN LOWER(CONCAT(
-     SUBSTR(hexStr, 25, 8), '-',      -- eeeeeeee
-     SUBSTR(hexStr, 21, 4), '-',      -- eeee
-     SUBSTR(hexStr, 13, 8), '-',      -- ddddcccc
-     SUBSTR(hexStr, 9, 4), '-',       -- bbbb
-     SUBSTR(hexStr, 1, 8)             -- aaaaaaaa
+     SUBSTR(hexStr, 1, 8), '-',      -- aaaaaaaa
+     SUBSTR(hexStr, 9, 4), '-',      -- bbbb
+     SUBSTR(hexStr, 13, 4), '-',     -- cccc
+     SUBSTR(hexStr, 17, 4), '-',     -- dddd
+     SUBSTR(hexStr, 21, 12)          -- eeeeeeeeeeee
   ));
 END$$
 DELIMITER ;

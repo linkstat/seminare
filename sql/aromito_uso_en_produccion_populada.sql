@@ -722,22 +722,22 @@ INSERT INTO `usuario` VALUES (0x0028F8594024A9A311EF8E9548EBD648, '2024-10-20', 
 INSERT INTO `usuario` VALUES (0x0028F8594024A9A311EF8E9548EBEF31, '2024-10-20', 24554978443, 'Bustos', 'Sebastián', 'OTRO', 1, 'sebustos@hmu.com.ar', 'Empleado', 0x0028F8594024A9A311EF8E9548E66221, NULL, NULL, '$2a$12$x9SDga8sk3DyjvdeIwkhl.2e9wcWHewfHEFQFKkFp1.FiAKcyRZUG', NULL);
 
 -- ----------------------------
--- Function structure for BIN_TO_UUID2
+-- Function structure for BIN_TO_UUID
 -- ----------------------------
-DROP FUNCTION IF EXISTS `BIN_TO_UUID2`;
+DROP FUNCTION IF EXISTS `BIN_TO_UUID`;
 delimiter ;;
-CREATE FUNCTION `BIN_TO_UUID2`(b BINARY(16))
+CREATE FUNCTION `BIN_TO_UUID`(b BINARY(16))
  RETURNS char(36) CHARSET ascii COLLATE ascii_general_ci
   DETERMINISTIC
 BEGIN
    DECLARE hexStr CHAR(32);
    SET hexStr = HEX(b);
    RETURN LOWER(CONCAT(
-     SUBSTR(hexStr, 25, 8), '-',      -- eeeeeeee
-     SUBSTR(hexStr, 21, 4), '-',      -- eeee
-     SUBSTR(hexStr, 13, 8), '-',      -- ddddcccc
-     SUBSTR(hexStr, 9, 4), '-',       -- bbbb
-     SUBSTR(hexStr, 1, 8)             -- aaaaaaaa
+     SUBSTR(hexStr, 1, 8), '-',      -- aaaaaaaa
+     SUBSTR(hexStr, 9, 4), '-',      -- bbbb
+     SUBSTR(hexStr, 13, 4), '-',     -- cccc
+     SUBSTR(hexStr, 17, 4), '-',     -- dddd
+     SUBSTR(hexStr, 21, 12)          -- eeeeeeeeeeee
   ));
 END
 ;;
@@ -753,11 +753,11 @@ CREATE FUNCTION `UUID_TO_BIN`(uuid CHAR(36))
   DETERMINISTIC
 BEGIN
   RETURN UNHEX(CONCAT(
-    SUBSTRING(uuid, 25, 12),
-    SUBSTRING(uuid, 20, 4),
-    SUBSTRING(uuid, 15, 4),
-    SUBSTRING(uuid, 10, 4),
-    SUBSTRING(uuid, 1, 8)
+    SUBSTRING(uuid, 1, 8),      -- aaaaaaaa
+    SUBSTRING(uuid, 10, 4),     -- bbbb
+    SUBSTRING(uuid, 15, 4),     -- cccc
+    SUBSTRING(uuid, 20, 4),     -- dddd
+    SUBSTRING(uuid, 25, 12)     -- eeeeeeeeeeee
   ));
 END
 ;;

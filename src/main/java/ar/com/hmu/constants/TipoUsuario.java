@@ -1,10 +1,29 @@
 package ar.com.hmu.constants;
 
-public class TipoUsuario {
+public enum TipoUsuario {
+    EMPLEADO("Empleado", "Agente"),
+    JEFATURA_DE_SERVICIO("JefaturaDeServicio", "Jefe de Servicio"),
+    OFICINA_DE_PERSONAL("OficinaDePersonal", "Oficina de Personal"),
+    DIRECCION("Direccion", "Directivo");
 
-    public static final String EMPLEADO = "Empleado";
-    public static final String JEFATURA_DE_SERVICIO = "Jefe de Servicio";
-    public static final String OFICINA_DE_PERSONAL = "Oficina de Personal";
-    public static final String DIRECCION = "Directivo";
+    private final String internalName;
+    private final String displayName;
 
+    TipoUsuario(String internalName, String displayName) {
+        this.internalName = internalName;
+        this.displayName = displayName;
+    }
+
+    public String getInternalName() {
+        return internalName;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    @Override
+    public String toString() {
+        return displayName;  // Por defecto, toString() mostrará el texto alternativo
+    }
 }

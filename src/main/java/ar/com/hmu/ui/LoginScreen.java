@@ -1,10 +1,8 @@
 package ar.com.hmu.ui;
 
-import ar.com.hmu.auth.LoginService;
-import ar.com.hmu.config.AppConfigReader;
-import ar.com.hmu.repository.DatabaseConnector;
-import ar.com.hmu.repository.UsuarioRepository;
-import ar.com.hmu.utils.AppInfo;
+import java.util.Objects;
+
+import ar.com.hmu.repository.*;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -13,7 +11,9 @@ import javafx.scene.image.Image;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
-import java.util.Objects;
+import ar.com.hmu.auth.LoginService;
+import ar.com.hmu.config.AppConfigReader;
+import ar.com.hmu.utils.AppInfo;
 
 /**
  * Clase principal que representa la pantalla de inicio de sesión de la aplicación.
@@ -45,7 +45,10 @@ public class LoginScreen extends Application {
             //LoginService loginService = initializeLoginService();
             AppConfigReader appConfigReader = new AppConfigReader();
             DatabaseConnector databaseConnector = new DatabaseConnector(appConfigReader);
-            UsuarioRepository usuarioRepository = new UsuarioRepository(databaseConnector);
+            DomicilioRepository domicilioRepository = new DomicilioRepository(databaseConnector);
+            CargoRepository cargoRepository = new CargoRepository(databaseConnector);
+            ServicioRepository servicioRepository = new ServicioRepository(databaseConnector);
+            UsuarioRepository usuarioRepository = new UsuarioRepository(databaseConnector, domicilioRepository, cargoRepository, servicioRepository);
             LoginService loginService = new LoginService(usuarioRepository);
 
             // Cargar el archivo FXML
@@ -88,7 +91,10 @@ public class LoginScreen extends Application {
     private LoginService initializeLoginService() {
         AppConfigReader appConfigReader = new AppConfigReader();
         DatabaseConnector databaseConnector = new DatabaseConnector(appConfigReader);
-        UsuarioRepository usuarioRepository = new UsuarioRepository(databaseConnector);
+        DomicilioRepository domicilioRepository = new DomicilioRepository(databaseConnector);
+        CargoRepository cargoRepository = new CargoRepository(databaseConnector);
+        ServicioRepository servicioRepository = new ServicioRepository(databaseConnector);
+        UsuarioRepository usuarioRepository = new UsuarioRepository(databaseConnector, domicilioRepository, cargoRepository, servicioRepository);
         return new LoginService(usuarioRepository);
     }
 
