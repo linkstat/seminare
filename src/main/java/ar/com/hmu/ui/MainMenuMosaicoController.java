@@ -1,17 +1,12 @@
 package ar.com.hmu.ui;
 
-import ar.com.hmu.repository.UsuarioRepository;
-import ar.com.hmu.service.MainMenuMosaicoService;
-import ar.com.hmu.model.Usuario;
-import ar.com.hmu.repository.DatabaseConnector;
-import ar.com.hmu.service.UsuarioService;
-import ar.com.hmu.utils.AlertUtils;
-import static ar.com.hmu.utils.SessionUtils.handleLogout;
-import static ar.com.hmu.utils.ServerStatusUtils.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 
-import ar.com.hmu.utils.AppInfo;
-import ar.com.hmu.utils.PasswordDialogUtils;
-import ar.com.hmu.utils.SessionUtils;
+import ar.com.hmu.repository.*;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -24,7 +19,15 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.scene.text.Text;
 
-import java.io.IOException;
+import ar.com.hmu.model.Usuario;
+import ar.com.hmu.service.MainMenuMosaicoService;
+import ar.com.hmu.service.UsuarioService;
+import ar.com.hmu.utils.AlertUtils;
+import ar.com.hmu.utils.AppInfo;
+import ar.com.hmu.utils.PasswordDialogUtils;
+import ar.com.hmu.utils.SessionUtils;
+import static ar.com.hmu.utils.SessionUtils.handleLogout;
+import static ar.com.hmu.utils.ServerStatusUtils.*;
 
 /**
  * Controlador para gestionar el comportamiento del menú principal en forma de mosaico.
@@ -122,17 +125,26 @@ public class MainMenuMosaicoController {
     @FXML
     private Label serverStatusLabel;
 
-    private MainMenuMosaicoService mainMenuMosaicoService; // Servicio para gestionar la lógica del menú principal
-    private DatabaseConnector databaseConnector; // Necesario para la verificación del estado del servidor.
+    private MainMenuMosaicoService mainMenuMosaicoService;  // Servicio para gestionar la lógica del menú principal
+    private DatabaseConnector databaseConnector;  // Necesario para la verificación del estado del servidor.
+
+    // Inyección de dependencias en UsuarioRepository (implementación de patrón «Lazy Loading»)
+    private DomicilioRepository domicilioRepository;
+    private CargoRepository cargoRepository;
+    private ServicioRepository servicioRepository;
+
     private Usuario usuarioActual;
     private UsuarioService usuarioService;
+    private Stage stage;  // Necesario para guardar las propiedades de ventana (asi lo llamo desde LoginController)
+
+    private static final String CONFIG_FILE_NAME = "window.properties";  // Archivo de configuración
+
 
     /**
      * Inicializa los componentes después de que el archivo FXML ha sido cargado.
      */
     @FXML
     public void initialize() {
-        //updateServerStatus(databaseConnector, serverStatusLabel, serverStatusIcon);
         setupEventHandlers();
     }
 
@@ -142,13 +154,20 @@ public class MainMenuMosaicoController {
      * @param usuario El usuario que ha iniciado sesión.
      * @param databaseConnector El conector de la base de datos.
      */
-    public void postInitialize(Usuario usuario, DatabaseConnector databaseConnector) {
+    public void postInitialize(Usuario usuario, DatabaseConnector databaseConnector, DomicilioRepository domicilioRepository, CargoRepository cargoRepository, ServicioRepository servicioRepository, Stage stage) {
         this.mainMenuMosaicoService = new MainMenuMosaicoService(usuario);
 
         this.usuarioActual = usuario;
-        this.databaseConnector = databaseConnector; // Asegúrate de asignar el databaseConnector al campo de clase
-        this.usuarioService = new UsuarioService(new UsuarioRepository(databaseConnector));
+        this.databaseConnector = databaseConnector;
+        this.domicilioRepository = domicilioRepository;
+        this.cargoRepository = cargoRepository;
+        this.servicioRepository = servicioRepository;
+        this.stage = stage;  // Guardar la referencia al Stage
+        this.usuarioService = new UsuarioService(new UsuarioRepository(databaseConnector, domicilioRepository, cargoRepository, servicioRepository));
         this.mainMenuMosaicoService = new MainMenuMosaicoService(usuario);
+
+        // Configurar el evento de cierre de la ventana
+        this.stage.setOnCloseRequest(event -> saveWindowPreferences());
 
         // Actualizar la información del agente
         agentFullNameText.setText(mainMenuMosaicoService.getAgenteFullName());
@@ -173,7 +192,109 @@ public class MainMenuMosaicoController {
         updateServerStatusUI(databaseConnector, serverStatusLabel, serverStatusIcon);
         startPeriodicServerCheck(databaseConnector, serverStatusLabel, serverStatusIcon);
 
+        // Configurar el evento de cierre de la ventana
+        this.stage.setOnCloseRequest(event -> saveWindowPreferences());
+
+        // Otros códigos de inicialización
+        loadWindowPreferences(); // Cargar preferencias de la ventana en este punto
+
     }
+
+    /**
+     * Método que define una ruta y nombre de archivo, según el sistema operativo en el cuals e ejecute la aplicación
+     * <p>
+     * Si el sistema es windows, la configuración se almacena dentro de LocalAppData del usuario.
+     * Si el sistema es UNIX-Like, se almacena en la carpeta .config dentro del HOME de usuario.
+     * @return Ruta y nombre de archivo (según sistema operativo)
+     */
+    private File getConfigFilePath() {
+        String osName = System.getProperty("os.name").toLowerCase();
+        String baseDir;
+
+        if (osName.contains("win")) { // Determinar si Windows u otro OS
+            // Windows: %LocalAppData%\CFG_FOLDER_NAME\UUID_usuario\window.properties
+            baseDir = System.getenv("LocalAppData");
+        } else {
+            // Unix/Linux/FreeBSD/Mac: $HOME/.config/CFG_FOLDER_NAME/UUID_usuario/window.properties
+            baseDir = System.getenv("HOME") + File.separator + ".config";
+        }
+
+        // Crear la ruta completa: baseDir + /CFG_FOLDER_NAME/UUID_usuario/window.properties
+        //File userConfigDir = new File(baseDir, AppInfo.CFG_FOLDER_NAME + File.separator + usuarioActual.getId().toString());
+        String folderId = String.valueOf(usuarioActual.getCuil());
+        //String folderId = String.valueOf(usuarioActual.getId());
+        File userConfigDir = new File(baseDir, AppInfo.CFG_FOLDER_NAME + File.separator + folderId);
+
+        if (!userConfigDir.exists()) {
+            userConfigDir.mkdirs(); // Crear la ruta si no existe
+        }
+
+        return new File(userConfigDir, CONFIG_FILE_NAME);
+    }
+
+
+    /**
+     * Método que configura el tamaño de la ventana al momento de cerrarse.
+     */
+    public void saveWindowPreferences() {
+        Properties properties = new Properties();
+        properties.setProperty("width", String.valueOf(stage.getWidth()));
+        properties.setProperty("height", String.valueOf(stage.getHeight()));
+        properties.setProperty("x", String.valueOf(stage.getX()));
+        properties.setProperty("y", String.valueOf(stage.getY()));
+
+        String cuil = String.valueOf(usuarioActual.getCuil()); // Convierte el CUIL a String
+
+        File configFile = getConfigFilePath();
+        try (FileOutputStream out = new FileOutputStream(configFile)) {
+            properties.store(out, "# Window Preferences for User CUIL " + usuarioActual.getCuil());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
+     * Método que carga las preferencias de la ventana (dimensiones y posición).
+     */
+    public void loadWindowPreferences() {
+        Properties properties = new Properties();
+        File configFile = getConfigFilePath();
+
+        if (configFile.exists()) {
+            try (FileInputStream in = new FileInputStream(configFile)) {
+                properties.load(in);
+
+                double width = Double.parseDouble(properties.getProperty("window.width", "800"));
+                double height = Double.parseDouble(properties.getProperty("window.height", "600"));
+                double x = Double.parseDouble(properties.getProperty("window.x", "100"));
+                double y = Double.parseDouble(properties.getProperty("window.y", "100"));
+
+                stage.setWidth(width);
+                stage.setHeight(height);
+                stage.setX(x);
+                stage.setY(y);
+            } catch (IOException | NumberFormatException e) {
+                e.printStackTrace(); // Error en la carga del archivo de configuración, se usan valores predeterminados
+            }
+        }
+    }
+
+
+    /**
+     * Método para obtener la ruta y nombre del archivo
+     * @param cuil Nro de CUIL de un usuario
+     * @return la ruta y nombre del archivo
+     */
+    private String getUserPreferencesFilePath(String cuil) {
+        String directoryPath = System.getProperty("user.home") + "/.app_config/";
+        File directory = new File(directoryPath);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+        return directoryPath + cuil + "_window.properties";
+    }
+
 
     /**
      * Configura los manejadores de eventos para los componentes del menú y mosaicos.

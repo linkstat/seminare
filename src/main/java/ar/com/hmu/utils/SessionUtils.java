@@ -2,8 +2,7 @@ package ar.com.hmu.utils;
 
 import ar.com.hmu.auth.LoginService;
 import ar.com.hmu.config.AppConfigReader;
-import ar.com.hmu.repository.DatabaseConnector;
-import ar.com.hmu.repository.UsuarioRepository;
+import ar.com.hmu.repository.*;
 import ar.com.hmu.ui.LoginController;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -31,7 +30,10 @@ public class SessionUtils {
             // Configurar las dependencias
             AppConfigReader appConfigReader = new AppConfigReader();
             DatabaseConnector databaseConnector = new DatabaseConnector(appConfigReader);
-            UsuarioRepository usuarioRepository = new UsuarioRepository(databaseConnector);
+            DomicilioRepository domicilioRepository = new DomicilioRepository(databaseConnector);
+            CargoRepository cargoRepository = new CargoRepository(databaseConnector);
+            ServicioRepository servicioRepository = new ServicioRepository(databaseConnector);
+            UsuarioRepository usuarioRepository = new UsuarioRepository(databaseConnector, domicilioRepository, cargoRepository, servicioRepository);
             LoginService loginService = new LoginService(usuarioRepository);
 
             controller.setLoginService(loginService);
@@ -40,7 +42,7 @@ public class SessionUtils {
 
             // Configurar la nueva ventana
             Stage stage = new Stage();
-            stage.setTitle("Inicio de sesión :: Sistema de Gestión de Ausentismo HMU");
+            stage.setTitle("Inicio de sesión" + " :: " + AppInfo.PRG_LONG_TITLE);
             stage.setResizable(false);
 
             Scene scene = new Scene(root);

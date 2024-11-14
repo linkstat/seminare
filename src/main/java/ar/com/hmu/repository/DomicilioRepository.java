@@ -1,11 +1,14 @@
 package ar.com.hmu.repository;
 
-import ar.com.hmu.model.Domicilio;
-import ar.com.hmu.repository.dao.GenericDAO;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import ar.com.hmu.factory.DomicilioFactory;
+import ar.com.hmu.model.Domicilio;
+import ar.com.hmu.repository.dao.GenericDAO;
+
 
 /**
  * Clase encargada de las operaciones relacionadas con la entidad Domicilio en la base de datos.
@@ -55,22 +58,15 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return new Domicilio.Builder()
-                            .setCalle(rs.getString("calle"))
-                            .setNumeracion(rs.getString("numeracion"))
-                            .setBarrio(rs.getString("barrio"))
-                            .setCiudad(rs.getString("ciudad"))
-                            .setLocalidad(rs.getString("localidad"))
-                            .setProvincia(rs.getString("provincia"))
-                            .build();
-                } else {
-                    return null; // No se encontró el domicilio
+                    return DomicilioFactory.createDomicilio(rs);
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Error al leer el domicilio por UUID", e);
         }
+        return null;
+
     }
 
     @Override

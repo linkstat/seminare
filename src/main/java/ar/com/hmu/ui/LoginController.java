@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.prefs.Preferences;
 
+import ar.com.hmu.repository.*;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -17,8 +18,6 @@ import javafx.stage.Stage;
 
 import ar.com.hmu.auth.LoginService;
 import ar.com.hmu.model.Usuario;
-import ar.com.hmu.repository.DatabaseConnector;
-import ar.com.hmu.repository.UsuarioRepository;
 import ar.com.hmu.service.UsuarioService;
 import ar.com.hmu.utils.AlertUtils;
 import ar.com.hmu.utils.AppInfo;
@@ -71,6 +70,11 @@ public class LoginController {
 
     private UsuarioService usuarioService; // objeto para persistencia en la BD
 
+    // Instancias que deberemos pasarle a UsuarioRepository para inyección de dependencias (necesario para «Lazy Loading»)
+    private DomicilioRepository domicilioRepository;
+    private CargoRepository cargoRepository;
+    private ServicioRepository servicioRepository;
+
     /**
      * Método para establecer el {@link LoginService} que se utilizará para la autenticación.
      *
@@ -98,7 +102,7 @@ public class LoginController {
 
         // Configurar el campo de texto para el CUIL
         CuilUtils.configureCuilField(usernameField);
-        //configureCuilField();  // el método fue movido a la clase CuilUtils del paquete utils
+        //configureCuilField();  // el método fue movido a la clase CuilUtils del paquete utils, porque ahora se utiliza también en otros lugares
 
         configureShowPassword(); // Configurar el checkbox de mostrar/ocultar contraseña
         loadUserCuil();
@@ -141,7 +145,7 @@ public class LoginController {
         }
 
         // Inicializar UsuarioService
-        this.usuarioService = new UsuarioService(new UsuarioRepository(databaseConnector));
+        this.usuarioService = new UsuarioService(new UsuarioRepository(databaseConnector, domicilioRepository, cargoRepository, servicioRepository));
 
         boolean b = updateServerStatusUI(databaseConnector, serverStatusLabel, serverStatusIcon);  // Actualizar el estado del servidor
         startPeriodicServerCheck(databaseConnector, serverStatusLabel, serverStatusIcon);  // Iniciar chequeo periódico del servidor
@@ -266,7 +270,7 @@ public class LoginController {
                     throw new IllegalStateException("No se pudo recuperar el usuario después de la autenticación.");
                 }
 
-                UsuarioService usuarioService = new UsuarioService(new UsuarioRepository(databaseConnector));
+                UsuarioService usuarioService = new UsuarioService(new UsuarioRepository(databaseConnector, domicilioRepository, cargoRepository, servicioRepository));
                 // Verificar si el usuario tiene la contraseña predeterminada
                 if (usuario.isDefaultPassword()) {
                     // Mostrar ventana para que el usuario cambie la contraseña
@@ -356,15 +360,17 @@ public class LoginController {
                 throw new IllegalStateException("El controlador del menú principal no fue inicializado correctamente.");
             }
 
-            controller.postInitialize(usuario,databaseConnector);
-
+            // Obtener el Stage actual y pasar el Stage al controlador
             Stage stage = (Stage) loginButton.getScene().getWindow();
+
+            // Pasar usuario, databaseConnector, y stage a postInitialize
+            controller.postInitialize(usuario, databaseConnector, domicilioRepository, cargoRepository, servicioRepository, stage);
+
             Scene scene = new Scene(root);
             stage.setScene(scene);
+            stage.setResizable(true);  // Establecer propiedades Hacer que el Stage sea redimensionable
+            stage.setTitle("Menú Principal" + " :: " + AppInfo.PRG_LONG_TITLE);  // Establecer un título a la ventana
 
-            // Establecer propiedades Hacer que el Stage sea redimensionable
-            stage.setResizable(true);
-            stage.setTitle("Menú Principal" + " :: " + AppInfo.PRG_LONG_TITLE);
 
         } catch (IOException e) {
             e.printStackTrace(); // Para imprimir todo el stack trace y facilitar el diagnóstico.

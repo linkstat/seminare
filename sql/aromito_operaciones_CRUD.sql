@@ -75,7 +75,7 @@ FROM Domicilio
 WHERE calle = 'Catamarca' AND numeracion = 441 AND ciudad = 'Córdoba' AND provincia = 'Córdoba'
 LIMIT 1;
 -- Opcional: verificar que se obtuvo el ID correctamente
-SELECT BIN_TO_UUID2(@HMUdomID) AS domicilioHMU;
+SELECT BIN_TO_UUID(@HMUdomID) AS domicilioHMU;
 
 -- Obtener el ID del domicilio del HIM (Lavalleja 3050)
 SELECT id INTO @HIMdomID
@@ -83,7 +83,7 @@ FROM Domicilio
 WHERE calle = 'Lavalleja' AND numeracion = 3050 AND ciudad = 'Córdoba' AND provincia = 'Córdoba'
 LIMIT 1;
 -- Opcional: verificar que se obtuvo el ID correctamente
-SELECT BIN_TO_UUID2(@HIMdomID) AS domicilioHIM;
+SELECT BIN_TO_UUID(@HIMdomID) AS domicilioHIM;
 
 -- Generar UUIDs y almacenarlos en variables, para luego usar con JefaturaDeServicios
 SET @JefeAdmisionID = UUID_TO_BIN(UUID());
@@ -193,7 +193,7 @@ JOIN Usuario U ON D.id = U.id
 WHERE U.apellidos = 'Marino' AND U.tipoUsuario = 'Direccion'
 LIMIT 1;
 -- Opcionalmente, verificar que se obtuvo el ID correctamente
-SELECT BIN_TO_UUID2(@dirID) AS dirID;
+SELECT BIN_TO_UUID(@dirID) AS dirID;
 
 -- Obtener el ID del actual subdirector (cuyo apellido es 'Vitali')
 SELECT D.id INTO @subdirID
@@ -202,7 +202,7 @@ JOIN Usuario U ON D.id = U.id
 WHERE U.apellidos = 'Vitali' AND U.tipoUsuario = 'Direccion'
 LIMIT 1;
 -- Opcionalmente, verificar que se obtuvo el ID correctamente
-SELECT BIN_TO_UUID2(@subdirID) AS subdirID;
+SELECT BIN_TO_UUID(@subdirID) AS subdirID;
 
 -- Insertar Servicios
 INSERT INTO Servicio (id, nombre, agrupacion, direccionID)
@@ -286,7 +286,7 @@ LIMIT 20;
 
 -- Listar usuarios Empleados
 SELECT
-    BIN_TO_UUID2(E.id) AS empleado_id,
+    BIN_TO_UUID(E.id) AS empleado_id,
     U.apellidos,
     U.nombres,
     U.cuil,
@@ -301,7 +301,7 @@ JOIN Servicio S ON E.servicioID = S.id;
 
 -- Listar usuarios de tipo Direccion cargados
 SELECT
-    BIN_TO_UUID2(id) AS usuario_id,
+    BIN_TO_UUID(id) AS usuario_id,
     nombres,
     apellidos,
     mail,
@@ -316,10 +316,10 @@ WHERE tipoUsuario = 'Direccion';
 
 -- Visualizar Servicios a cargo del Director
 SELECT
-    BIN_TO_UUID2(S.id) AS servicio_id,
+    BIN_TO_UUID(S.id) AS servicio_id,
     S.nombre AS servicio,
     S.agrupacion,
-    BIN_TO_UUID2(S.direccionID) AS direccion_id,
+    BIN_TO_UUID(S.direccionID) AS direccion_id,
     U.nombres AS director_nombres,
     U.apellidos AS director_apellidos
 FROM Servicio S
@@ -330,10 +330,10 @@ WHERE U.apellidos = 'Marino' AND U.tipoUsuario = 'Direccion';
 
 -- Visualizar Servicios a cargo del Subdirector
 SELECT
-    BIN_TO_UUID2(S.id) AS servicio_id,
+    BIN_TO_UUID(S.id) AS servicio_id,
     S.nombre AS servicio,
     S.agrupacion,
-    BIN_TO_UUID2(S.direccionID) AS direccion_id,
+    BIN_TO_UUID(S.direccionID) AS direccion_id,
     U.nombres AS director_nombres,
     U.apellidos AS director_apellidos
 FROM Servicio S
@@ -344,7 +344,7 @@ WHERE U.apellidos = 'Vitali' AND U.tipoUsuario = 'Direccion';
 
 -- Listar asignaciones de Jefes a Servicios y Director superior
 SELECT
-    BIN_TO_UUID2(J.servicioID) AS servicio_id,
+    BIN_TO_UUID(J.servicioID) AS servicio_id,
     S.nombre AS servicio_nombre,
     CONCAT(UJ.nombres, ' ', UJ.apellidos) AS jefe_de_servicio,
     UJ.mail AS jefe_mail,

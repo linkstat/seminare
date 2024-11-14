@@ -28,6 +28,13 @@ public abstract class Usuario {
 	private byte[] profileImage;
 	private Servicio servicio;
 
+	// Atributos para implementar el patrón «Lazy Loading»
+	// Una solución equilibrada: almacenar la referencias de los objetos (además de los propios objetos), evita tener que inicializar los objetos (en este caso Cargo, Servicio, Domicilio)evitando tener que cargar las entidades completas desde la BD
+	private UUID domicilioId;
+	private UUID cargoId;
+	private UUID servicioId;
+
+
 	// Constructor por defecto
 	public Usuario(){
 		//void
@@ -94,6 +101,18 @@ public abstract class Usuario {
 		return cargo;
 	}
 
+	public UUID getDomicilioId() {
+		return domicilioId;
+	}
+
+	public UUID getCargoId() {
+		return cargoId;
+	}
+
+	public UUID getServicioId() {
+		return servicioId;
+	}
+
 	public byte[] getProfileImage() {
 		return profileImage;
 	}
@@ -152,6 +171,7 @@ public abstract class Usuario {
 		return PasswordUtils.validatePassword(rawPasswordArray, this.password);
 	}
 
+
 	// Setters
 
 	public void setId(UUID id) {
@@ -196,6 +216,18 @@ public abstract class Usuario {
 
 	public void setCargo(Cargo cargo) {
 		this.cargo = cargo;
+	}
+
+	public void setDomicilioId(UUID domicilioId) {
+		this.domicilioId = domicilioId;
+	}
+
+	public void setCargoId(UUID cargoId) {
+		this.cargoId = cargoId;
+	}
+
+	public void setServicioId(UUID servicioId) {
+		this.servicioId = servicioId;
 	}
 
 	public void setProfileImage(byte[] profileImage) {

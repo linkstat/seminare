@@ -2,7 +2,6 @@ package ar.com.hmu.auth;
 
 import ar.com.hmu.model.Usuario;
 import ar.com.hmu.repository.UsuarioRepository;
-import ar.com.hmu.utils.PasswordUtils;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -65,7 +64,7 @@ public class LoginService {
     }
 
     public Usuario getUsuarioByCuil(long cuil) throws SQLException {
-        return usuarioRepository.getUsuarioByCuil(cuil);
+        return usuarioRepository.findUsuarioByCuil(cuil);
     }
 
 

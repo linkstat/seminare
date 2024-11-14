@@ -61,7 +61,7 @@ public class AbmUsuariosController implements Initializable {
     @FXML private ComboBox<String> domProvinciaComboBox;
 
     // Tipo de Usuario y Asignaciones
-    @FXML private ComboBox<String> tipoUsuarioComboBox;
+    @FXML private ComboBox<TipoUsuario> tipoUsuarioComboBox;
     @FXML private ComboBox<Cargo> cargoComboBox;
     @FXML private Button gestionarCargosButton;
     @FXML private ComboBox<Servicio> servicioComboBox;
@@ -80,7 +80,7 @@ public class AbmUsuariosController implements Initializable {
     private ObservableList<Usuario> usuariosList = FXCollections.observableArrayList();
     private FilteredList<Usuario> filteredUsuariosList;
     private ObservableList<Sexo> sexosList = FXCollections.observableArrayList(Sexo.values());
-    private ObservableList<String> tiposUsuarioList = FXCollections.observableArrayList(TipoUsuario.EMPLEADO, TipoUsuario.JEFATURA_DE_SERVICIO, TipoUsuario.OFICINA_DE_PERSONAL, TipoUsuario.DIRECCION);
+    private ObservableList<TipoUsuario> tiposUsuarioList = FXCollections.observableArrayList(TipoUsuario.values());
     private ObservableList<Cargo> cargosList = FXCollections.observableArrayList();
     private ObservableList<Servicio> serviciosList = FXCollections.observableArrayList();
 
@@ -515,11 +515,11 @@ public class AbmUsuariosController implements Initializable {
      */
     @FXML
     private void onTipoUsuarioSelected(ActionEvent event) {
-        String tipoUsuario = tipoUsuarioComboBox.getSelectionModel().getSelectedItem();
+        TipoUsuario tipoUsuario = tipoUsuarioComboBox.getSelectionModel().getSelectedItem();
 
         if (tipoUsuario != null) {
             switch (tipoUsuario) {
-                case TipoUsuario.DIRECCION:
+                case DIRECCION:
                     // Asignar servicio y cargo automáticamente
                     Servicio servicioDireccion = buscarServicioPorNombre(NombreServicio.DIRECCION);
                     servicioComboBox.getSelectionModel().select(servicioDireccion);
@@ -531,7 +531,7 @@ public class AbmUsuariosController implements Initializable {
                     cargoComboBox.setDisable(true);
                     gestionarCargosButton.setDisable(true);
                     break;
-                case TipoUsuario.OFICINA_DE_PERSONAL:
+                case OFICINA_DE_PERSONAL:
                     // Asignar servicio automáticamente
                     Servicio servicioPersonal = buscarServicioPorNombre(NombreServicio.OFICINA_DE_PERSONAL);
                     servicioComboBox.getSelectionModel().select(servicioPersonal);
@@ -542,7 +542,7 @@ public class AbmUsuariosController implements Initializable {
                     cargoComboBox.setDisable(false);
                     gestionarCargosButton.setDisable(false);
                     break;
-                case TipoUsuario.JEFATURA_DE_SERVICIO:
+                case JEFATURA_DE_SERVICIO:
                     // Habilitar todos los elementos para selección normal
                     servicioComboBox.setDisable(false);
                     gestionarServiciosButton.setDisable(false);
@@ -552,7 +552,7 @@ public class AbmUsuariosController implements Initializable {
                     // Validar si el servicio ya tiene jefes asignados
                     validarJefesDeServicio();
                     break;
-                case TipoUsuario.EMPLEADO:
+                case EMPLEADO:
                     // Habilitar todos los elementos para selección normal
                     servicioComboBox.setDisable(false);
                     gestionarServiciosButton.setDisable(false);
@@ -977,7 +977,7 @@ public class AbmUsuariosController implements Initializable {
      * @param usuario objeto tipo Usuario
      * @return cadena de texto que indicado el tipo de usuario
      */
-    private String obtenerTipoUsuario(Usuario usuario) {
+    private TipoUsuario obtenerTipoUsuario(Usuario usuario) {
         if (usuario instanceof Empleado) {
             return TipoUsuario.EMPLEADO;
         } else if (usuario instanceof JefaturaDeServicio) {
@@ -998,7 +998,7 @@ public class AbmUsuariosController implements Initializable {
      * @return un objeto de tipo Usuario
      */
     private Usuario crearOActualizarUsuarioDesdeFormulario(Usuario usuarioExistente) {
-        String tipoUsuarioSeleccionado = tipoUsuarioComboBox.getSelectionModel().getSelectedItem();
+        TipoUsuario tipoUsuarioSeleccionado = tipoUsuarioComboBox.getSelectionModel().getSelectedItem();
         Usuario usuario;
 
         if (usuarioExistente == null) {

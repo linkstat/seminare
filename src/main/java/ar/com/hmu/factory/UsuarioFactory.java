@@ -4,6 +4,7 @@ import ar.com.hmu.model.*;
 import java.sql.Blob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.UUID;
 
 /**
  * Clase {@code UsuarioFactory} que se encarga de crear instancias de las subclases de {@link Usuario}.
@@ -32,8 +33,8 @@ import java.sql.SQLException;
      */
     public static Usuario createUsuario(ResultSet resultSet) throws SQLException {
         String tipoUsuario = resultSet.getString("tipoUsuario");
-
         Usuario usuario;
+
         switch (tipoUsuario) {
             case "Empleado":
                 usuario = new Empleado();
@@ -51,10 +52,19 @@ import java.sql.SQLException;
                 throw new IllegalArgumentException("Tipo de usuario desconocido: " + tipoUsuario);
         }
 
-        // Asignar valores comunes
+        // Asignar el ID (UUID) del usuario directamente desde la columna convertida con BIN_TO_UUID2
+        usuario.setId(UUID.fromString(resultSet.getString("id")));
+
+        // Asignar otros campos
         usuario.setCuil(resultSet.getLong("cuil"));
         usuario.setApellidos(resultSet.getString("apellidos"));
         usuario.setNombres(resultSet.getString("nombres"));
+        usuario.setMail(resultSet.getString("mail"));
+        usuario.setSexo(Sexo.valueOf(resultSet.getString("sexo").toUpperCase()));
+        usuario.setEstado(resultSet.getBoolean("estado"));
+        usuario.setFechaAlta(resultSet.getDate("fechaAlta").toLocalDate());
+        usuario.setTel(resultSet.getLong("tel"));
+
         // Cargar el hash de la contraseña almacenado
         String passwordHash = resultSet.getString("passwd");
         if (passwordHash != null && !passwordHash.isEmpty()) {
@@ -66,6 +76,12 @@ import java.sql.SQLException;
             int blobLength = (int) profileImageBlob.length();
             usuario.setProfileImage(profileImageBlob.getBytes(1, blobLength));
         }
+
+        // Asignar los IDs de las relaciones (sin cargar las entidades)
+        usuario.setDomicilioId((UUID)resultSet.getObject("domicilioID"));
+        usuario.setCargoId((UUID)resultSet.getObject("cargoID"));
+        usuario.setServicioId((UUID)resultSet.getObject("servicioID"));
+
         return usuario;
     }
 
