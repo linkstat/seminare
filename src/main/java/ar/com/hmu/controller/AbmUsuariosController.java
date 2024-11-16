@@ -1,4 +1,4 @@
-package ar.com.hmu.ui;
+package ar.com.hmu.controller;
 
 import java.io.File;
 import java.net.URL;

@@ -135,4 +135,87 @@ public class CargoRepository implements GenericDAO<Cargo> {
         }
     }
 
+
+    /**
+     * Encuentra el número de cargo dado su descripción.
+     * @param descripcion La descripción del cargo.
+     * @return El número del cargo o null si no se encuentra.
+     */
+    public Integer findNumeroByDescripcion(String descripcion) {
+        String query = "SELECT numero FROM Cargo WHERE descripcion = ?";
+
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+
+            stmt.setString(1, descripcion);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("numero");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error al buscar el número por descripción", e);
+        }
+        return null;
+    }
+
+    /**
+     * Encuentra la descripción de un cargo dado su número.
+     * @param numero El número del cargo.
+     * @return La descripción del cargo o null si no se encuentra.
+     */
+    public String findDescripcionByNumero(Integer numero) {
+        String query = "SELECT descripcion FROM Cargo WHERE numero = ?";
+
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+
+            stmt.setInt(1, numero);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("descripcion");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error al buscar la descripción por número", e);
+        }
+        return null;
+    }
+
+    /**
+     * Lee todos los cargos de una agrupación específica.
+     * @param agrupacion La agrupación de los cargos a leer.
+     * @return Una lista de cargos pertenecientes a la agrupación especificada.
+     */
+    public List<Cargo> readAllByAgrupacion(Agrupacion agrupacion) {
+        List<Cargo> cargos = new ArrayList<>();
+        String query = "SELECT *, BIN_TO_UUID(id) as idUUID FROM Cargo WHERE agrupacion = ?";
+
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+
+            stmt.setString(1, agrupacion.name());
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    cargos.add(new Cargo(
+                            UUID.fromString(rs.getString("idUUID")),
+                            rs.getInt("numero"),
+                            rs.getString("descripcion"),
+                            agrupacion
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error al leer todos los cargos por agrupación", e);
+        }
+
+        return cargos;
+    }
+
 }

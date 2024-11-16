@@ -1,5 +1,6 @@
 package ar.com.hmu.repository;
 
+import ar.com.hmu.constants.NombreServicio;
 import ar.com.hmu.constants.TipoUsuario;
 import ar.com.hmu.factory.UsuarioFactory;
 import ar.com.hmu.model.*;
@@ -29,14 +30,19 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
     @Override
     public void create(Usuario usuario) {
         try (Connection connection = databaseConnector.getConnection()) {
-            String query = "INSERT INTO Usuario (id, cuil, apellidos, nombres, mail, passwd) VALUES (UUID_TO_BIN(?), ?, ?, ?, ?, ?)";
+            String query = "INSERT INTO Usuario (id, fechaAlta, estado, cuil, apellidos, nombres, sexo, mail, passwd, tipoUsuario) " +
+                    "VALUES (UUID_TO_BIN(?), ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement stmt = connection.prepareStatement(query)) {
                 stmt.setString(1, usuario.getId().toString());
-                stmt.setLong(2, usuario.getCuil());
-                stmt.setString(3, usuario.getApellidos());
-                stmt.setString(4, usuario.getNombres());
-                stmt.setString(5, usuario.getMail());
-                stmt.setString(6, usuario.getEncryptedPassword());
+                stmt.setDate(2, Date.valueOf(usuario.getFechaAlta()));
+                stmt.setBoolean(3, usuario.getEstado());
+                stmt.setLong(4, usuario.getCuil());
+                stmt.setString(5, usuario.getApellidos());
+                stmt.setString(6, usuario.getNombres());
+                stmt.setString(7, usuario.getSexo().name());
+                stmt.setString(8, usuario.getMail());
+                stmt.setString(9, usuario.getEncryptedPassword());
+                stmt.setString(10, usuario.getTipoUsuario().getInternalName());
                 stmt.executeUpdate();
             }
         } catch (SQLException e) {
@@ -47,14 +53,14 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
 
     @Override
     public Usuario readByUUID(UUID id) {
-        String query = "SELECT *, BIN_TO_UUID2(id) AS id FROM Usuario WHERE id = UUID_TO_BIN(?)";
+        String query = "SELECT *, BIN_TO_UUID(id) AS id FROM Usuario WHERE id = UUID_TO_BIN(?)";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, id.toString());
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return UsuarioFactory.createUsuario(rs);
+                    return UsuarioFactory.createUsuario(rs);  // UsuarioFactory maneja los valores opcionales
                 }
             }
         } catch (SQLException e) {
@@ -67,7 +73,7 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
     @Override
     public List<Usuario> readAll() {
         List<Usuario> usuarios = new ArrayList<>();
-        String query = "SELECT *, BIN_TO_UUID2(id) AS id FROM Usuario";
+        String query = "SELECT *, BIN_TO_UUID(id) AS id FROM Usuario";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query);
@@ -86,12 +92,48 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
 
     @Override
     public void update(Usuario usuario) {
-        // Implementación para actualizar un usuario
+        String query = "UPDATE Usuario SET fechaAlta = ?, estado = ?, cuil = ?, apellidos = ?, nombres = ?, sexo = ?, mail = ?, tel = ?, " +
+                "domicilioID = UUID_TO_BIN(?), cargoID = UUID_TO_BIN(?), servicioID = UUID_TO_BIN(?), tipoUsuario = ?, passwd = ?, profile_image = ? " +
+                "WHERE id = UUID_TO_BIN(?)";
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+
+            stmt.setDate(1, usuario.getFechaAlta() != null ? java.sql.Date.valueOf(usuario.getFechaAlta()) : java.sql.Date.valueOf(java.time.LocalDate.now()));
+            stmt.setBoolean(2, usuario.getEstado());
+            stmt.setLong(3, usuario.getCuil());
+            stmt.setString(4, usuario.getApellidos());
+            stmt.setString(5, usuario.getNombres());
+            stmt.setString(6, usuario.getSexo().name());
+            stmt.setString(7, usuario.getMail());
+            stmt.setObject(8, usuario.getTel() != 0 ? usuario.getTel() : null, Types.BIGINT);
+            stmt.setString(9, usuario.getDomicilioId() != null ? usuario.getDomicilioId().toString() : null);
+            stmt.setString(10, usuario.getCargoId() != null ? usuario.getCargoId().toString() : null);
+            stmt.setString(11, usuario.getServicioId() != null ? usuario.getServicioId().toString() : null);
+            stmt.setString(12, usuario.getTipoUsuario().getInternalName());
+            stmt.setString(13, usuario.getEncryptedPassword());
+            stmt.setBytes(14, usuario.getProfileImage() != null && usuario.getProfileImage().length > 0
+                    ? usuario.getProfileImage()
+                    : null);
+
+            stmt.setString(15, usuario.getId().toString());
+
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al actualizar el usuario", e);
+        }
     }
 
     @Override
     public void delete(Usuario usuario) {
-        // Implementación para eliminar un usuario
+        String query = "DELETE FROM Usuario WHERE id = UUID_TO_BIN(?)";
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+
+            stmt.setString(1, usuario.getId().toString());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al eliminar el usuario", e);
+        }
     }
 
     // Métodos específicos para Usuario
@@ -105,54 +147,33 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
      * @throws SQLException En caso de errores durante la consulta SQL.
      */
     public Usuario findUsuarioByCuil(long cuil) throws SQLException {
-        // Primero obtenemos el UUID usando el CUIL
-        UUID uuid = findUUIDByCuil(cuil);
-        if (uuid == null) {
-            return null; // Si no se encuentra UUID para el CUIL, retornar null
-        }
-
-        Usuario usuario = null;
-        TipoUsuario tipoUsuario = null;
-
-        // Ahora obtenemos el tipo de usuario basado en el UUID
-        String query = "SELECT tipoUsuario FROM Usuario WHERE id = UUID_TO_BIN(?)";
+        String query = "SELECT *, BIN_TO_UUID(id) AS id FROM Usuario WHERE cuil = ?";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
-            stmt.setString(1, uuid.toString()); // Usamos el UUID obtenido
+            stmt.setLong(1, cuil);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    tipoUsuario = TipoUsuario.valueOf(rs.getString("tipoUsuario"));
+                    return UsuarioFactory.createUsuario(rs); // Delegación a UsuarioFactory
                 }
             }
         }
-
-        // Determinar el tipo de usuario y cargar la información correspondiente
-        if (tipoUsuario != null) {
-            switch (tipoUsuario) {
-                case EMPLEADO:
-                    usuario = loadEmpleadoByUUID(uuid);
-                    break;
-                case JEFATURA_DE_SERVICIO:
-                    usuario = loadJefaturaDeServicioByUUID(uuid);
-                    break;
-                case OFICINA_DE_PERSONAL:
-                    usuario = loadOficinaDePersonalByUUID(uuid);
-                    break;
-                case DIRECCION:
-                    usuario = loadDireccionByUUID(uuid);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Tipo de usuario desconocido: " + tipoUsuario);
-            }
-        }
-        return usuario;
+        return null;
     }
+
 
     // Cargar datos completos de Empleado, incluyendo servicioID
     private Empleado loadEmpleadoByUUID(UUID id) throws SQLException {
-        String query = "SELECT u.*, e.servicioID FROM Usuario u "
-                + "JOIN Empleado e ON u.id = e.id WHERE u.id = UUID_TO_BIN(?)";
+        String query = "SELECT BIN_TO_UUID(u.id) AS id, " +
+                "u.fechaAlta, u.cuil, u.apellidos, u.nombres, " +
+                "u.sexo, u.estado, u.mail, u.tel, u.tipoUsuario, " +
+                "BIN_TO_UUID(u.domicilioID) AS domicilioID, " +
+                "BIN_TO_UUID(u.cargoID) AS cargoID, " +
+                "u.passwd, u.profile_image, " +
+                "e.francosCompensatoriosUtilizados, BIN_TO_UUID(e.horarioActualID), " +
+                "BIN_TO_UUID(e.jefaturaID), BIN_TO_UUID(e.servicioID) " +
+                "FROM Usuario u JOIN Empleado e ON u.id = e.id " +
+                "WHERE u.id = UUID_TO_BIN(?)";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -161,9 +182,11 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     Empleado empleado = (Empleado) UsuarioFactory.createUsuario(rs);
-                    UUID servicioId = UUID.fromString(rs.getString("servicioID"));
+
                     // Cargar el servicio con el ID y asignarlo al empleado
+                    UUID servicioId = UUID.fromString(rs.getString("servicioID"));
                     empleado.setServicio(servicioRepository.readByUUID(servicioId));
+
                     return empleado;
                 }
             }
@@ -171,10 +194,16 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
         return null;
     }
 
-    // Cargar datos completos de Empleado, incluyendo servicioID
+    // Cargar datos completos de JefaturaDeServicio, incluyendo servicioID
     private JefaturaDeServicio loadJefaturaDeServicioByUUID(UUID id) throws SQLException {
-        String query = "SELECT u.*, j.servicioID FROM Usuario u "
-                + "JOIN JefaturaDeServicio j ON u.id = j.id WHERE u.id = UUID_TO_BIN(?)";
+        String query = "SELECT BIN_TO_UUID(u.id) AS id, " +
+                "u.fechaAlta, u.cuil, u.apellidos, u.nombres, " +
+                "u.sexo, u.estado, u.mail, u.tel, u.tipoUsuario, " +
+                "BIN_TO_UUID(u.domicilioID) AS domicilioID, " +
+                "BIN_TO_UUID(u.cargoID) AS cargoID, " +
+                "u.passwd, u.profile_image, j.servcioID " +
+                "FROM Usuario u JOIN JefaturaDeServicio j ON u.id = j.id " +
+                "WHERE u.id = UUID_TO_BIN(?)";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -183,31 +212,43 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     JefaturaDeServicio jefaturaDeServicio = (JefaturaDeServicio) UsuarioFactory.createUsuario(rs);
+
+                    // Cargar el servicio con el ID y asignarlo a jefaturaDeServicio
                     UUID servicioId = UUID.fromString(rs.getString("servicioID"));
-                    // Cargar el servicio con el ID y asignarlo al jefaturaDeServicio
                     jefaturaDeServicio.setServicio(servicioRepository.readByUUID(servicioId));
+
                     return jefaturaDeServicio;
+
                 }
             }
         }
         return null;
     }
 
-    // Cargar datos completos de Empleado, incluyendo servicioID
+    // Cargar datos completos de OficinaDePersonal, incluyendo el servicioID correspondiente a Oficina de Personal
     private OficinaDePersonal loadOficinaDePersonalByUUID(UUID id) throws SQLException {
-        String query = "SELECT u.*, o.reportesGenerados FROM Usuario u "
-                + "JOIN OficinaDePersonal o ON u.id = o.id WHERE u.id = UUID_TO_BIN(?)";
+        // Consulta con BIN_TO_UUID para obtener el UUID como un String legible
+        String query = "SELECT BIN_TO_UUID(u.id) AS id, " +
+                "u.fechaAlta, u.cuil, u.apellidos, u.nombres, " +
+                "u.sexo, u.estado, u.mail, u.tel, u.tipoUsuario, " +
+                "BIN_TO_UUID(u.domicilioID) AS domicilioID, " +
+                "BIN_TO_UUID(u.cargoID) AS cargoID, " +
+                "u.passwd, u.profile_image, o.reportesGenerados " +
+                "FROM Usuario u JOIN OficinaDePersonal o ON u.id = o.id " +
+                "WHERE u.id = UUID_TO_BIN(?)";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
-            stmt.setString(1, id.toString());
+            stmt.setString(1, id.toString()); // Pasamos el UUID como String
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     OficinaDePersonal oficinaDePersonal = (OficinaDePersonal) UsuarioFactory.createUsuario(rs);
-                    //UUID servicioId = UUID.fromString(rs.getString("servicioID"));
-                    // Cargar el servicio con el ID y asignarlo al jefaturaDeServicio
-                    //oficinaDePersonal.setServicio(servicioRepository.readByUUID(servicioId));
+
+                    // Obtener el ID de "Oficina de Personal" desde el repositorio de Servicio o definir un ID constante, o un método que devuelva el ID directamente
+                    UUID servicioOficinaPersonalId = servicioRepository.findIdByName(NombreServicio.OFICINA_DE_PERSONAL);
+                    oficinaDePersonal.setServicioId(servicioOficinaPersonalId);
+
                     return oficinaDePersonal;
                 }
             }
@@ -215,10 +256,16 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
         return null;
     }
 
-    // Cargar datos completos de Empleado, incluyendo servicioID
+    // Cargar datos completos de Direccion, incluyendo el servicioID correspondiente a Dirección
     private Direccion loadDireccionByUUID(UUID id) throws SQLException {
-        String query = "SELECT u.*, d.* FROM Usuario u "
-                + "JOIN Direccion d ON u.id = d.id WHERE u.id = UUID_TO_BIN(?)";
+        String query = "SELECT BIN_TO_UUID(u.id) AS id, " +
+                "u.fechaAlta, u.cuil, u.apellidos, u.nombres, " +
+                "u.sexo, u.estado, u.mail, u.tel, u.tipoUsuario, " +
+                "BIN_TO_UUID(u.domicilioID) AS domicilioID, " +
+                "BIN_TO_UUID(u.cargoID) AS cargoID, " +
+                "u.passwd, u.profile_image " +
+                "FROM Usuario u JOIN Direccion d ON u.id = d.id " +
+                "WHERE u.id = UUID_TO_BIN(?)";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -227,9 +274,11 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     Direccion direccion = (Direccion) UsuarioFactory.createUsuario(rs);
-                    //UUID servicioId = UUID.fromString(rs.getString("servicioID"));
-                    // Cargar el servicio con el ID y asignarlo al jefaturaDeServicio
-                    //direccion.setServicio(servicioRepository.readByUUID(servicioId));
+
+                    // Obtener el ID de "Dirección" desde el repositorio de Servicio o definir un ID constante, o un método que devuelva el ID directamente
+                    UUID servicioDireccionId = servicioRepository.findIdByName(NombreServicio.DIRECCION);
+                    direccion.setServicioId(servicioDireccionId);
+
                     return direccion;
                 }
             }
@@ -244,7 +293,7 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
      * @throws SQLException
      */
     public UUID findUUIDByCuil(long cuil) throws SQLException {
-        String query = "SELECT BIN_TO_UUID2(id) AS id FROM Usuario WHERE cuil = ?";
+        String query = "SELECT BIN_TO_UUID(id) AS id FROM Usuario WHERE cuil = ?";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
@@ -256,6 +305,9 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
                     return UUID.fromString(uuidString);
                 }
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error al buscar UUID por CUIL", e);
         }
         return null;
     }
@@ -308,6 +360,25 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
                 throw new SQLException("No se pudo actualizar la imagen de perfil; el usuario con CUIL " + cuil + " no existe.");
             }
         }
+    }
+
+
+    public int countUsuarios() {
+        String query = "SELECT COUNT(*) AS total FROM Usuario";
+
+        try (Connection connection = databaseConnector.getConnection();
+             Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error al contar los usuarios", e);
+        }
+
+        return 0; // Retornar 0 si no hay registros (BD vacía por ejemplo)
     }
 
 

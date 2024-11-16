@@ -3,7 +3,7 @@ package ar.com.hmu.utils;
 import ar.com.hmu.auth.LoginService;
 import ar.com.hmu.config.AppConfigReader;
 import ar.com.hmu.repository.*;
-import ar.com.hmu.ui.LoginController;
+import ar.com.hmu.controller.LoginController;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;

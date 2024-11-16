@@ -1,4 +1,4 @@
-package ar.com.hmu.ui;
+package ar.com.hmu.controller;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -13,7 +13,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 
 import ar.com.hmu.auth.LoginService;

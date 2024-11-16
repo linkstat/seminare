@@ -28,7 +28,7 @@ public class DireccionRepository {
      * @return Una instancia de Direccion con el servicio correspondiente.
      */
     public Direccion findDireccion() {
-        String query = "SELECT BIN_TO_UUID2(id) AS id, nombre FROM Servicio WHERE nombre = ?";
+        String query = "SELECT BIN_TO_UUID(id) AS id, nombre FROM Servicio WHERE nombre = ?";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 

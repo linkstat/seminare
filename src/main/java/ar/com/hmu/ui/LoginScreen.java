@@ -2,6 +2,7 @@ package ar.com.hmu.ui;
 
 import java.util.Objects;
 
+import ar.com.hmu.controller.LoginController;
 import ar.com.hmu.repository.*;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;

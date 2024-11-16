@@ -52,7 +52,7 @@ import java.util.UUID;
                 throw new IllegalArgumentException("Tipo de usuario desconocido: " + tipoUsuario);
         }
 
-        // Asignar el ID (UUID) del usuario directamente desde la columna convertida con BIN_TO_UUID2
+        // Asignar el ID (UUID) del usuario directamente desde la columna convertida con BIN_TO_UUID
         usuario.setId(UUID.fromString(resultSet.getString("id")));
 
         // Asignar otros campos
@@ -78,9 +78,20 @@ import java.util.UUID;
         }
 
         // Asignar los IDs de las relaciones (sin cargar las entidades)
-        usuario.setDomicilioId((UUID)resultSet.getObject("domicilioID"));
-        usuario.setCargoId((UUID)resultSet.getObject("cargoID"));
-        usuario.setServicioId((UUID)resultSet.getObject("servicioID"));
+        String domicilioIdStr = resultSet.getString("domicilioID");
+        if (domicilioIdStr != null) {
+            usuario.setDomicilioId(UUID.fromString(domicilioIdStr));
+        }
+
+        String cargoIdStr = resultSet.getString("cargoID");
+        if (cargoIdStr != null) {
+            usuario.setCargoId(UUID.fromString(cargoIdStr));
+        }
+
+        String servicioIdStr = resultSet.getString("servicioID");
+        if (cargoIdStr != null) {
+            usuario.setServicioId(UUID.fromString(servicioIdStr));
+        }
 
         return usuario;
     }

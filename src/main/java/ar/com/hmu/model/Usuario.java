@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.UUID;
 
+import ar.com.hmu.constants.TipoUsuario;
 import ar.com.hmu.utils.PasswordUtils;
 import static ar.com.hmu.utils.StringUtils.normalizar;
 
@@ -15,18 +16,19 @@ public abstract class Usuario {
 
 	private UUID id;
 	private LocalDate fechaAlta;
+	private boolean estado;
 	private long cuil;
 	private String apellidos;
 	private String nombres;
 	private Sexo sexo;
-	private boolean estado;
 	private String mail;
-	private Domicilio domicilio;
 	private long tel;
+	private Domicilio domicilio;
 	private Cargo cargo;
+	private Servicio servicio;
+	private TipoUsuario tipoUsuario;
 	private String password;
 	private byte[] profileImage;
-	private Servicio servicio;
 
 	// Atributos para implementar el patrón «Lazy Loading»
 	// Una solución equilibrada: almacenar la referencias de los objetos (además de los propios objetos), evita tener que inicializar los objetos (en este caso Cargo, Servicio, Domicilio)evitando tener que cargar las entidades completas desde la BD
@@ -41,21 +43,22 @@ public abstract class Usuario {
 	}
 
 	// Constructor con los datos principales
-	public Usuario(UUID id, LocalDate fechaAlta, long cuil, String apellidos, String nombres, Sexo sexo, boolean estado, String mail, Domicilio domicilio, int tel, Cargo cargo) {
+	public Usuario(UUID id, LocalDate fechaAlta, boolean estado, long cuil, String apellidos, String nombres, Sexo sexo, String mail, TipoUsuario tipoUsuario) {
 		this.id = id;
 		this.fechaAlta = fechaAlta;
+		this.estado = estado;
 		this.cuil = cuil;
 		this.apellidos = apellidos;
 		this.nombres = nombres;
 		this.sexo = sexo;
-		this.estado = estado;
 		this.mail = mail;
-		this.domicilio = domicilio;
-		this.tel = tel;
-		this.cargo = cargo;
+		this.tipoUsuario = tipoUsuario;
+		this.password = PasswordUtils.hashPassword(String.valueOf(cuil).toCharArray());
 	}
 
+
 	// Getters
+
 
 	public UUID getId() {
 		return id;
@@ -63,6 +66,10 @@ public abstract class Usuario {
 
 	public LocalDate getFechaAlta() {
 		return fechaAlta;
+	}
+
+	public boolean getEstado() {
+		return estado;
 	}
 
 	public long getCuil() {
@@ -89,16 +96,45 @@ public abstract class Usuario {
 		return mail;
 	}
 
-	public Domicilio getDomicilio() {
-		return domicilio;
-	}
-
 	public long getTel() {
 		return tel;
 	}
 
+	public Domicilio getDomicilio() {
+		return domicilio;
+	}
+
 	public Cargo getCargo() {
 		return cargo;
+	}
+
+	/**
+	 * Obtiene el servicio al que pertenece el usuario.
+	 *
+	 * @return el servicio asociado al usuario.
+	 */
+	public Servicio getServicio() {
+		return servicio;
+	}
+
+	public TipoUsuario getTipoUsuario() {
+		return tipoUsuario;
+	}
+
+	// Método para obtener la contraseña cifrada (solo para uso interno de la base de datos)
+	/**
+	 * Este método permite al UsuarioRepository acceder a la contraseña ya cifrada
+	 * y usarla para persistir en la base de datos.
+	 * Este método no expone la contraseña en texto plano, sino la versión hasheada
+	 * que ya está lista para ser almacenada.
+	 * @return EncryptedPassword
+	 */
+	public String getEncryptedPassword() {
+		return this.password;
+	}
+
+	public byte[] getProfileImage() {
+		return profileImage;
 	}
 
 	public UUID getDomicilioId() {
@@ -113,34 +149,101 @@ public abstract class Usuario {
 		return servicioId;
 	}
 
-	public byte[] getProfileImage() {
-		return profileImage;
+
+	// Setters
+
+
+	public void setId(UUID id) {
+		this.id = id;
 	}
 
-	// Método para obtener la contraseña cifrada (solo para uso interno de la base de datos)
-	/**
-	 * Este método permite al UsuarioRepository acceder a la contraseña ya cifrada
-	 * y usarla para persistir en la base de datos.
-	 * Este método no expone la contraseña en texto plano, sino la versión hashada
-	 * que ya está lista para ser almacenada.
-	 * @return EncryptedPassword
-	 */
-	public String getEncryptedPassword() {
-		return this.password;
+	public void setFechaAlta(LocalDate fechaAlta) {
+		this.fechaAlta = fechaAlta;
+	}
+
+	public void setEstado(boolean estado) {
+		this.estado = estado;
+	}
+
+	public void setCuil(long cuil) {
+		this.cuil = cuil;
+	}
+
+	public void setApellidos(String apellidos) {
+		this.apellidos = apellidos;
+	}
+
+	public void setNombres(String nombres) {
+		this.nombres = nombres;
+	}
+
+	public void setSexo(Sexo sexo) {
+		this.sexo = sexo;
+	}
+
+	public void setMail(String mail) {
+		this.mail = mail;
+	}
+
+	public void setTel(long tel) {
+		this.tel = tel;
+	}
+
+	public void setDomicilio(Domicilio domicilio) {
+		this.domicilio = domicilio;
+	}
+
+	public void setCargo(Cargo cargo) {
+		this.cargo = cargo;
 	}
 
 	/**
-	 * Obtiene el servicio al que pertenece el usuario.
+	 * Establece el servicio al que pertenece el usuario.
 	 *
-	 * @return el servicio asociado al usuario.
+	 * @param servicio el servicio a asociar con el usuario.
 	 */
-	public Servicio getServicio() {
-		return servicio;
+	public void setServicio(Servicio servicio) {
+		this.servicio = servicio;
 	}
 
-	public boolean isEstado() {
-		return estado;
+	public void setTipoUsuario(TipoUsuario tipoUsuario) {
+		this.tipoUsuario = tipoUsuario;
 	}
+
+	// Setter para la contraseña (encriptada con BCrypt)
+	/**
+	 * Establece la contraseña del usuario cifrándola con BCrypt antes de almacenarla.
+	 *
+	 * @param rawPasswordArray La contraseña en texto plano proporcionada por el usuario.
+	 */
+	public void setPassword(char[] rawPasswordArray) {
+		this.password = PasswordUtils.hashPassword(rawPasswordArray);
+	}
+
+	// Método para establecer la contraseña desde la base de datos
+	public void setPasswordHash(String passwordHash) {
+		this.password = passwordHash;
+	}
+
+	public void setProfileImage(byte[] profileImage) {
+		this.profileImage = profileImage;
+	}
+
+	public void setDomicilioId(UUID domicilioId) {
+		this.domicilioId = domicilioId;
+	}
+
+	public void setCargoId(UUID cargoId) {
+		this.cargoId = cargoId;
+	}
+
+	public void setServicioId(UUID servicioId) {
+		this.servicioId = servicioId;
+	}
+
+
+	// Otros métodos
+
 
 	/**
 	 * Verifica si la contraseña actual del usuario es la predeterminada.
@@ -169,84 +272,6 @@ public abstract class Usuario {
 	 */
 	public boolean validatePassword(char[] rawPasswordArray) {
 		return PasswordUtils.validatePassword(rawPasswordArray, this.password);
-	}
-
-
-	// Setters
-
-	public void setId(UUID id) {
-		this.id = id;
-	}
-
-	public void setFechaAlta(LocalDate fechaAlta) {
-		this.fechaAlta = fechaAlta;
-	}
-
-	public void setCuil(long cuil) {
-		this.cuil = cuil;
-	}
-
-	public void setApellidos(String apellidos) {
-		this.apellidos = apellidos;
-	}
-
-	public void setNombres(String nombres) {
-		this.nombres = nombres;
-	}
-
-	public void setSexo(Sexo sexo) {
-		this.sexo = sexo;
-	}
-
-	public void setEstado(boolean estado) {
-		this.estado = estado;
-	}
-
-	public void setMail(String mail) {
-		this.mail = mail;
-	}
-
-	public void setDomicilio(Domicilio domicilio) {
-		this.domicilio = domicilio;
-	}
-
-	public void setTel(long tel) {
-		this.tel = tel;
-	}
-
-	public void setCargo(Cargo cargo) {
-		this.cargo = cargo;
-	}
-
-	public void setDomicilioId(UUID domicilioId) {
-		this.domicilioId = domicilioId;
-	}
-
-	public void setCargoId(UUID cargoId) {
-		this.cargoId = cargoId;
-	}
-
-	public void setServicioId(UUID servicioId) {
-		this.servicioId = servicioId;
-	}
-
-	public void setProfileImage(byte[] profileImage) {
-		this.profileImage = profileImage;
-	}
-
-	// Método para establecer la contraseña desde la base de datos
-	public void setPasswordHash(String passwordHash) {
-		this.password = passwordHash;
-	}
-
-	// Setter para la contraseña (encriptada con BCrypt)
-	/**
-	 * Establece la contraseña del usuario cifrándola con BCrypt antes de almacenarla.
-	 *
-	 * @param rawPasswordArray La contraseña en texto plano proporcionada por el usuario.
-	 */
-	public void setPassword(char[] rawPasswordArray) {
-		this.password = PasswordUtils.hashPassword(rawPasswordArray);
 	}
 
 	public boolean setDefaultPassword() {
@@ -302,15 +327,6 @@ public abstract class Usuario {
 			Arrays.fill(newPassword, '\0');
 			Arrays.fill(confirmNewPassword, '\0');
 		}
-	}
-
-	/**
-	 * Establece el servicio al que pertenece el usuario.
-	 *
-	 * @param servicio el servicio a asociar con el usuario.
-	 */
-	public void setServicio(Servicio servicio) {
-		this.servicio = servicio;
 	}
 
 	public void consultarHorario(){

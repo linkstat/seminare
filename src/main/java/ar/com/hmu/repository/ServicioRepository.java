@@ -106,7 +106,33 @@ public class ServicioRepository implements GenericDAO<Servicio> {
     }
 
     /**
-     * Helper method to map a ResultSet row to a Servicio object.
+     * Devuelve el UUID de Servicio en base a un nombre dado
+     * @param name Nombre del servicio del cual se quiere obtener el UUID
+     * @return UUID del servicio buscado
+     */
+    public UUID findIdByName(String name) {
+        String query = "SELECT BIN_TO_UUID(id) AS id FROM Servicio WHERE nombre = ?";
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+
+            stmt.setString(1, name);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    // Leer el UUID como String y convertirlo a UUID
+                    String uuidString = rs.getString("id");
+                    return UUID.fromString(uuidString);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error al buscar el UUID de servicio por nombre", e);
+        }
+        return null;
+    }
+
+
+    /**
+     * Método para mapear filas a un ResultSet de Servicio.
      */
     private Servicio mapResultSetToServicio(ResultSet rs) throws SQLException {
         UUID id = UUID.fromString(rs.getString("UUID"));
@@ -116,5 +142,26 @@ public class ServicioRepository implements GenericDAO<Servicio> {
 
         return new Servicio(id, nombre, agrupacion, direccionId);
     }
+
+
+    public int countServicios() {
+        String query = "SELECT COUNT(*) AS total FROM Servicio";
+
+        try (Connection connection = databaseConnector.getConnection();
+             Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error al contar los servicios", e);
+        }
+
+        return 0; // Retornar 0 si no se encuentra ningún registro
+    }
+
+
 }
 
