@@ -6,51 +6,116 @@ import java.util.Properties;
 import java.util.UUID;
 
 public class PreferencesManager {
-
-    private static final String APP_DIR = System.getProperty("os.name").startsWith("Windows")
-            ? System.getenv("LocalAppData") + File.separator + AppInfo.CFG_FOLDER_NAME
-            : System.getProperty("user.home") + File.separator + ".config" + File.separator + AppInfo.CFG_FOLDER_NAME;
-
-    private static final String PREFS_FILE = APP_DIR + File.separator + "preferences.properties";
     private Properties properties;
+    private Path prefsFilePath;
 
+    /**
+     * Constructor por defecto para preferencias generales de la aplicación.
+     */
     public PreferencesManager() {
+        this.prefsFilePath = Paths.get(getDefaultPrefsFilePath());
         properties = new Properties();
         loadProperties();
     }
 
+    /**
+     * Constructor que acepta un identificador único para preferencias específicas de un usuario.
+     *
+     * @param userId Identificador único del usuario (por ejemplo, CUIL).
+     */
+    public PreferencesManager(String userId) {
+        this.prefsFilePath = Paths.get(getUserPrefsFilePath(userId));
+        properties = new Properties();
+        loadProperties();
+    }
+
+    /**
+     * Obtiene la ruta predeterminada para las preferencias generales.
+     *
+     * @return Ruta como String.
+     */
+    private String getDefaultPrefsFilePath() {
+        String osName = System.getProperty("os.name").toLowerCase();
+        String baseDir;
+
+        if (osName.contains("win")) {
+            baseDir = System.getenv("LocalAppData") + File.separator + AppInfo.CFG_FOLDER_NAME;
+        } else {
+            baseDir = System.getProperty("user.home") + File.separator + ".config" + File.separator + AppInfo.CFG_FOLDER_NAME;
+        }
+
+        return baseDir + File.separator + "preferences.properties";
+    }
+
+    /**
+     * Obtiene la ruta para las preferencias específicas de un usuario.
+     *
+     * @param userId Identificador único del usuario.
+     * @return Ruta como String.
+     */
+    private String getUserPrefsFilePath(String userId) {
+        String osName = System.getProperty("os.name").toLowerCase();
+        String baseDir;
+
+        if (osName.contains("win")) {
+            baseDir = System.getenv("LocalAppData") + File.separator + AppInfo.CFG_FOLDER_NAME + File.separator + userId;
+        } else {
+            baseDir = System.getProperty("user.home") + File.separator + ".config" + File.separator + AppInfo.CFG_FOLDER_NAME + File.separator + userId;
+        }
+
+        return baseDir + File.separator + "window.properties";
+    }
+
+    /**
+     * Carga las propiedades desde el archivo especificado.
+     */
     private void loadProperties() {
         try {
-            Path path = Paths.get(PREFS_FILE);
-            if (Files.exists(path)) {
-                try (InputStream input = Files.newInputStream(path)) {
+            if (Files.exists(prefsFilePath)) {
+                try (InputStream input = Files.newInputStream(prefsFilePath)) {
                     properties.load(input);
                 }
             } else {
-                // Crear el directorio si no existe
-                Files.createDirectories(path.getParent());
-                Files.createFile(path);
+                // Crear directorios y archivo si no existen
+                Files.createDirectories(prefsFilePath.getParent());
+                Files.createFile(prefsFilePath);
             }
         } catch (IOException e) {
             e.printStackTrace();
-            throw new RuntimeException("Error al cargar las preferencias", e);
+            throw new RuntimeException("Error al cargar las preferencias desde " + prefsFilePath, e);
         }
     }
 
-    public void savePreferences() {
-        try (OutputStream output = Files.newOutputStream(Paths.get(PREFS_FILE))) {
-            properties.store(output, "Aromito Preferences");
+    /**
+     * Guarda las propiedades en el archivo especificado.
+     */
+    private void saveProperties() {
+        try (OutputStream output = Files.newOutputStream(prefsFilePath)) {
+            properties.store(output, AppInfo.PRG_SHORT_TITLE + " Preferences");
         } catch (IOException e) {
             e.printStackTrace();
-            throw new RuntimeException("Error al guardar las preferencias", e);
+            throw new RuntimeException("Error al guardar las preferencias en " + prefsFilePath, e);
         }
     }
 
+    /**
+     * Almacena un par clave-valor.
+     *
+     * @param key   Clave de la preferencia.
+     * @param value Valor de la preferencia.
+     */
     public void put(String key, String value) {
         properties.setProperty(key, value);
-        savePreferences();
+        saveProperties();
     }
 
+    /**
+     * Recupera el valor asociado a una clave.
+     *
+     * @param key          Clave de la preferencia.
+     * @param defaultValue Valor por defecto si la clave no existe.
+     * @return Valor de la preferencia.
+     */
     public String get(String key, String defaultValue) {
         return properties.getProperty(key, defaultValue);
     }
@@ -62,7 +127,7 @@ public class PreferencesManager {
         } else {
             properties.remove(key);
         }
-        savePreferences();
+        saveProperties();
     }
 
     public UUID getUUID(String key, UUID defaultValue) {
@@ -80,13 +145,17 @@ public class PreferencesManager {
         } else {
             properties.remove(key);
         }
-        savePreferences();
+        saveProperties();
     }
 
     public Integer getInt(String key, Integer defaultValue) {
         String value = properties.getProperty(key);
         if (value != null) {
-            return Integer.parseInt(value);
+            try {
+                return Integer.parseInt(value);
+            } catch (NumberFormatException e) {
+                // Log o manejar el error según sea necesario
+            }
         }
         return defaultValue;
     }
@@ -97,7 +166,7 @@ public class PreferencesManager {
         } else {
             properties.remove(key);
         }
-        savePreferences();
+        saveProperties();
     }
 
     public Boolean getBoolean(String key, Boolean defaultValue) {

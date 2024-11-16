@@ -1,13 +1,17 @@
 package ar.com.hmu.controller;
 
-import ar.com.hmu.utils.AppInfo;
+import java.awt.Desktop;
+import java.net.URI;
+
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -16,8 +20,7 @@ import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
 
-import java.awt.*;
-import java.net.URI;
+import ar.com.hmu.utils.AppInfo;
 
 public class LicenciasDeUsoController {
     @FXML
@@ -43,7 +46,7 @@ public class LicenciasDeUsoController {
         descriptionText.setFont(Font.font("Barlow Condensed", 18));
 
         // Opcionalmente, también se podría setear la imagen del logo (pero usamos la que se estableció por defecto en el fxml)
-        // logoImageView.setImage(new Image(getClass().getResourceAsStream("mosaic_default_image.png")));
+        logoImageView.setImage(new Image(getClass().getResourceAsStream(AppInfo.LOGO_IMAGE)));
 
         // Establecer el productInfoWebView del Acerca de (y el comportamiento de links)
         WebEngine webEngine = licenceInfoWebView.getEngine();  // Obtiene el WebEngine

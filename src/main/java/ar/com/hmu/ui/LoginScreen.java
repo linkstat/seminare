@@ -53,7 +53,7 @@ public class LoginScreen extends Application {
             LoginService loginService = new LoginService(usuarioRepository);
 
             // Cargar el archivo FXML
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ar/com/hmu/ui/loginScreen.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/loginScreen.fxml"));
             Parent root = loader.load();
 
             // Obtener el controlador y pasarle el LoginService
@@ -73,7 +73,7 @@ public class LoginScreen extends Application {
             primaryStage.setResizable(false);
 
             // Establecer el icono de la aplicación
-            setStageIcon(primaryStage, "app-icon.png");
+            setStageIcon(primaryStage, AppInfo.ICON_IMAGE);
 
             // Mostrar la ventana principal
             primaryStage.setScene(scene);

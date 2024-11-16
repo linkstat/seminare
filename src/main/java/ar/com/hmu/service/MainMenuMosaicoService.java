@@ -66,7 +66,7 @@ public class MainMenuMosaicoService {
             return new Image(inputStream);
         }
         //return null; // Si no tiene imagen personalizada, retornamos null.
-        return new Image(getClass().getResourceAsStream("/ar/com/hmu/ui/loginImage.png"));
+        return new Image(getClass().getResourceAsStream("/images/loginImage.png"));
     }
 
     // Métodos adicionales para obtener la información de la conexión

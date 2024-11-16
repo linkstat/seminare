@@ -147,7 +147,14 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
      * @throws SQLException En caso de errores durante la consulta SQL.
      */
     public Usuario findUsuarioByCuil(long cuil) throws SQLException {
-        String query = "SELECT *, BIN_TO_UUID(id) AS id FROM Usuario WHERE cuil = ?";
+        String query = "SELECT BIN_TO_UUID(id) AS id, " +
+                "fechaAlta, estado, cuil, apellidos, nombres, " +
+                "sexo, mail, tel, " +
+                "BIN_TO_UUID(domicilioID) AS domicilioID, " +
+                "BIN_TO_UUID(cargoID) AS cargoID, " +
+                "BIN_TO_UUID(servicioID) AS servicioID, " +
+                "tipoUsuario, passwd, profile_image " +
+                "FROM Usuario WHERE cuil = ?";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
