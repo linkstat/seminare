@@ -134,8 +134,9 @@ public class MainMenuMosaicoController {
     private UsuarioService usuarioService;
     private Stage stage;  // Necesario para guardar las propiedades de ventana (asi lo llamo desde LoginController)
 
-    private PreferencesManager preferencesManager; // Nueva instancia para manejar preferencias
-
+    // Nueva instancia para manejar preferencias
+    private PreferencesManager preferencesManager;
+    // Almacenamiento de las propiedades de la ventana (tamaño y posición)
     private static final String WINDOW_WIDTH_KEY = "window.width";
     private static final String WINDOW_HEIGHT_KEY = "window.height";
     private static final String WINDOW_X_KEY = "window.x";
@@ -193,8 +194,34 @@ public class MainMenuMosaicoController {
 
         // Configurar visibilidad del mosaico "Alta, Baja y Modificación de Agentes"
         abmAgentesVBox.setVisible(mainMenuMosaicoService.puedeAccederAltaBajaAgentes());
-        // Configurar la visibilidad de otros mosaicos según el servicio
-        //TODO: Agregar la visibilidad de elementos según tipo de usuario
+        // Configurar la visibilidad de otros elementos según el servicio
+        /* TODO: Agregar la visibilidad de mosaicos (VBox) según tipo de usuario
+         *       Aprobación de Solicitudes: todos menos Agente
+         *       Notas y Memorandums: todos
+         *       Módulo de Partes Diarios: OficinaDePersonal
+         *       Consulta de Diagramas de Servicios: OficinaDePersonal, Direccion
+         *       Diagramación de mi Servicio: JefaturaDeServicio
+         *       Marcaciones: Empleado
+         *       Pases de Salida: Empleado
+         *       Omisiones de Ingres/Egreso: Empleado
+         *       Faltas Justificadas: Empleado
+         *       Faltas Injustificadas: Empleado
+         *       Faltas por Fuerza Mayor: Empleado
+         *       Solicitud de Horas Extra p/FC: Empleado
+         *       Gestión de Francos Compensatorios: Empleado
+         *       Módulo de Reportes: Todos excepto Empleado
+         *       Listado de Agentes: OficinaDePersonal, Direccion
+         *       AMB de Agentes: OficinaDePersonal
+         *       Listado de Servicios: OficinaDePersonal, Direccion
+         */
+
+        /* TODO: Agregar la visibilidad de elementos de menú según tipo de usuario
+         *       Todos pueden ver el menú Archivo y el menú Ayuda
+         *       Empleados: visualiza además el menú Agente
+         *       JefaturaDeServicio: visualiza además el menú Agente y el menú Jefe de Servicio
+         *       OficinaDePersonal: visualiza todos los menús excepto Dirección
+         *       Direccion: solo visualiza Direccion y los comunes
+         */
 
         // Actualizar el estado del servidor y comenzar el chequeo periódico
         if (databaseConnector == null) {
@@ -324,7 +351,7 @@ public class MainMenuMosaicoController {
             AbmUsuariosController abmUsuariosController = loader.getController();
 
             // TODO: pasar el usuario logueado para verificación adicional
-            // Por ejemplo, si el usuario es de tipo empleado, no debería poder ingresar, o bien permitirle modificar solo sus propios datos
+            // Por ejemplo, si el usuario es de tipo empleado, no debería poder ingresar.
             // abmUsuariosController.setUsuarioActual(usuarioActual);  // meditarlo...
 
             // Crear una nueva escena y un nuevo Stage (ventana)
