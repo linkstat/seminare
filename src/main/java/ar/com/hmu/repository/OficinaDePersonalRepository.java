@@ -26,7 +26,7 @@ public class OficinaDePersonalRepository {
      * @return Una instancia de OficinaDePersonal con el servicio correspondiente.
      */
     public OficinaDePersonal findOficinaDePersonal() {
-        String query = "SELECT BIN_TO_UUID2(id) AS id, nombre FROM Servicio WHERE nombre = ?";
+        String query = "SELECT BIN_TO_UUID(id) AS id, nombre FROM Servicio WHERE nombre = ?";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 

@@ -22,6 +22,16 @@ public enum TipoUsuario {
         return displayName;
     }
 
+    // Método de conversión para obtener el Enum a partir de la cadena de la base de datos
+    public static TipoUsuario fromInternalName(String internalName) {
+        for (TipoUsuario tipo : TipoUsuario.values()) {
+            if (tipo.getInternalName().equalsIgnoreCase(internalName)) {
+                return tipo;
+            }
+        }
+        throw new IllegalArgumentException("Tipo de usuario desconocido: " + internalName);
+    }
+
     @Override
     public String toString() {
         return displayName;  // Por defecto, toString() mostrará el texto alternativo

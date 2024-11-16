@@ -4,8 +4,7 @@ package ar.com.hmu.model;
 import java.util.UUID;
 
 /**
- * @author Pablo Alejandro Hamann
- * @version 1.0
+ * Clase Cargo
  */
 public class Cargo {
 

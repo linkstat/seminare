@@ -1,9 +1,8 @@
-package ar.com.hmu.ui;
+package ar.com.hmu.controller;
 
 import ar.com.hmu.utils.AppInfo;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;

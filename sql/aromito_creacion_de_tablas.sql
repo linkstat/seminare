@@ -1,12 +1,6 @@
 /* Definición de funciones personalizadas
  * Dado que se decidió utilizar UUID y almacenarlos en formato binario, contar con una función que facilite la inserción y consulta de estos datos, nos facilitará enormemente la vida.
- * Las funciones propuestas (obtenidas desde https://mariadb.com/kb/en/uuid-data-type/ ), usan el enfoque de MySQL 8.0+ (UUID_TO_BIN(uuid, swap_flag=1), donde swap_flag=1 indica que los bytes deben reordenarse para mejorar la localidad de referencia en los índices.
- * Ventajas:
- * Mejora el rendimiento de los índices al ordenar los UUIDs de manera más secuencial.
- * Reduce la fragmentación y los costos de mantenimiento de índices en bases de datos con gran cantidad de inserciones.
- * Desventajas:
- * Los UUIDs almacenados no coincidirán con su representación estándar si se leen directamente desde la BD sin usar las funciones adecuadas.
- * Requiere ser cuidadosos: hay que asegurar que todos los componentes del sistema manejen correctamente el reordenamiento para evitar inconsistencias.
+ * Los UUIDs se almacenan usando la representación estándar, de esta forma podemos manipular sin problemas usando java.util.UUID.
 */
 -- Función para convertir (y almacenar) un UUID en un binario de 16 bytes
 DELIMITER $$
@@ -24,7 +18,7 @@ BEGIN
 END$$
 DELIMITER ;
 
--- Función  para recuperar y convertir de nuevo a UUID
+-- Función para recuperar y convertir de nuevo a UUID
 DELIMITER $$
 CREATE FUNCTION `BIN_TO_UUID`(b BINARY(16))
 RETURNS CHAR(36) CHARSET ascii
@@ -43,7 +37,8 @@ END$$
 DELIMITER ;
 
 
-/* Tabla HorarioBase
+-- Tabla HorarioBase
+/* 
  * Implementación de la Herencia entre Horarios
  * Utilizamos la estrategia de Tabla por Subclase, donde:
  * HorarioBase es la tabla base que contiene el identificador y el tipo de horario.
@@ -54,7 +49,8 @@ CREATE TABLE HorarioBase (
     tipo VARCHAR(50) NOT NULL -- 'Horario', 'HorarioConFranquicia'
 );
 
-/* Tabla Horario
+-- Tabla Horario
+/* 
  * Agregamos una columna 'modalidad' para identificar el tipo de horario y facilitar consultas:
  * Posibles valores: 'HorarioEstandar', 'HorarioSemanal', 'HorarioNocturno',
  * 'HorarioFeriante', 'HorarioDXI', 'HorarioGuardiaEnfermeria', 'HorarioGuardiaMedica',
@@ -182,11 +178,26 @@ CREATE TABLE Cargo (
     barrio VARCHAR(255),
     ciudad VARCHAR(255),
     localidad VARCHAR(255),
-    provincia VARCHAR(255),
+    provincia VARCHAR(255)
 );
 
-/* Tabla Usuarios
- * Representa a la clase Usuario (y es base para sus herederas): JefeDeServicio, OficinaDePersonal y Direccion
+
+
+SET FOREIGN_KEY_CHECKS = 0; -- Deshabilitar las Restricciones de Claves Foráneas
+-- Tabla Servicio
+CREATE TABLE Servicio (
+    id BINARY(16) PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    agrupacion ENUM('ADMINISTRATIVO', 'SERVICIO', 'MEDICO', 'ENFERMERIA', 'TECNICO', 'PLANTA POLITICA') NOT NULL,
+    direccionID BINARY(16) NOT NULL,
+    FOREIGN KEY (direccionID) REFERENCES Direccion(id)
+);
+SET FOREIGN_KEY_CHECKS = 1; -- Habilitar las Restricciones de Claves Foráneas
+
+
+ -- Tabla Usuario
+/*
+ * Representa a la clase Usuario (y es base para sus herederas): JefaturaDeServicio, OficinaDePersonal y Direccion
  * La herencia puede manejarse de varias formas en SQL.
  * Usaremos la estrategia de Tabla por Subclase (Class Table Inheritance)
  * donde cada subclase tiene su propia tabla que extiende la tabla de la superclase
@@ -204,11 +215,13 @@ CREATE TABLE Usuario (
     tel BIGINT,
     domicilioID BINARY(16),
     cargoID BINARY(16),
+    servicioID BINARY(16),
     tipoUsuario VARCHAR(50) NOT NULL, -- Indica si: 'Direccion', 'Empleado', 'JefaturaDeServicio', 'OficinaDePersonal'
     passwd VARCHAR(255) NOT NULL,
     profile_image BLOB,
     FOREIGN KEY (domicilioID) REFERENCES Domicilio(id),
-    FOREIGN KEY (cargoID) REFERENCES Cargo(id)
+    FOREIGN KEY (cargoID) REFERENCES Cargo(id),
+    FOREIGN KEY (servicioID) REFERENCES Servicio(id)
 );
 
 -- Tabla Direccion
@@ -218,21 +231,10 @@ CREATE TABLE Direccion (
     -- No tiene atributos adicionales directos
 );
 
--- Tabla Servicio
-CREATE TABLE Servicio (
-    id BINARY(16) PRIMARY KEY,
-    nombre VARCHAR(255) NOT NULL,
-    agrupacion ENUM('ADMINISTRATIVO', 'SERVICIO', 'MEDICO', 'ENFERMERIA', 'TECNICO', 'PLANTA POLITICA') NOT NULL,
-    direccionID BINARY(16) NOT NULL,
-    FOREIGN KEY (direccionID) REFERENCES Direccion(id)
-);
-
 -- Tabla JefaturaDeServicio
 CREATE TABLE JefaturaDeServicio (
     id BINARY(16) PRIMARY KEY,
-    FOREIGN KEY (id) REFERENCES Usuario(id),
-    servicioID BINARY(16) NOT NULL,
-    FOREIGN KEY (servicioID) REFERENCES Servicio(id)
+    FOREIGN KEY (id) REFERENCES Usuario(id)
 );
 
 -- Tabla OficinaDePersonal
@@ -249,10 +251,8 @@ CREATE TABLE Empleado (
     francosCompensatoriosUtilizados INT,
     horarioActualID BINARY(16),
     jefaturaID BINARY(16) NOT NULL,
-    servicioID BINARY(16),
     FOREIGN KEY (horarioActualID) REFERENCES HorarioBase(id),
-    FOREIGN KEY (jefaturaID) REFERENCES JefaturaDeServicio(id),
-    FOREIGN KEY (servicioID) REFERENCES Servicio(id)
+    FOREIGN KEY (jefaturaID) REFERENCES JefaturaDeServicio(id)
 );
 
 
@@ -278,23 +278,29 @@ CREATE TRIGGER trg_check_servicio_consistente_before_insert
 BEFORE INSERT ON Empleado
 FOR EACH ROW
 BEGIN
+    DECLARE empleadoServicioID BINARY(16);
     DECLARE jefaturaServicioID BINARY(16);
+
+    -- Obtener el servicioID del Empleado desde la tabla Usuario
+    SELECT servicioID INTO empleadoServicioID
+    FROM Usuario
+    WHERE id = NEW.id;
 
     -- Verificar si NEW.jefaturaID no es NULL
     IF NEW.jefaturaID IS NOT NULL THEN
-        -- Intentar obtener el servicioID de la JefaturaDeServicio asociada
+        -- Obtener el servicioID de la JefaturaDeServicio desde la tabla Usuario
         SELECT servicioID INTO jefaturaServicioID
-        FROM JefaturaDeServicio
+        FROM Usuario
         WHERE id = NEW.jefaturaID;
 
-        -- Si no se encuentra la JefaturaDeServicio, generar un error
+        -- Si no se encuentra el servicioID de la JefaturaDeServicio, generar un error
         IF jefaturaServicioID IS NULL THEN
             SIGNAL SQLSTATE '45000' 
-            SET MESSAGE_TEXT = 'La JefaturaDeServicio especificada no existe.';
+            SET MESSAGE_TEXT = 'La JefaturaDeServicio especificada no tiene un servicio asignado.';
         END IF;
 
         -- Verificar si los servicioID coinciden
-        IF NEW.servicioID != jefaturaServicioID THEN
+        IF empleadoServicioID != jefaturaServicioID THEN
             SIGNAL SQLSTATE '45000' 
             SET MESSAGE_TEXT = 'El servicioID del Empleado debe coincidir con el servicioID de la JefaturaDeServicio.';
         END IF;
@@ -306,28 +312,34 @@ DELIMITER ;
 
 -- Trigger BEFORE UPDATE
 -- cambiamos el delimitador por defecto para no tener problemas
-DELIMITER $$ 
+DELIMITER $$
 CREATE TRIGGER trg_check_servicio_consistente_before_update
 BEFORE UPDATE ON Empleado
 FOR EACH ROW
 BEGIN
+    DECLARE empleadoServicioID BINARY(16);
     DECLARE jefaturaServicioID BINARY(16);
+
+    -- Obtener el servicioID del Empleado desde la tabla Usuario
+    SELECT servicioID INTO empleadoServicioID
+    FROM Usuario
+    WHERE id = NEW.id;
 
     -- Verificar si NEW.jefaturaID no es NULL
     IF NEW.jefaturaID IS NOT NULL THEN
-        -- Intentar obtener el servicioID de la JefaturaDeServicio asociada
+        -- Obtener el servicioID de la JefaturaDeServicio desde la tabla Usuario
         SELECT servicioID INTO jefaturaServicioID
-        FROM JefaturaDeServicio
+        FROM Usuario
         WHERE id = NEW.jefaturaID;
 
-        -- Si no se encuentra la JefaturaDeServicio, generar un error
+        -- Si no se encuentra el servicioID de la JefaturaDeServicio, generar un error
         IF jefaturaServicioID IS NULL THEN
             SIGNAL SQLSTATE '45000' 
-            SET MESSAGE_TEXT = 'La JefaturaDeServicio especificada no existe.';
+            SET MESSAGE_TEXT = 'La JefaturaDeServicio especificada no tiene un servicio asignado.';
         END IF;
 
         -- Verificar si los servicioID coinciden
-        IF NEW.servicioID != jefaturaServicioID THEN
+        IF empleadoServicioID != jefaturaServicioID THEN
             SIGNAL SQLSTATE '45000' 
             SET MESSAGE_TEXT = 'El servicioID del Empleado debe coincidir con el servicioID de la JefaturaDeServicio.';
         END IF;
@@ -406,8 +418,9 @@ CREATE TABLE DiagramaDeServicio (
     FOREIGN KEY (servicioID) REFERENCES Servicio(id)
 );
 
-/* Tabla Planificacion: para el atributo 'planificaciones' de la clase DiagramaDeServicio
-*  Relaciona DiagramaDeServicio, Empleado y JornadaLaboral.
+-- Tabla Planificacion
+/* Para el atributo 'planificaciones' de la clase DiagramaDeServicio.
+ * Relaciona DiagramaDeServicio, Empleado y JornadaLaboral.
  * Representa las planificaciones de cada empleado en un diagrama de servicio.
  */
 CREATE TABLE Planificacion (
@@ -419,7 +432,6 @@ CREATE TABLE Planificacion (
     FOREIGN KEY (empleadoID) REFERENCES Empleado(id),
     FOREIGN KEY (jornadaID) REFERENCES JornadaLaboral(id)
 );
-
 
 -- Tabla Memorandum
 CREATE TABLE Memorandum (
@@ -535,8 +547,8 @@ CREATE TABLE MarcacionEmpleado (
 );
 
 
-/* -- Tabla RegistroJornadaLaboral
- * Notas:
+-- Tabla RegistroJornadaLaboral
+/* Notas:
  * fecha: Representa la fecha de la jornada laboral.
  * empleadoID: Referencia al empleado al que pertenece la jornada.
  * marcacionIngresoID y marcacionEgresoID: FK a las marcaciones específicas de ingreso y egreso.
@@ -560,7 +572,6 @@ CREATE TABLE RegistroJornadaLaboral (
 
 
 -- Extras
-/*
 /* Creación de índices en FK (Claves Foráneas)
  * Agregamos índices en las columnas que son claves foráneas y se utilizan en consultas frecuentes.
  */
@@ -568,21 +579,15 @@ CREATE INDEX idx_empleado_jefatura ON Empleado (jefaturaID);
 CREATE INDEX idx_servicio_direccion ON Servicio (direccionID);
 
 
-/** 
- * Creación de índices en Domicilio
- * Agregamos índices en los elementos de búsquedas rápidas frecuentes.
- */
- ALTER TABLE Usuario
+-- Creación de índices en Domicilio
+ ALTER TABLE Domicilio
 	ADD INDEX `idx_calle` (`calle`),
 	ADD INDEX `idx_barrio` (`barrio`),
 	ADD INDEX `idx_ciudad` (`ciudad`),
 	ADD INDEX `idx_localidad` (`localidad`);
 
 
-/** 
- * Creación de índices en Usuario
- * Agregamos índices en los elementos de búsquedas rápidas frecuentes.
- */
+-- Creación de índices en Usuario
  ALTER TABLE Usuario
 	ADD INDEX `idx_apellidos`(`apellidos`),
 	ADD INDEX `idx_nombres`(`nombres`),
@@ -590,8 +595,12 @@ CREATE INDEX idx_servicio_direccion ON Servicio (direccionID);
 	ADD UNIQUE INDEX `idx_tel`(`tel`);
 
 
-/**
- * Creación de un usuario propietario para la BD (acceso localhost unicamente)
+-- Creación de índices en Servicio
+ALTER TABLE Servicio
+    ADD UNIQUE INDEX `idx_nombre`(`nombre`);
+
+
+/* Creación de un usuario propietario para la BD (acceso localhost unicamente)
  * user: aromito
  * pass: aromitoSuperSecretDBPass
  */
