@@ -42,7 +42,7 @@ public class AppConfigReader {
 
         // Inicializar Yaml con el constructor
         Yaml yaml = new Yaml(constructor);
-        String filePath = "config.yaml";
+        String filePath = "config/config.yaml";
 
         try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePath)) {
             if (inputStream == null) {

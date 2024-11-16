@@ -1,4 +1,5 @@
 package ar.com.hmu.factory;
+import ar.com.hmu.constants.TipoUsuario;
 import ar.com.hmu.model.*;
 
 import java.sql.Blob;
@@ -56,14 +57,21 @@ import java.util.UUID;
         usuario.setId(UUID.fromString(resultSet.getString("id")));
 
         // Asignar otros campos
+        usuario.setFechaAlta(resultSet.getDate("fechaAlta").toLocalDate());
+        usuario.setEstado(resultSet.getBoolean("estado"));
         usuario.setCuil(resultSet.getLong("cuil"));
         usuario.setApellidos(resultSet.getString("apellidos"));
         usuario.setNombres(resultSet.getString("nombres"));
-        usuario.setMail(resultSet.getString("mail"));
         usuario.setSexo(Sexo.valueOf(resultSet.getString("sexo").toUpperCase()));
-        usuario.setEstado(resultSet.getBoolean("estado"));
-        usuario.setFechaAlta(resultSet.getDate("fechaAlta").toLocalDate());
+        usuario.setMail(resultSet.getString("mail"));
         usuario.setTel(resultSet.getLong("tel"));
+
+        try {
+            usuario.setTipoUsuario(TipoUsuario.fromInternalName(resultSet.getString("tipoUsuario")));
+        } catch (IllegalArgumentException | NullPointerException e) {
+            usuario.setTipoUsuario(TipoUsuario.EMPLEADO);
+            throw new SQLException("TipoUsuario inválido: " + resultSet.getString("tipoUsuario"), e);
+        }
 
         // Cargar el hash de la contraseña almacenado
         String passwordHash = resultSet.getString("passwd");

@@ -18,7 +18,7 @@ public class SessionUtils {
     public static void handleLogout(Stage currentStage) {
         try {
             // Cargar el archivo FXML de la pantalla de login
-            FXMLLoader loader = new FXMLLoader(LoginController.class.getResource("/ar/com/hmu/ui/loginScreen.fxml"));
+            FXMLLoader loader = new FXMLLoader(LoginController.class.getResource("/fxml/loginScreen.fxml"));
             Parent root = loader.load();
 
             // Obtener el controlador

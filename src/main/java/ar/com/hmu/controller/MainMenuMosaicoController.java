@@ -1,12 +1,7 @@
 package ar.com.hmu.controller;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Properties;
 
-import ar.com.hmu.repository.*;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -20,11 +15,13 @@ import javafx.stage.Stage;
 import javafx.scene.text.Text;
 
 import ar.com.hmu.model.Usuario;
+import ar.com.hmu.repository.*;
 import ar.com.hmu.service.MainMenuMosaicoService;
 import ar.com.hmu.service.UsuarioService;
 import ar.com.hmu.utils.AlertUtils;
 import ar.com.hmu.utils.AppInfo;
 import ar.com.hmu.utils.PasswordDialogUtils;
+import ar.com.hmu.utils.PreferencesManager;
 import ar.com.hmu.utils.SessionUtils;
 import static ar.com.hmu.utils.SessionUtils.handleLogout;
 import static ar.com.hmu.utils.ServerStatusUtils.*;
@@ -137,7 +134,13 @@ public class MainMenuMosaicoController {
     private UsuarioService usuarioService;
     private Stage stage;  // Necesario para guardar las propiedades de ventana (asi lo llamo desde LoginController)
 
-    private static final String CONFIG_FILE_NAME = "window.properties";  // Archivo de configuración
+    private PreferencesManager preferencesManager; // Nueva instancia para manejar preferencias
+
+    private static final String WINDOW_WIDTH_KEY = "window.width";
+    private static final String WINDOW_HEIGHT_KEY = "window.height";
+    private static final String WINDOW_X_KEY = "window.x";
+    private static final String WINDOW_Y_KEY = "window.y";
+
 
 
     /**
@@ -152,7 +155,11 @@ public class MainMenuMosaicoController {
      * Establece el usuario actual y actualiza la interfaz gráfica con sus datos.
      *
      * @param usuario El usuario que ha iniciado sesión.
-     * @param databaseConnector El conector de la base de datos.
+     * @param databaseConnector   El conector de la base de datos.
+     * @param domicilioRepository Repositorio de domicilios.
+     * @param cargoRepository     Repositorio de cargos.
+     * @param servicioRepository  Repositorio de servicios.
+     * @param stage               El Stage principal de la aplicación.
      */
     public void postInitialize(Usuario usuario, DatabaseConnector databaseConnector, DomicilioRepository domicilioRepository, CargoRepository cargoRepository, ServicioRepository servicioRepository, Stage stage) {
         this.mainMenuMosaicoService = new MainMenuMosaicoService(usuario);
@@ -165,6 +172,10 @@ public class MainMenuMosaicoController {
         this.stage = stage;  // Guardar la referencia al Stage
         this.usuarioService = new UsuarioService(new UsuarioRepository(databaseConnector, domicilioRepository, cargoRepository, servicioRepository));
         this.mainMenuMosaicoService = new MainMenuMosaicoService(usuario);
+
+        // Inicializar PreferencesManager con el CUIL del usuario
+        String userId = String.valueOf(usuarioActual.getCuil());
+        this.preferencesManager = new PreferencesManager(userId);
 
         // Configurar el evento de cierre de la ventana
         this.stage.setOnCloseRequest(event -> saveWindowPreferences());
@@ -195,41 +206,9 @@ public class MainMenuMosaicoController {
         // Configurar el evento de cierre de la ventana
         this.stage.setOnCloseRequest(event -> saveWindowPreferences());
 
-        // Otros códigos de inicialización
-        loadWindowPreferences(); // Cargar preferencias de la ventana en este punto
+        // Cargar preferencias de la ventana en este punto
+        loadWindowPreferences();
 
-    }
-
-    /**
-     * Método que define una ruta y nombre de archivo, según el sistema operativo en el cuals e ejecute la aplicación
-     * <p>
-     * Si el sistema es windows, la configuración se almacena dentro de LocalAppData del usuario.
-     * Si el sistema es UNIX-Like, se almacena en la carpeta .config dentro del HOME de usuario.
-     * @return Ruta y nombre de archivo (según sistema operativo)
-     */
-    private File getConfigFilePath() {
-        String osName = System.getProperty("os.name").toLowerCase();
-        String baseDir;
-
-        if (osName.contains("win")) { // Determinar si Windows u otro OS
-            // Windows: %LocalAppData%\CFG_FOLDER_NAME\UUID_usuario\window.properties
-            baseDir = System.getenv("LocalAppData");
-        } else {
-            // Unix/Linux/FreeBSD/Mac: $HOME/.config/CFG_FOLDER_NAME/UUID_usuario/window.properties
-            baseDir = System.getenv("HOME") + File.separator + ".config";
-        }
-
-        // Crear la ruta completa: baseDir + /CFG_FOLDER_NAME/UUID_usuario/window.properties
-        //File userConfigDir = new File(baseDir, AppInfo.CFG_FOLDER_NAME + File.separator + usuarioActual.getId().toString());
-        String folderId = String.valueOf(usuarioActual.getCuil());
-        //String folderId = String.valueOf(usuarioActual.getId());
-        File userConfigDir = new File(baseDir, AppInfo.CFG_FOLDER_NAME + File.separator + folderId);
-
-        if (!userConfigDir.exists()) {
-            userConfigDir.mkdirs(); // Crear la ruta si no existe
-        }
-
-        return new File(userConfigDir, CONFIG_FILE_NAME);
     }
 
 
@@ -237,62 +216,31 @@ public class MainMenuMosaicoController {
      * Método que configura el tamaño de la ventana al momento de cerrarse.
      */
     public void saveWindowPreferences() {
-        Properties properties = new Properties();
-        properties.setProperty("width", String.valueOf(stage.getWidth()));
-        properties.setProperty("height", String.valueOf(stage.getHeight()));
-        properties.setProperty("x", String.valueOf(stage.getX()));
-        properties.setProperty("y", String.valueOf(stage.getY()));
-
-        String cuil = String.valueOf(usuarioActual.getCuil()); // Convierte el CUIL a String
-
-        File configFile = getConfigFilePath();
-        try (FileOutputStream out = new FileOutputStream(configFile)) {
-            properties.store(out, "# Window Preferences for User CUIL " + usuarioActual.getCuil());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        preferencesManager.put(WINDOW_WIDTH_KEY, String.valueOf(stage.getWidth()));
+        preferencesManager.put(WINDOW_HEIGHT_KEY, String.valueOf(stage.getHeight()));
+        preferencesManager.put(WINDOW_X_KEY, String.valueOf(stage.getX()));
+        preferencesManager.put(WINDOW_Y_KEY, String.valueOf(stage.getY()));
     }
 
 
     /**
      * Método que carga las preferencias de la ventana (dimensiones y posición).
      */
-    public void loadWindowPreferences() {
-        Properties properties = new Properties();
-        File configFile = getConfigFilePath();
+    private void loadWindowPreferences() {
+        try {
+            double width = Double.parseDouble(preferencesManager.get(WINDOW_WIDTH_KEY, "800"));
+            double height = Double.parseDouble(preferencesManager.get(WINDOW_HEIGHT_KEY, "600"));
+            double x = Double.parseDouble(preferencesManager.get(WINDOW_X_KEY, "100"));
+            double y = Double.parseDouble(preferencesManager.get(WINDOW_Y_KEY, "100"));
 
-        if (configFile.exists()) {
-            try (FileInputStream in = new FileInputStream(configFile)) {
-                properties.load(in);
-
-                double width = Double.parseDouble(properties.getProperty("window.width", "800"));
-                double height = Double.parseDouble(properties.getProperty("window.height", "600"));
-                double x = Double.parseDouble(properties.getProperty("window.x", "100"));
-                double y = Double.parseDouble(properties.getProperty("window.y", "100"));
-
-                stage.setWidth(width);
-                stage.setHeight(height);
-                stage.setX(x);
-                stage.setY(y);
-            } catch (IOException | NumberFormatException e) {
-                e.printStackTrace(); // Error en la carga del archivo de configuración, se usan valores predeterminados
-            }
+            stage.setWidth(width);
+            stage.setHeight(height);
+            stage.setX(x);
+            stage.setY(y);
+        } catch (NumberFormatException e) {
+            e.printStackTrace(); // Error en la carga de preferencias, se usan valores predeterminados
+            // Valores predeterminados ya están establecidos en el método get de PreferencesManager
         }
-    }
-
-
-    /**
-     * Método para obtener la ruta y nombre del archivo
-     * @param cuil Nro de CUIL de un usuario
-     * @return la ruta y nombre del archivo
-     */
-    private String getUserPreferencesFilePath(String cuil) {
-        String directoryPath = System.getProperty("user.home") + "/.app_config/";
-        File directory = new File(directoryPath);
-        if (!directory.exists()) {
-            directory.mkdirs();
-        }
-        return directoryPath + cuil + "_window.properties";
     }
 
 
@@ -308,14 +256,6 @@ public class MainMenuMosaicoController {
 
         // Configura la funcionalidad del menú: Archivo -> Cerrar sesión
         logoutMenuItem.setOnAction(event -> handleLogout((Stage) menuBar.getScene().getWindow()));
-
-        // Otro método (no me gusta por contra intuitivo)
-        /* Obtener el Scene desde cualquier nodo de la escena
-        logoutMenuItem.setOnAction(event -> {
-            Stage stage = (Stage) ((MenuItem) event.getSource()).getParentPopup().getOwnerWindow();
-            handleLogout(stage);
-        });
-        */
 
         // Configura la funcionalidad del menú: Archivo -> Salir
         exitMenuItem.setOnAction(event -> System.exit(0));
@@ -377,7 +317,7 @@ public class MainMenuMosaicoController {
     private void handleAbmAgentes() {
         try {
             // Cargar el archivo FXML del ABM de Usuarios
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ar/com/hmu/ui/abmUsuarios.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/abmUsuarios.fxml"));
             Parent abmUsuariosRoot = loader.load();
 
             // Obtener el controlador de la nueva vista
@@ -411,7 +351,7 @@ public class MainMenuMosaicoController {
     private void handleLicenciasDeUso() {
         try {
             // Cargar el FXML de la ventana "Licencias de uso"
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ar/com/hmu/ui/licenciasDeUso.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/licenciasDeUso.fxml"));
             Parent root = loader.load();
 
             // Crear una nueva ventana (Stage)
@@ -420,7 +360,7 @@ public class MainMenuMosaicoController {
             stage.initModality(Modality.APPLICATION_MODAL); // Bloquear la ventana principal hasta que se cierre esta
             stage.setResizable(false);
             // Establecer el ícono de la aplicación
-            stage.getIcons().add(new Image(getClass().getResourceAsStream("app-icon.png")));
+            stage.getIcons().add(new Image(getClass().getResourceAsStream(AppInfo.ICON_IMAGE)));
 
             Scene scene = new Scene(root);
             stage.setScene(scene);
@@ -440,7 +380,7 @@ public class MainMenuMosaicoController {
     private void handleAcercaDeAromito() {
         try {
             // Cargar el FXML de la ventana "Acerca de"
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ar/com/hmu/ui/about.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/about.fxml"));
             Parent root = loader.load();
 
             // Crear una nueva ventana (Stage)
@@ -449,7 +389,7 @@ public class MainMenuMosaicoController {
             stage.initModality(Modality.APPLICATION_MODAL); // Bloquear la ventana principal hasta que se cierre esta
             stage.setResizable(false);
             // Establecer el ícono de la aplicación
-            stage.getIcons().add(new Image(getClass().getResourceAsStream("app-icon.png")));
+            stage.getIcons().add(new Image(getClass().getResourceAsStream(AppInfo.ICON_IMAGE)));
 
             Scene scene = new Scene(root);
             stage.setScene(scene);

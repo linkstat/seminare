@@ -628,7 +628,7 @@ public class AbmUsuariosController implements Initializable {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Seleccionar Imagen de Perfil");
         fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Imágenes", "*.png", "*.jpg", "*.jpeg", "*.gif"));
+                new FileChooser.ExtensionFilter("Imágenes", "*.png", "*.jpg", "*.jpeg", "*.jpe", "*.gif"));
         File archivoSeleccionado = fileChooser.showOpenDialog(getStage());
 
         if (archivoSeleccionado != null) {

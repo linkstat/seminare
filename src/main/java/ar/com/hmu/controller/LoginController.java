@@ -2,9 +2,7 @@ package ar.com.hmu.controller;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.prefs.Preferences;
 
-import ar.com.hmu.repository.*;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -18,12 +16,14 @@ import javafx.stage.Stage;
 import ar.com.hmu.auth.LoginService;
 import ar.com.hmu.model.Usuario;
 import ar.com.hmu.service.UsuarioService;
+import ar.com.hmu.repository.*;
 import ar.com.hmu.utils.AlertUtils;
 import ar.com.hmu.utils.AppInfo;
 import ar.com.hmu.utils.CuilUtils;
 import ar.com.hmu.utils.PasswordDialogUtils;
 import static ar.com.hmu.utils.ServerStatusUtils.*;
 import ar.com.hmu.utils.SessionUtils;
+import ar.com.hmu.utils.PreferencesManager;
 
 /**
  * Controlador encargado de gestionar la interfaz de usuario de la pantalla de login.
@@ -62,7 +62,7 @@ public class LoginController {
 
     // Añadir una referencia a las preferencias del sistema
     private static final String LAST_USER_CUIL_KEY = "lastUserCuil";
-    private Preferences preferences;
+    private PreferencesManager preferencesManager;
 
     private LoginService loginService;  // LoginService para la autenticación del usuario
     private DatabaseConnector databaseConnector;  // DatabaseConnector para la verificación del estado del servidor de BD
@@ -95,15 +95,16 @@ public class LoginController {
      */
     @FXML
     public void initialize() {
-        preferences = Preferences.userNodeForPackage(LoginController.class);
+        preferencesManager = new PreferencesManager(); // Inicializar PreferencesManager
         //Mueve la llamada a updateServerStatus() desde initialize() a postInitialize(), donde databaseConnector ya está configurado.
         //updateServerStatus(databaseConnector, serverStatusLabel, serverStatusIcon); // Esto llamaba al método de utilería para verificar el estado del servidor al iniciar la ventana.
 
         // Configurar el campo de texto para el CUIL
         CuilUtils.configureCuilField(usernameField);
-        //configureCuilField();  // el método fue movido a la clase CuilUtils del paquete utils, porque ahora se utiliza también en otros lugares
 
-        configureShowPassword(); // Configurar el checkbox de mostrar/ocultar contraseña
+        // Configurar el checkbox de mostrar/ocultar contraseña
+        configureShowPassword();
+        // Cargar el último CUIL, si existe
         loadUserCuil();
 
         // Añadir el evento de presionar "Enter" para usernameField
@@ -146,7 +147,7 @@ public class LoginController {
         // Inicializar UsuarioService
         this.usuarioService = new UsuarioService(new UsuarioRepository(databaseConnector, domicilioRepository, cargoRepository, servicioRepository));
 
-        boolean b = updateServerStatusUI(databaseConnector, serverStatusLabel, serverStatusIcon);  // Actualizar el estado del servidor
+        boolean isServerUp = updateServerStatusUI(databaseConnector, serverStatusLabel, serverStatusIcon);  // Actualizar el estado del servidor
         startPeriodicServerCheck(databaseConnector, serverStatusLabel, serverStatusIcon);  // Iniciar chequeo periódico del servidor
     }
 
@@ -163,7 +164,7 @@ public class LoginController {
     private void loadUserCuil() {
         // Mejor inicializar preferences en initialize() una vez para evitar posibles inconsistencias.
         //preferences = Preferences.userNodeForPackage(LoginController.class);
-        String lastUserCuil = preferences.get(LAST_USER_CUIL_KEY, "");
+        String lastUserCuil = preferencesManager.get(LAST_USER_CUIL_KEY, "");
 
         if (!lastUserCuil.isEmpty()) {
             usernameField.setText(lastUserCuil);
@@ -187,9 +188,9 @@ public class LoginController {
         //preferences = Preferences.userNodeForPackage(LoginController.class);
 
         if (rememberMeCheckBox.isSelected()) {
-            preferences.put(LAST_USER_CUIL_KEY, cuil);
+            preferencesManager.put(LAST_USER_CUIL_KEY, cuil);
         } else {
-            preferences.remove(LAST_USER_CUIL_KEY);
+            preferencesManager.put(LAST_USER_CUIL_KEY, ""); // Truquito para no tener que implementar un método remove :-/
         }
     }
 
@@ -351,7 +352,7 @@ public class LoginController {
      */
     private void showMainMenu(Usuario usuario) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("mainMenuMosaico.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/mainMenuMosaico.fxml"));
             Parent root = loader.load();
 
             MainMenuMosaicoController controller = loader.getController();
@@ -367,7 +368,7 @@ public class LoginController {
 
             Scene scene = new Scene(root);
             stage.setScene(scene);
-            stage.setResizable(true);  // Establecer propiedades Hacer que el Stage sea redimensionable
+            stage.setResizable(true);  // Hacer que el Stage sea redimensionable
             stage.setTitle("Menú Principal" + " :: " + AppInfo.PRG_LONG_TITLE);  // Establecer un título a la ventana
 
 
