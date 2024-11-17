@@ -1,16 +1,17 @@
 package ar.com.hmu.model;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import ar.com.hmu.constants.TipoUsuario;
-import ar.com.hmu.utils.PasswordUtils;
-import static ar.com.hmu.utils.StringUtils.normalizar;
+import ar.com.hmu.util.PasswordUtils;
+import static ar.com.hmu.util.StringUtils.normalizar;
 
 /**
- * @author Pablo Alejandro Hamann
- * @version 1.0
+ * Clase base abstracta pra representar usuarios de forma genérica
  */
 public abstract class Usuario {
 
@@ -35,6 +36,9 @@ public abstract class Usuario {
 	private UUID domicilioId;
 	private UUID cargoId;
 	private UUID servicioId;
+
+	// Gestión de roles de usuario
+	private List<Rol> roles = new ArrayList<>();
 
 
 	// Constructor por defecto
@@ -149,6 +153,10 @@ public abstract class Usuario {
 		return servicioId;
 	}
 
+	public List<Rol> getRoles() {
+		return roles;
+	}
+
 
 	// Setters
 
@@ -241,6 +249,14 @@ public abstract class Usuario {
 		this.servicioId = servicioId;
 	}
 
+	public void setRoles(List<Rol> roles) {
+		this.roles = roles;
+	}
+
+	public void addRol(Rol rol) {
+		this.roles.add(rol);
+	}
+
 
 	// Otros métodos
 
@@ -327,6 +343,51 @@ public abstract class Usuario {
 			Arrays.fill(newPassword, '\0');
 			Arrays.fill(confirmNewPassword, '\0');
 		}
+	}
+
+	/**
+	 * Método que indica si el usuario posé un determinado rol.
+	 * @param tipoUsuario es un Enum de tipo TipoUsuario, que contiene los valores posibles.
+	 * @return verdadero o falso, según el usuario tenga el rol o no.
+	 */
+	public boolean hasRole(TipoUsuario tipoUsuario) {
+		return roles.stream()
+				.anyMatch(rol -> rol.getNombre().equalsIgnoreCase(tipoUsuario.getInternalName()));
+	}
+
+	/**
+	 * Método que indica si el usuario posé al menos un rol de entre varios dados.
+	 * @param tiposUsuario uno o más Enum de tipo TipoUsuario, que contiene los valores posibles.
+	 * @return verdaero o falso, según el usuario tenga el rol o no.
+	 */
+	public boolean hasRoles(TipoUsuario... tiposUsuario) {
+		for (TipoUsuario tipoUsuario : tiposUsuario) {
+			if (hasRole(tipoUsuario)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Método que indica si el usuario posé un determinado rol
+	 * @param roleName cadena de texto con el rol consultado
+	 * @return verdadero o false, según el usaario tenga el rol o no
+	 */
+	public boolean hasRole(String roleName) {
+		return roles.stream()
+				.anyMatch(rol -> rol.getNombre().equalsIgnoreCase(roleName));
+	}
+
+	/**
+	 * Método que indica si el usuario posé algún rol o no
+	 * El objetivo principal, es poder manejar los casos en los cuales el usuario no tiene cargado ningún rol.
+	 * También resulta de utilidad cuando se desea mostrar un elemento a cualquier tipo de usuario,
+	 * pero cuidando que tenga al menos un rol configurado.
+	 * @return verdadero o false, según el usuario tenga el rol o no
+	 */
+	public boolean hasAnyRole() {
+		return roles != null && !roles.isEmpty();
 	}
 
 	public void consultarHorario(){

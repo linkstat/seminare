@@ -48,7 +48,7 @@
                         <Insets left="4.0" />
                      </HBox.margin>
                      <image>
-                        <Image url="@/images/serverStatus_icon_blue_question.png" />
+                        <Image url="@../images/serverStatus_icon_blue_question.png" />
                      </image>
                   </ImageView>
                   <Label fx:id="serverStatusLabel" text="Estado de conexión del servidor">
@@ -147,7 +147,7 @@
                <children>
                   <ImageView fx:id="agentProfileImage" fitHeight="96.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true">
                      <image>
-                        <Image url="@/images/loginImage.png" />
+                        <Image url="@../images/loginImage.png" />
                      </image>
                      <HBox.margin>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
@@ -277,13 +277,13 @@
    <center>
       <ScrollPane fitToHeight="true" fitToWidth="true">
          <content>
-            <TilePane hgap="24.0" prefColumns="1" prefHeight="480.0" prefRows="1" prefWidth="720.0" styleClass="panel" stylesheets="@/css/MainMenuMosaicoStd.css" vgap="16.0">
+            <TilePane hgap="24.0" prefColumns="1" prefHeight="480.0" prefRows="1" prefWidth="720.0" styleClass="panel" stylesheets="@../css/MainMenuMosaicoStd.css" vgap="16.0">
                <children>
                   <VBox fx:id="aprobacionSolicitudesVBox" alignment="TOP_CENTER" layoutX="586.0" layoutY="354.0" styleClass="mosaic">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>
-                              <Image url="@/images/mosaic_aprobacion_solicitudes.png" />
+                              <Image url="@../images/mosaic_aprobacion_solicitudes.png" />
                            </image>
                            <cursor>
                               <Cursor fx:constant="HAND" />
@@ -303,7 +303,7 @@
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>
-                              <Image url="@/images/mosaic_notas_memos.png" />
+                              <Image url="@../images/mosaic_notas_memos.png" />
                            </image>
                            <cursor>
                               <Cursor fx:constant="HAND" />
@@ -323,7 +323,7 @@
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>
-                              <Image url="@/images/mosaic_partes_diarios.png" />
+                              <Image url="@../images/mosaic_partes_diarios.png" />
                            </image>
                            <cursor>
                               <Cursor fx:constant="HAND" />
@@ -346,7 +346,7 @@
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>
-                              <Image url="@/images/mosaic_consulta_diagramas_de_servicios.png" />
+                              <Image url="@../images/mosaic_consulta_diagramas_de_servicios.png" />
                            </image>
                            <cursor>
                               <Cursor fx:constant="HAND" />
@@ -369,7 +369,7 @@
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>
-                              <Image url="@/images/mosaic_diagramacion_de_servicio.png" />
+                              <Image url="@../images/mosaic_diagramacion_de_servicio.png" />
                            </image>
                            <cursor>
                               <Cursor fx:constant="HAND" />
@@ -399,7 +399,7 @@
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>
-                              <Image url="@/images/mosaic_control_marcaciones.png" />
+                              <Image url="@../images/mosaic_control_marcaciones.png" />
                            </image>
                            <cursor>
                               <Cursor fx:constant="HAND" />
@@ -422,7 +422,7 @@
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>
-                              <Image url="@/images/mosaic_gestion_pases_de_salida.png" />
+                              <Image url="@../images/mosaic_gestion_pases_de_salida.png" />
                            </image>
                            <cursor>
                               <Cursor fx:constant="HAND" />
@@ -445,7 +445,7 @@
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>
-                              <Image url="@/images/mosaic_omision_ingreso-egreso.png" />
+                              <Image url="@../images/mosaic_omision_ingreso-egreso.png" />
                            </image>
                            <cursor>
                               <Cursor fx:constant="HAND" />
@@ -468,7 +468,7 @@
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>
-                              <Image url="@/images/mosaic_falta_justificada.png" />
+                              <Image url="@../images/mosaic_falta_justificada.png" />
                            </image>
                            <cursor>
                               <Cursor fx:constant="HAND" />
@@ -491,7 +491,7 @@
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>
-                              <Image url="@/images/mosaic_falta_injustificada.png" />
+                              <Image url="@../images/mosaic_falta_injustificada.png" />
                            </image>
                            <cursor>
                               <Cursor fx:constant="HAND" />
@@ -514,7 +514,7 @@
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>
-                              <Image url="@/images/mosaic_falta_por_fuerza_mayor.png" />
+                              <Image url="@../images/mosaic_falta_por_fuerza_mayor.png" />
                            </image>
                            <cursor>
                               <Cursor fx:constant="HAND" />
@@ -534,7 +534,7 @@
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>
-                              <Image url="@/images/mosaic_solicitud_horas_extra.png" />
+                              <Image url="@../images/mosaic_solicitud_horas_extra.png" />
                            </image>
                            <cursor>
                               <Cursor fx:constant="HAND" />
@@ -554,7 +554,7 @@
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>
-                              <Image url="@/images/mosaic_francos_compensatorios.png" />
+                              <Image url="@../images/mosaic_francos_compensatorios.png" />
                            </image>
                            <cursor>
                               <Cursor fx:constant="HAND" />
@@ -574,7 +574,7 @@
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>
-                              <Image url="@/images/mosaic_reportes.png" />
+                              <Image url="@../images/mosaic_reportes.png" />
                            </image>
                            <cursor>
                               <Cursor fx:constant="HAND" />
@@ -594,7 +594,7 @@
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>
-                              <Image url="@/images/mosaic_listado_usuarios.png" />
+                              <Image url="@../images/mosaic_listado_usuarios.png" />
                            </image>
                            <cursor>
                               <Cursor fx:constant="HAND" />
@@ -617,7 +617,7 @@
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>
-                              <Image url="@/images/mosaic_ABM_agentes.png" />
+                              <Image url="@../images/mosaic_ABM_agentes.png" />
                            </image>
                            <cursor>
                               <Cursor fx:constant="HAND" />
@@ -640,7 +640,7 @@
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>
-                              <Image url="@/images/mosaic_listado_servicios.png" />
+                              <Image url="@../images/mosaic_listado_servicios.png" />
                            </image>
                            <cursor>
                               <Cursor fx:constant="HAND" />
@@ -663,7 +663,7 @@
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>
-                              <Image url="@/images/mosaic_ABM_servcios.png" />
+                              <Image url="@../images/mosaic_ABM_servcios.png" />
                            </image>
                            <cursor>
                               <Cursor fx:constant="HAND" />

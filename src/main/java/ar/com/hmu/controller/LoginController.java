@@ -17,13 +17,13 @@ import ar.com.hmu.auth.LoginService;
 import ar.com.hmu.model.Usuario;
 import ar.com.hmu.service.UsuarioService;
 import ar.com.hmu.repository.*;
-import ar.com.hmu.utils.AlertUtils;
-import ar.com.hmu.utils.AppInfo;
-import ar.com.hmu.utils.CuilUtils;
-import ar.com.hmu.utils.PasswordDialogUtils;
-import static ar.com.hmu.utils.ServerStatusUtils.*;
-import ar.com.hmu.utils.SessionUtils;
-import ar.com.hmu.utils.PreferencesManager;
+import ar.com.hmu.util.AlertUtils;
+import ar.com.hmu.util.AppInfo;
+import ar.com.hmu.util.CuilUtils;
+import ar.com.hmu.util.PasswordDialogUtils;
+import static ar.com.hmu.util.ServerStatusUtils.*;
+import ar.com.hmu.util.SessionUtils;
+import ar.com.hmu.util.PreferencesManager;
 
 /**
  * Controlador encargado de gestionar la interfaz de usuario de la pantalla de login.
@@ -66,10 +66,11 @@ public class LoginController {
 
     private LoginService loginService;  // LoginService para la autenticación del usuario
     private DatabaseConnector databaseConnector;  // DatabaseConnector para la verificación del estado del servidor de BD
-
+    private RolRepository rolRepository;
     private UsuarioService usuarioService; // objeto para persistencia en la BD
 
-    // Instancias que deberemos pasarle a UsuarioRepository para inyección de dependencias (necesario para «Lazy Loading»)
+
+    // Instancias que deberemos pasarle a UsuarioRepository para inyección de dependencias (necesario para «Lazy Loading»). Ya no lo uso. Después borrar.
     private DomicilioRepository domicilioRepository;
     private CargoRepository cargoRepository;
     private ServicioRepository servicioRepository;
@@ -81,6 +82,14 @@ public class LoginController {
      */
     public void setLoginService(LoginService loginService) {
         this.loginService = loginService;
+    }
+
+    /**
+     * Método para Inyectar RolRepository
+     * @param rolRepository repositorio de Roles
+     */
+    public void setRolRepository(RolRepository rolRepository) {
+        this.rolRepository = rolRepository;
     }
 
 
@@ -121,6 +130,9 @@ public class LoginController {
             }
         });
 
+        // Configurar el estado del botón de iniciar sesión
+        configureLoginButton();
+
     }
 
     /**
@@ -139,16 +151,45 @@ public class LoginController {
      * verificaciones necesarias para el estado del servidor.
      */
     public void postInitialize() {
-        updateServerStatusUI(databaseConnector, serverStatusLabel, serverStatusIcon); // Llamar al método de utilería para verificar el estado del servidor al iniciar la ventana.
+        updateServerStatusUI(databaseConnector, serverStatusLabel, serverStatusIcon); // Verifica estado del servidor al iniciar la ventana.
         if (databaseConnector == null || loginService == null) {
             throw new IllegalStateException("Las dependencias no han sido configuradas correctamente.");
         }
 
         // Inicializar UsuarioService
-        this.usuarioService = new UsuarioService(new UsuarioRepository(databaseConnector, domicilioRepository, cargoRepository, servicioRepository));
+        this.usuarioService = new UsuarioService(new UsuarioRepository(databaseConnector, rolRepository));
 
         boolean isServerUp = updateServerStatusUI(databaseConnector, serverStatusLabel, serverStatusIcon);  // Actualizar el estado del servidor
         startPeriodicServerCheck(databaseConnector, serverStatusLabel, serverStatusIcon);  // Iniciar chequeo periódico del servidor
+    }
+
+
+    /**
+     * Configura el botón de inicio de sesión para habilitarse o deshabilitarse
+     * según el contenido de los campos de CUIL y contraseña.
+     */
+    private void configureLoginButton() {
+        // Añadir listeners para habilitar/deshabilitar el botón de iniciar sesión
+        usernameField.textProperty().addListener((observable, oldValue, newValue) -> updateLoginButtonState());
+        passwordField.textProperty().addListener((observable, oldValue, newValue) -> updateLoginButtonState());
+
+        // Inicializar el estado del botón
+        updateLoginButtonState();
+    }
+
+    /**
+     * Actualiza el estado del botón de inicio de sesión en función de los campos de CUIL y contraseña.
+     * El botón solo estará habilitado si ambos campos tienen algún valor.
+     */
+    private void updateLoginButtonState() {
+        String cuil = usernameField.getText();
+        String password = passwordField.getText();
+
+        // Habilitar el botón solo si CUIL y contraseña tienen valores
+        boolean isCuilFilled = cuil != null && !cuil.trim().isEmpty();
+        boolean isPasswordFilled = password != null && !password.trim().isEmpty();
+
+        loginButton.setDisable(!(isCuilFilled && isPasswordFilled));
     }
 
 
@@ -270,7 +311,9 @@ public class LoginController {
                     throw new IllegalStateException("No se pudo recuperar el usuario después de la autenticación.");
                 }
 
-                UsuarioService usuarioService = new UsuarioService(new UsuarioRepository(databaseConnector, domicilioRepository, cargoRepository, servicioRepository));
+                // Ya hay una instancia de UsuarioService inicializada en postInitialize... no sería necesario crear una nueva
+                //UsuarioService usuarioService = new UsuarioService(new UsuarioRepository(databaseConnector, rolRepository));
+
                 // Verificar si el usuario tiene la contraseña predeterminada
                 if (usuario.isDefaultPassword()) {
                     // Mostrar ventana para que el usuario cambie la contraseña
@@ -364,7 +407,7 @@ public class LoginController {
             Stage stage = (Stage) loginButton.getScene().getWindow();
 
             // Pasar usuario, databaseConnector, y stage a postInitialize
-            controller.postInitialize(usuario, databaseConnector, domicilioRepository, cargoRepository, servicioRepository, stage);
+            controller.postInitialize(usuario, databaseConnector, rolRepository, stage);
 
             Scene scene = new Scene(root);
             stage.setScene(scene);

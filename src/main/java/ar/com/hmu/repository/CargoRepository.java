@@ -25,7 +25,7 @@ public class CargoRepository implements GenericDAO<Cargo> {
     }
 
     @Override
-    public void create(Cargo cargo) {
+    public void create(Cargo cargo) throws SQLException {
         String query = "INSERT INTO Cargo (id, numero, descripcion, agrupacion) VALUES (UUID_TO_BIN(UUID()), ?, ?, ?)";
 
         try (Connection connection = databaseConnector.getConnection();
@@ -43,7 +43,7 @@ public class CargoRepository implements GenericDAO<Cargo> {
     }
 
     @Override
-    public Cargo readByUUID(UUID id) {
+    public Cargo readByUUID(UUID id) throws SQLException {
         String query = "SELECT * FROM Cargo WHERE id = UUID_TO_BIN(?)";
 
         try (Connection connection = databaseConnector.getConnection();
@@ -70,7 +70,7 @@ public class CargoRepository implements GenericDAO<Cargo> {
     }
 
     @Override
-    public List<Cargo> readAll() {
+    public List<Cargo> readAll() throws SQLException {
         List<Cargo> cargos = new ArrayList<>();
         String query = "SELECT *, BIN_TO_UUID(id) as idUUID FROM Cargo";
 
@@ -95,7 +95,7 @@ public class CargoRepository implements GenericDAO<Cargo> {
     }
 
     @Override
-    public void update(Cargo cargo) {
+    public void update(Cargo cargo) throws SQLException {
         String query = "UPDATE Cargo SET numero = ?, descripcion = ?, agrupacion = ? WHERE id = UUID_TO_BIN(?)";
 
         try (Connection connection = databaseConnector.getConnection();
@@ -117,7 +117,7 @@ public class CargoRepository implements GenericDAO<Cargo> {
     }
 
     @Override
-    public void delete(Cargo cargo) {
+    public void delete(Cargo cargo) throws SQLException {
         String query = "DELETE FROM Cargo WHERE id = UUID_TO_BIN(?)";
 
         try (Connection connection = databaseConnector.getConnection();

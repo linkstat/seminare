@@ -23,6 +23,8 @@ DELETE FROM Empleado_Novedad;
 DELETE FROM Novedad;
 DELETE FROM EstadoTramite;
 DELETE FROM Autorizacion;
+DELETE FROM Usuario_Rol;
+DELETE FROM Rol;
 DELETE FROM Empleado;
 DELETE FROM OficinaDePersonal;
 DELETE FROM JefaturaDeServicio;
@@ -139,6 +141,7 @@ SET @JefeNutricionID = UUID_TO_BIN(UUID());
 SET @JefePersonalID = UUID_TO_BIN(UUID());
 SET @JefeTraumatologiaID = UUID_TO_BIN(UUID());
 SET @JefeToxicologiaID = UUID_TO_BIN(UUID());
+
 
 -- Generar una contraseña inicial usando Bcrypt
 /* Por defecto, utlizaremos la contraseña Aromito1
@@ -381,6 +384,57 @@ WHERE U.tipoUsuario IN ('Empleado', 'JefaturaDeServicio')
 GROUP BY S.id, S.nombre
 ORDER BY Cant_empleados DESC;
 
+
+-- Generar Roles y almacenarlos en variables, para luego asignar a usuarios
+SET @RolEmpleado = UUID_TO_BIN(UUID());
+SET @RolJefeDeServicio = UUID_TO_BIN(UUID());
+SET @RolOficinaDePersonal = UUID_TO_BIN(UUID());
+SET @RolDireccion = UUID_TO_BIN(UUID());
+
+-- Inicializar tabla de Roles
+INSERT INTO Rol (id, nombre, descripcion) VALUES
+(@RolEmpleado, 'Empleado', 'Agente'),
+(@RolJefeDeServicio, 'JefaturaDeServicio', 'Jefe de Servicio'),
+(@RolOficinaDePersonal, 'OficinaDePersonal', 'Oficina de Personal'),
+(@RolDireccion, 'Direccion', 'Directivo');
+
+-- Listar roles de usuario
+SELECT BIN_TO_UUID(id) AS id, nombre, descripcion FROM Rol;
+
+-- Asignar roles al usuario cuyo apellido es 'Maurino'
+INSERT INTO Usuario_Rol (usuario_id, rol_id)
+SELECT u.id, r.id
+FROM Usuario u
+JOIN Rol r ON r.nombre IN ('Empleado', 'JefaturaDeServicio', 'OficinaDePersonal')
+WHERE u.apellidos = 'Maurino';
+
+-- Asignar roles al usuario cuyo apellido es 'Roqué'
+INSERT INTO Usuario_Rol (usuario_id, rol_id)
+SELECT u.id, r.id
+FROM Usuario u
+JOIN Rol r ON r.nombre IN ('Empleado', 'JefaturaDeServicio')
+WHERE u.apellidos = 'Roqué';
+
+-- Asignar roles al usuario cuyo apellido es 'Marino'
+INSERT INTO Usuario_Rol (usuario_id, rol_id)
+SELECT u.id, r.id
+FROM Usuario u
+JOIN Rol r ON r.nombre IN ('JefaturaDeServicio', 'Direccion')
+WHERE u.apellidos = 'Marino';
+
+-- Asignar roles al usuario cuyos apellidos son 'Canga' o 'Hamann'
+INSERT INTO Usuario_Rol (usuario_id, rol_id)
+SELECT u.id, r.id
+FROM Usuario u
+JOIN Rol r ON r.nombre = 'Empleado'
+WHERE u.apellidos IN ('Canga', 'Hamann');
+
+-- Listar todas las asignaciones de roles
+SELECT BIN_TO_UUID(u.id) AS usuario_id, u.apellidos, BIN_TO_UUID(r.id) AS rol_id, r.nombre
+FROM Usuario u
+JOIN Usuario_Rol ur ON u.id = ur.usuario_id
+JOIN Rol r ON ur.rol_id = r.id
+ORDER BY apellidos;
 
 
 -- Agregar/modificar el teléfono a un usuario cualquiera

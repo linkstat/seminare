@@ -350,6 +350,38 @@ END$$
 DELIMITER ;
 
 
+/* Roles como Entidades en la Base de Datos
+ *
+ * Múltiples Roles por Usuario: Este enfoque permite que un usuario tenga
+ * múltiples roles de manera sencilla, sin las limitaciones impuestas por
+ * la herencia.
+ * Gestión Dinámica de Roles: Dado que los cambios de roles son muy frecuentes
+ * (por ejemplo, asignar un empleado como jefe temporalmente),
+ * manejar roles como entidades facilita estas asignaciones y revocaciones
+ * sin necesidad de modificar la estructura de clases en el código.
+ */
+-- Tabla Rol
+CREATE TABLE Rol (
+    id BINARY(16) PRIMARY KEY,
+    nombre VARCHAR(50) UNIQUE NOT NULL,
+    descripcion VARCHAR(255)
+);
+
+-- Tabla Intermedia Usuario_Rol
+CREATE TABLE Usuario_Rol (
+    usuario_id BINARY(16) NOT NULL,
+    rol_id BINARY(16) NOT NULL,
+    PRIMARY KEY (usuario_id, rol_id),
+    FOREIGN KEY (usuario_id) REFERENCES Usuario(id) ON DELETE CASCADE,
+    FOREIGN KEY (rol_id) REFERENCES Rol(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- Índice para búsquedas por usuario_id
+CREATE INDEX idx_usuario ON Usuario_Rol(usuario_id);
+-- Índice para búsquedas por rol_id
+CREATE INDEX idx_rol ON Usuario_Rol(rol_id);
+
+
 -- Tabla Autorizacion
 CREATE TABLE Autorizacion (
     id BINARY(16) PRIMARY KEY,

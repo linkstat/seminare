@@ -24,8 +24,8 @@ import javafx.stage.Stage;
 import ar.com.hmu.constants.NombreServicio;
 import ar.com.hmu.constants.TipoUsuario;
 import ar.com.hmu.model.*;
-import ar.com.hmu.utils.CuilUtils;
-import ar.com.hmu.utils.ImageUtils;
+import ar.com.hmu.util.CuilUtils;
+import ar.com.hmu.util.ImageUtils;
 
 public class AbmUsuariosController implements Initializable {
 

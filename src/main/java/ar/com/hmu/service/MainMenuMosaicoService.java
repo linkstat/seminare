@@ -1,12 +1,14 @@
 package ar.com.hmu.service;
 
-import ar.com.hmu.model.*;
-import javafx.scene.image.Image;
 import java.io.ByteArrayInputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import javafx.scene.image.Image;
+
+import ar.com.hmu.model.*;
 
 /**
  * Servicio que gestiona la lógica del menú principal en mosaico.
@@ -103,23 +105,6 @@ public class MainMenuMosaicoService {
         }
     }
 
-    /**
-     * Determina si el usuario tiene acceso al módulo de Alta, Baja y Modificación de Agentes.
-     *
-     * @return true si el usuario tiene acceso, false de lo contrario.
-     */
-    public boolean puedeAccederAltaBajaAgentes() {
-        return usuarioActual instanceof OficinaDePersonal; // Solo OficinaDePersonal tiene acceso a este módulo
-    }
-
-    /**
-     * Determina si el usuario tiene acceso al módulo de aprobación de solicitudes.
-     *
-     * @return true si el usuario tiene acceso, false de lo contrario.
-     */
-    public boolean puedeAccederAprobacionSolicitudes() {
-        return usuarioActual instanceof JefaturaDeServicio; // Solo JefaturaDeServicio tiene acceso a este módulo
-    }
 
     /**
      * Proporciona el cargo del usuario actual.
@@ -135,8 +120,5 @@ public class MainMenuMosaicoService {
         }
     }
 
-
-    // Aquí podrías añadir más métodos para proporcionar datos adicionales
-    // sobre los módulos a los que tiene acceso el usuario o información de la sesión actual.
 
 }

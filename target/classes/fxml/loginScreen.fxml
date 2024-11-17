@@ -36,7 +36,7 @@
          <children>
             <ImageView fitHeight="160.0" fitWidth="160.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="1" GridPane.halignment="CENTER">
                <image>
-                  <Image url="@/images/loginImage.png" />
+                  <Image url="@../images/loginImage.png" />
                </image>
             </ImageView>
             <VBox prefHeight="130.0" prefWidth="100.0" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
@@ -101,7 +101,7 @@
                   <Insets left="4.0" />
                </HBox.margin>
                <image>
-                  <Image url="@/images/serverStatus_icon_blue_question.png" />
+                  <Image url="@../images/serverStatus_icon_blue_question.png" />
                </image>
             </ImageView>
             <Label fx:id="serverStatusLabel" text="Indicador de estado de conexión">

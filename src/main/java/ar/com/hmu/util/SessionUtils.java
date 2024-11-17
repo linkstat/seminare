@@ -1,4 +1,4 @@
-package ar.com.hmu.utils;
+package ar.com.hmu.util;
 
 import ar.com.hmu.auth.LoginService;
 import ar.com.hmu.config.AppConfigReader;
@@ -30,10 +30,11 @@ public class SessionUtils {
             // Configurar las dependencias
             AppConfigReader appConfigReader = new AppConfigReader();
             DatabaseConnector databaseConnector = new DatabaseConnector(appConfigReader);
+            RolRepository rolRepository = new RolRepository(databaseConnector);
             DomicilioRepository domicilioRepository = new DomicilioRepository(databaseConnector);
             CargoRepository cargoRepository = new CargoRepository(databaseConnector);
             ServicioRepository servicioRepository = new ServicioRepository(databaseConnector);
-            UsuarioRepository usuarioRepository = new UsuarioRepository(databaseConnector, domicilioRepository, cargoRepository, servicioRepository);
+            UsuarioRepository usuarioRepository = new UsuarioRepository(databaseConnector, rolRepository);
             LoginService loginService = new LoginService(usuarioRepository);
 
             controller.setLoginService(loginService);

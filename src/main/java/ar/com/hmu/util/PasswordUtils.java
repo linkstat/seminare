@@ -1,4 +1,4 @@
-package ar.com.hmu.utils;
+package ar.com.hmu.util;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import java.util.Arrays;
