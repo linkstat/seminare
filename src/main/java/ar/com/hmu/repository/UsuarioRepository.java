@@ -15,16 +15,10 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
 
     private DatabaseConnector databaseConnector;
     private RolRepository rolRepository;
-    //private final DomicilioRepository domicilioRepository;
-    //private final CargoRepository cargoRepository;
-    //private final ServicioRepository servicioRepository;
 
     public UsuarioRepository(DatabaseConnector databaseConnector, RolRepository rolRepository) {
         this.databaseConnector = databaseConnector;
         this.rolRepository = rolRepository;
-        //this.domicilioRepository = domicilioRepository;
-        //this.cargoRepository = cargoRepository;
-        //this.servicioRepository = servicioRepository;
     }
 
     @Override
@@ -54,7 +48,10 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
     @Override
     public Usuario readByUUID(UUID id) throws SQLException {
         String query = "SELECT BIN_TO_UUID(id) AS id, fechaAlta, estado, cuil, apellidos, nombres, sexo, mail, tel, " +
-                "BIN_TO_UUID(domicilioID), BIN_TO_UUID(cargoID), BIN_TO_UUID(servicioID), tipoUsuario, passwd, profileImage " +
+                "BIN_TO_UUID(domicilioID) AS domicilioID, " +
+                "BIN_TO_UUID(cargoID) AS cargoID, " +
+                "BIN_TO_UUID(servicioID) AS servicioID, " +
+                "tipoUsuario, passwd, profile_image " +
                 "FROM Usuario WHERE id = UUID_TO_BIN(?)";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -78,7 +75,10 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
     public List<Usuario> readAll() throws SQLException {
         List<Usuario> usuarios = new ArrayList<>();
         String query = "SELECT BIN_TO_UUID(id) AS id, fechaAlta, estado, cuil, apellidos, nombres, sexo, mail, tel, " +
-                "BIN_TO_UUID(domicilioID), BIN_TO_UUID(cargoID), BIN_TO_UUID(servicioID), tipoUsuario, passwd, profileImage " +
+                "BIN_TO_UUID(domicilioID) AS domicilioID, " +
+                "BIN_TO_UUID(cargoID) AS cargoID, " +
+                "BIN_TO_UUID(servicioID) AS servicioID, " +
+                "tipoUsuario, passwd, profile_image " +
                 "FROM Usuario";
 
         try (Connection connection = databaseConnector.getConnection();

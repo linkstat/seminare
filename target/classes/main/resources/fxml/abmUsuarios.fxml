@@ -201,7 +201,7 @@
             <children>
                   <!-- Fila 13: Resetear Contraseña -->
                   <Label text="Contraseña:" />
-                  <Button fx:id="resetPasswdButton" onAction="#onResetearContrasena" text="Resetear Contraseña" />
+                  <Button fx:id="resetPasswdButton" onAction="#onResetPassword" text="Resetear Contraseña" />
             </children>
          </VBox>
          <VBox HBox.hgrow="ALWAYS">

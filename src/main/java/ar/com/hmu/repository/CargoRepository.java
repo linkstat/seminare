@@ -1,5 +1,6 @@
 package ar.com.hmu.repository;
 
+import ar.com.hmu.exceptions.ServiceException;
 import ar.com.hmu.model.Agrupacion;
 import ar.com.hmu.model.Cargo;
 import ar.com.hmu.repository.dao.GenericDAO;
@@ -141,7 +142,7 @@ public class CargoRepository implements GenericDAO<Cargo> {
      * @param descripcion La descripción del cargo.
      * @return El número del cargo o null si no se encuentra.
      */
-    public Integer findNumeroByDescripcion(String descripcion) {
+    public Integer findNumeroByDescripcion(String descripcion) throws SQLException {
         String query = "SELECT numero FROM Cargo WHERE descripcion = ?";
 
         try (Connection connection = databaseConnector.getConnection();
@@ -166,7 +167,7 @@ public class CargoRepository implements GenericDAO<Cargo> {
      * @param numero El número del cargo.
      * @return La descripción del cargo o null si no se encuentra.
      */
-    public String findDescripcionByNumero(Integer numero) {
+    public String findDescripcionByNumero(Integer numero) throws SQLException {
         String query = "SELECT descripcion FROM Cargo WHERE numero = ?";
 
         try (Connection connection = databaseConnector.getConnection();
@@ -181,7 +182,7 @@ public class CargoRepository implements GenericDAO<Cargo> {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new RuntimeException("Error al buscar la descripción por número", e);
+            throw new SQLException("Error al buscar la descripción por número", e);
         }
         return null;
     }
@@ -191,7 +192,7 @@ public class CargoRepository implements GenericDAO<Cargo> {
      * @param agrupacion La agrupación de los cargos a leer.
      * @return Una lista de cargos pertenecientes a la agrupación especificada.
      */
-    public List<Cargo> readAllByAgrupacion(Agrupacion agrupacion) {
+    public List<Cargo> readAllByAgrupacion(Agrupacion agrupacion) throws SQLException {
         List<Cargo> cargos = new ArrayList<>();
         //String query = "SELECT *, BIN_TO_UUID(id) as idUUID FROM Cargo WHERE agrupacion = ?";
         String query = "SELECT BIN_TO_UUID(id) as id, numero, descripcion, agrupacion FROM Cargo WHERE agrupacion = ?";
@@ -213,7 +214,7 @@ public class CargoRepository implements GenericDAO<Cargo> {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new RuntimeException("Error al leer todos los cargos por agrupación", e);
+            throw new SQLException("Error al leer todos los cargos por agrupación", e);
         }
 
         return cargos;

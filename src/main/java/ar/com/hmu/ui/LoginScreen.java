@@ -42,15 +42,16 @@ public class LoginScreen extends Application {
             Font.loadFont(getClass().getResourceAsStream("/fonts/pristina.ttf"), 10);
             Font.loadFont(getClass().getResourceAsStream("/fonts/BarlowCondensed-Regular.ttf"), 10);
 
-            // Configurar servicios necesarios
-            //LoginService loginService = initializeLoginService();
+            // Inicialización de repositorios
             AppConfigReader appConfigReader = new AppConfigReader();
             DatabaseConnector databaseConnector = new DatabaseConnector(appConfigReader);
             RolRepository rolRepository = new RolRepository(databaseConnector);
-            DomicilioRepository domicilioRepository = new DomicilioRepository(databaseConnector);
-            CargoRepository cargoRepository = new CargoRepository(databaseConnector);
-            ServicioRepository servicioRepository = new ServicioRepository(databaseConnector);
             UsuarioRepository usuarioRepository = new UsuarioRepository(databaseConnector, rolRepository);
+//            DomicilioRepository domicilioRepository = new DomicilioRepository(databaseConnector);
+//            CargoRepository cargoRepository = new CargoRepository(databaseConnector);
+//            ServicioRepository servicioRepository = new ServicioRepository(databaseConnector);
+
+            // Inicialización de servicios
             LoginService loginService = new LoginService(usuarioRepository);
 
             // Cargar el archivo FXML

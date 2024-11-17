@@ -2,7 +2,7 @@ package ar.com.hmu.controller;
 
 import java.io.IOException;
 
-import ar.com.hmu.model.Domicilio;
+import ar.com.hmu.service.*;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -18,11 +18,10 @@ import javafx.scene.text.Text;
 import ar.com.hmu.constants.TipoUsuario;
 import ar.com.hmu.exceptions.ServiceException;
 import ar.com.hmu.model.Cargo;
+import ar.com.hmu.model.Domicilio;
 import ar.com.hmu.model.Servicio;
 import ar.com.hmu.model.Usuario;
 import ar.com.hmu.repository.*;
-import ar.com.hmu.service.MainMenuMosaicoService;
-import ar.com.hmu.service.UsuarioService;
 import ar.com.hmu.util.AlertUtils;
 import ar.com.hmu.util.AppInfo;
 import ar.com.hmu.util.PasswordDialogUtils;
@@ -130,13 +129,20 @@ public class MainMenuMosaicoController {
     private MainMenuMosaicoService mainMenuMosaicoService;  // Servicio para gestionar la lógica del menú principal
     private DatabaseConnector databaseConnector;  // Necesario para la verificación del estado del servidor.
 
-    // Inyección de dependencias en UsuarioRepository (implementación de patrón «Lazy Loading») / Ya no lo uso. Cambio de enfoque. Borrar después.
+    // Repositorios
     private DomicilioRepository domicilioRepository;
     private CargoRepository cargoRepository;
     private ServicioRepository servicioRepository;
+    private UsuarioRepository usuarioRepository;
+    private RolRepository rolRepository;
+
+    // Servicios
+    private UsuarioService usuarioService;
+    private CargoService cargoService;
+    private ServicioService servicioService;
+    private DomicilioService domicilioService;
 
     private Usuario usuarioActual;
-    private UsuarioService usuarioService;
     private Stage stage;  // Necesario para guardar las propiedades de ventana (asi lo llamo desde LoginController)
 
     // Nueva instancia para manejar preferencias
@@ -165,24 +171,24 @@ public class MainMenuMosaicoController {
      * @param stage               El Stage principal de la aplicación.
      */
     public void postInitialize(Usuario usuario, DatabaseConnector databaseConnector, RolRepository rolRepository, Stage stage) {
-        this.mainMenuMosaicoService = new MainMenuMosaicoService(usuario);
-
         this.usuarioActual = usuario;
         this.databaseConnector = databaseConnector;
-        //this.domicilioRepository = domicilioRepository;
-        //this.cargoRepository = cargoRepository;
-        //this.servicioRepository = servicioRepository;
-        this.stage = stage;  // Guardar la referencia al Stage
-        this.usuarioService = new UsuarioService(new UsuarioRepository(databaseConnector, rolRepository));
-        this.mainMenuMosaicoService = new MainMenuMosaicoService(usuario);
+        this.rolRepository = rolRepository;
+        this.stage = stage;  // Guardo la referencia al Stage
 
-        // Cargar Servicio, Cargo y Domicilio
-        this.usuarioService = new UsuarioService(
-                new UsuarioRepository(databaseConnector, rolRepository),
-                new ServicioRepository(databaseConnector),
-                new CargoRepository(databaseConnector),
-                new DomicilioRepository(databaseConnector)
-        );
+        // Inicialización de repositorios
+        this.usuarioRepository = new UsuarioRepository(databaseConnector, rolRepository);
+        this.servicioRepository = new ServicioRepository(databaseConnector);
+        this.cargoRepository = new CargoRepository(databaseConnector);
+        this.domicilioRepository = new DomicilioRepository(databaseConnector);
+
+        // Inicialización de servicios con los repositorios necesarios
+        this.usuarioService = new UsuarioService(usuarioRepository, servicioRepository, cargoRepository, domicilioRepository);
+        this.cargoService = new CargoService(cargoRepository);
+        this.servicioService = new ServicioService(servicioRepository);
+        this.domicilioService = new DomicilioService(domicilioRepository);
+
+        this.mainMenuMosaicoService = new MainMenuMosaicoService(usuario);
 
         try {
             usuarioService.loadAdditionalUserData(usuarioActual);
@@ -370,16 +376,31 @@ public class MainMenuMosaicoController {
      */
     private void handleAbmAgentes() {
         try {
-            // Cargar el archivo FXML del ABM de Usuarios
+            // Usa los servicios ya inicializados
+            UsuarioService usuarioService = this.usuarioService;
+            CargoService cargoService = this.cargoService;
+            ServicioService servicioService = this.servicioService;
+            DomicilioService domicilioService = this.domicilioService;
+
+            // Configurar la fábrica de controladores
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/abmUsuarios.fxml"));
+            loader.setControllerFactory(controllerClass -> {
+                if (controllerClass == AbmUsuariosController.class) {
+                    AbmUsuariosController controller = new AbmUsuariosController();
+                    controller.setServices(usuarioService, cargoService, servicioService, domicilioService);
+                    return controller;
+                } else {
+                    // Manejo predeterminado
+                    try {
+                        return controllerClass.getDeclaredConstructor().newInstance();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+
+            // Carga del FXML después de configurada la Fábrica
             Parent abmUsuariosRoot = loader.load();
-
-            // Obtener el controlador de la nueva vista
-            AbmUsuariosController abmUsuariosController = loader.getController();
-
-            // TODO: pasar el usuario logueado para verificación adicional
-            // Por ejemplo, si el usuario es de tipo empleado, no debería poder ingresar.
-            // abmUsuariosController.setUsuarioActual(usuarioActual);  // meditarlo...
 
             // Crear una nueva escena y un nuevo Stage (ventana)
             Stage stage = new Stage();
