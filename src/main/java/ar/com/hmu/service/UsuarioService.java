@@ -2,35 +2,81 @@ package ar.com.hmu.service;
 
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.List;
 
 import ar.com.hmu.exceptions.ServiceException;
 import ar.com.hmu.model.Cargo;
 import ar.com.hmu.model.Domicilio;
 import ar.com.hmu.model.Servicio;
 import ar.com.hmu.model.Usuario;
-import ar.com.hmu.repository.CargoRepository;
-import ar.com.hmu.repository.DomicilioRepository;
-import ar.com.hmu.repository.ServicioRepository;
-import ar.com.hmu.repository.UsuarioRepository;
+import ar.com.hmu.repository.*;
 import ar.com.hmu.util.PasswordUtils;
 
 
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
-    private ServicioRepository servicioRepository;
-    private CargoRepository cargoRepository;
-    private DomicilioRepository domicilioRepository;
+    private final ServicioRepository servicioRepository;
+    private final CargoRepository cargoRepository;
+    private final DomicilioRepository domicilioRepository;
 
-    public UsuarioService(UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
-    }
 
     public UsuarioService(UsuarioRepository usuarioRepository, ServicioRepository servicioRepository, CargoRepository cargoRepository, DomicilioRepository domicilioRepository) {
         this.usuarioRepository = usuarioRepository;
         this.servicioRepository = servicioRepository;
         this.cargoRepository = cargoRepository;
         this.domicilioRepository = domicilioRepository;
+    }
+
+
+    public void create(Usuario usuario) throws ServiceException {
+        try {
+            usuarioRepository.create(usuario);
+        } catch (SQLException e) {
+            throw new ServiceException("Error al crear el usuario", e);
+        }
+    }
+
+    public List<Usuario> readAll() throws ServiceException {
+        try {
+            return usuarioRepository.readAll();
+        } catch (SQLException e) {
+            throw new ServiceException("Error al leer todos los usuarios", e);
+        }
+    }
+
+    public void update(Usuario usuario) throws ServiceException {
+        try {
+            usuarioRepository.update(usuario);
+        } catch (SQLException e) {
+            throw new ServiceException("Error al actualizar el usuario", e);
+        }
+    }
+
+    public void delete(Usuario usuario) throws ServiceException {
+        try {
+            usuarioRepository.delete(usuario);
+        } catch (SQLException e) {
+            throw new ServiceException("Error al eliminar el usuario", e);
+        }
+    }
+
+
+    /**
+     * Restablece la contraseña sus valores por defecto y persiste el cambio en la base de datos.
+     * @param usuario El usuario que cambiará la contraseña.
+     * @throws ServiceException excepción personalizada
+     */
+    public void resetPassword(Usuario usuario) throws ServiceException {
+        try {
+            // Establecer la contraseña por defecto en el objeto Usuario
+            usuario.setDefaultPassword();
+
+            // Actualizar la contraseña en la base de datos
+            usuarioRepository.updatePassword(usuario.getCuil(), usuario.getEncryptedPassword());
+        } catch (SQLException e) {
+            throw new ServiceException("Error al restablecer la contraseña del usuario", e);
+        }
     }
 
     /**

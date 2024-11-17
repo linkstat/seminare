@@ -69,12 +69,6 @@ public class LoginController {
     private RolRepository rolRepository;
     private UsuarioService usuarioService; // objeto para persistencia en la BD
 
-
-    // Instancias que deberemos pasarle a UsuarioRepository para inyección de dependencias (necesario para «Lazy Loading»). Ya no lo uso. Después borrar.
-    private DomicilioRepository domicilioRepository;
-    private CargoRepository cargoRepository;
-    private ServicioRepository servicioRepository;
-
     /**
      * Método para establecer el {@link LoginService} que se utilizará para la autenticación.
      *
@@ -104,7 +98,10 @@ public class LoginController {
      */
     @FXML
     public void initialize() {
-        preferencesManager = new PreferencesManager(); // Inicializar PreferencesManager
+
+        // Inicializar PreferencesManager
+        preferencesManager = new PreferencesManager();
+
         //Mueve la llamada a updateServerStatus() desde initialize() a postInitialize(), donde databaseConnector ya está configurado.
         //updateServerStatus(databaseConnector, serverStatusLabel, serverStatusIcon); // Esto llamaba al método de utilería para verificar el estado del servidor al iniciar la ventana.
 
@@ -113,6 +110,7 @@ public class LoginController {
 
         // Configurar el checkbox de mostrar/ocultar contraseña
         configureShowPassword();
+
         // Cargar el último CUIL, si existe
         loadUserCuil();
 
@@ -151,13 +149,22 @@ public class LoginController {
      * verificaciones necesarias para el estado del servidor.
      */
     public void postInitialize() {
-        updateServerStatusUI(databaseConnector, serverStatusLabel, serverStatusIcon); // Verifica estado del servidor al iniciar la ventana.
+
+        // Verificar estado del servidor
+        updateServerStatusUI(databaseConnector, serverStatusLabel, serverStatusIcon);
         if (databaseConnector == null || loginService == null) {
             throw new IllegalStateException("Las dependencias no han sido configuradas correctamente.");
         }
 
-        // Inicializar UsuarioService
-        this.usuarioService = new UsuarioService(new UsuarioRepository(databaseConnector, rolRepository));
+        // Inicialización de repositorios
+        ServicioRepository servicioRepository = new ServicioRepository(databaseConnector);
+        CargoRepository cargoRepository = new CargoRepository(databaseConnector);
+        DomicilioRepository domicilioRepository = new DomicilioRepository(databaseConnector);
+        UsuarioRepository usuarioRepository = new UsuarioRepository(databaseConnector, rolRepository);
+
+        // Inicialización de UsuarioService con el constructor unificado
+        this.usuarioService = new UsuarioService(usuarioRepository, servicioRepository, cargoRepository, domicilioRepository);
+
 
         boolean isServerUp = updateServerStatusUI(databaseConnector, serverStatusLabel, serverStatusIcon);  // Actualizar el estado del servidor
         startPeriodicServerCheck(databaseConnector, serverStatusLabel, serverStatusIcon);  // Iniciar chequeo periódico del servidor

@@ -111,7 +111,7 @@ public class ServicioRepository implements GenericDAO<Servicio> {
      * @param name Nombre del servicio del cual se quiere obtener el UUID
      * @return UUID del servicio buscado
      */
-    public UUID findIdByName(String name) {
+    public UUID findIdByName(String name) throws SQLException {
         String query = "SELECT BIN_TO_UUID(id) AS id FROM Servicio WHERE nombre = ?";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -145,7 +145,7 @@ public class ServicioRepository implements GenericDAO<Servicio> {
     }
 
 
-    public int countServicios() {
+    public int countServicios() throws SQLException {
         String query = "SELECT COUNT(*) AS total FROM Servicio";
 
         try (Connection connection = databaseConnector.getConnection();

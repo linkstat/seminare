@@ -2,9 +2,12 @@ package ar.com.hmu.controller;
 
 import java.io.File;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
+import ar.com.hmu.exceptions.ServiceException;
+import ar.com.hmu.service.DomicilioService;
 import javafx.collections.transformation.FilteredList;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -24,6 +27,9 @@ import javafx.stage.Stage;
 import ar.com.hmu.constants.NombreServicio;
 import ar.com.hmu.constants.TipoUsuario;
 import ar.com.hmu.model.*;
+import ar.com.hmu.service.CargoService;
+import ar.com.hmu.service.ServicioService;
+import ar.com.hmu.service.UsuarioService;
 import ar.com.hmu.util.CuilUtils;
 import ar.com.hmu.util.ImageUtils;
 
@@ -99,11 +105,21 @@ public class AbmUsuariosController implements Initializable {
     private boolean isCancelMode = false;
     private boolean isModificacionMode = false;
 
+    // Servicios
+    private UsuarioService usuarioService;
+    private CargoService cargoService;
+    private ServicioService servicioService;
+    private DomicilioService domicilioService;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
-        // Cargar datos necesarios
+        // Verificar que los servicios han sido inyectados
+        if (usuarioService == null || cargoService == null || servicioService == null || domicilioService == null) {
+            throw new IllegalStateException("Los servicios no han sido inicializados. Llama a setServices() antes de initialize().");
+        }
+
+        // Cargar datos desde las clases Service
         cargarUsuarios();
         cargarCargos();
         cargarServicios();
@@ -170,72 +186,56 @@ public class AbmUsuariosController implements Initializable {
     }
 
 
-    // Método para cargar usuarios (simulado)
+    /**
+     * Método para cargar Usuarios desde la base de datos a través de UsuarioService
+     */
     private void cargarUsuarios() {
-        // Agregar usuarios de ejemplo a la lista
-        usuariosList.addAll(
-                new Empleado() {{
-                    setCuil(20123456789L);
-                    setApellidos("Pérez");
-                    setNombres("Juan");
-                    setMail("juan.perez@datanet.com.ar");
-                    setTel(1123456789L);
-                }},
-                new Empleado() {{
-                    setCuil(27163556788L);
-                    setApellidos("Teresa");
-                    setNombres("Páez");
-                    setMail("tere.paez@gmail.com");
-                    setTel(1143436719L);
-                }},
-                new Empleado() {{
-                    setCuil(20232467480L);
-                    setApellidos("Jorge Alejandro");
-                    setNombres("Marín");
-                    setMail("ja_marin@hotmail.com");
-                    setTel(0);
-                }},
-                new Empleado() {{
-                    setCuil(20326473281L);
-                    setApellidos("Nidia Marina");
-                    setNombres("Dellamea");
-                    setMail("nmd87@latinmail.net");
-                    setTel(3518779654L);
-                }},
-                new Empleado() {{
-                    setCuil(20123339222L);
-                    setApellidos("Pirín");
-                    setNombres("Fariña");
-                    setMail("pf.car@imail.ar");
-                    setTel(2667672233L);
-                }},
-                new Empleado() {{
-                    setCuil(20987654321L);
-                    setApellidos("García");
-                    setNombres("María");
-                    setMail("maria.garcia@tuto.net.ar");
-                    setTel(9876654321L);
-                }}
-        );
-
+        try {
+            List<Usuario> usuarios = usuarioService.readAll();
+            usuariosList.clear();
+            usuariosList.addAll(usuarios);
+        } catch (ServiceException e) {
+            mostrarError("Error al cargar usuarios: " + e.getMessage());
+        }
     }
 
-    // Método para cargar cargos (simulado)
+    /**
+     * Método para cargar cargos desde la base de datos a través de CargoService
+     */
     private void cargarCargos() {
-        // Aquí se deberían cargar los cargos desde la base de datos o fuente de datos
-        cargosList.add(new Cargo(UUID.randomUUID(), 1200, "Agrupamiento profesional", Agrupacion.SERVICIO));
-        cargosList.add(new Cargo(UUID.randomUUID(), 513, "Administrativo Nivel 1", Agrupacion.ADMINISTRATIVO));
+        try {
+            List<Cargo> cargos = cargoService.readAll();
+            cargosList.clear();
+            cargosList.addAll(cargos);
+        } catch (ServiceException e) {
+            mostrarError("Error al cargar cargos: " + e.getMessage());
+        }
     }
 
-    // Método para cargar servicios (simulado)
+    /**
+     * Método para cargar servicios desde la base de datos a través de ServicioService
+     */
     private void cargarServicios() {
-        // Aquí se deberían cargar los servicios desde la base de datos o fuente de datos
-        serviciosList.add(new Servicio(UUID.randomUUID(), "Servicio médico 1", Agrupacion.MEDICO));
-        serviciosList.add(new Servicio(UUID.randomUUID(), "Servicio médico 2", Agrupacion.MEDICO));
-        serviciosList.add(new Servicio(UUID.randomUUID(), "Oficina administrativa 1", Agrupacion.ADMINISTRATIVO));
-        serviciosList.add(new Servicio(UUID.randomUUID(), "Oficina administrativa 2", Agrupacion.ADMINISTRATIVO));
-        serviciosList.add(new Servicio(UUID.randomUUID(), "Informática", Agrupacion.TECNICO));
-        serviciosList.add(new Servicio(UUID.randomUUID(), NombreServicio.DIRECCION, Agrupacion.PLANTAPOLITICA));
+        try {
+            List<Servicio> servicios = servicioService.readAll();
+            serviciosList.clear();
+            serviciosList.addAll(servicios);
+        } catch (ServiceException e) {
+            mostrarError("Error al cargar servicios: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Método para Inyectar los Servicios
+     * @param usuarioService para la gestión de Usuarios
+     * @param cargoService para la gestión de Cargos
+     * @param servicioService para la gestión de Servicios
+     */
+    public void setServices(UsuarioService usuarioService, CargoService cargoService, ServicioService servicioService, DomicilioService domicilioService) {
+        this.usuarioService = usuarioService;
+        this.cargoService = cargoService;
+        this.servicioService = servicioService;
+        this.domicilioService = domicilioService;
     }
 
 
@@ -668,7 +668,7 @@ public class AbmUsuariosController implements Initializable {
      * @param event Evento
      */
     @FXML
-    private void onResetearContrasena(ActionEvent event) {
+    private void onResetPassword(ActionEvent event) {
         Usuario usuario = obtenerUsuarioActual();
         if (usuario != null) {
             Alert confirmacion = new Alert(AlertType.CONFIRMATION);
@@ -677,10 +677,12 @@ public class AbmUsuariosController implements Initializable {
             confirmacion.showAndWait().ifPresent(response -> {
                 if (response == ButtonType.OK) {
                     usuario.setDefaultPassword();
-                    Alert info = new Alert(AlertType.INFORMATION);
-                    info.setTitle("Contraseña Restablecida");
-                    info.setHeaderText("La contraseña por defecto ha sido establecida.");
-                    info.showAndWait();
+                    try {
+                        usuarioService.resetPassword(usuario);
+                        mostrarMensaje("La contraseña por defecto ha sido establecida.");
+                    } catch (ServiceException e) {
+                        mostrarError("Error al restablecer la contraseña: " + e.getMessage());
+                    }
                 }
             });
         }
@@ -732,9 +734,14 @@ public class AbmUsuariosController implements Initializable {
             if (validarCamposObligatorios()) {
                 Usuario nuevoUsuario = crearOActualizarUsuarioDesdeFormulario(null);
                 if (nuevoUsuario != null) {
-                    usuariosList.add(nuevoUsuario);
-                    resetInterface();
-                    mostrarMensaje("Usuario agregado correctamente.");
+                    try {
+                        usuarioService.create(nuevoUsuario);
+                        usuariosList.add(nuevoUsuario);
+                        resetInterface();
+                        mostrarMensaje("Usuario agregado correctamente.");
+                    } catch (ServiceException e) {
+                        mostrarError("Error al agregar el usuario: " + e.getMessage());
+                    }
                 }
             }
         } else if (isModificacionMode) {
@@ -743,11 +750,15 @@ public class AbmUsuariosController implements Initializable {
             if (usuarioSeleccionado != null && validarCamposObligatorios()) {
                 Usuario usuarioActualizado = crearOActualizarUsuarioDesdeFormulario(usuarioSeleccionado);
                 if (usuarioActualizado != null) {
-                    // Update in the list if necessary
-                    int index = usuariosList.indexOf(usuarioSeleccionado);
-                    usuariosList.set(index, usuarioActualizado);
-                    resetInterface();
-                    mostrarMensaje("Usuario modificado correctamente.");
+                    try {
+                        usuarioService.update(usuarioActualizado);
+                        int index = usuariosList.indexOf(usuarioSeleccionado);
+                        usuariosList.set(index, usuarioActualizado);
+                        resetInterface();
+                        mostrarMensaje("Usuario modificado correctamente.");
+                    } catch (ServiceException e) {
+                        mostrarError("Error al modificar el usuario: " + e.getMessage());
+                    }
                 }
             }
         }
@@ -814,9 +825,14 @@ public class AbmUsuariosController implements Initializable {
             confirmacion.setHeaderText("¿Está seguro de eliminar al usuario " + usuarioSeleccionado.getNombreCompleto() + "?");
             confirmacion.showAndWait().ifPresent(response -> {
                 if (response == ButtonType.OK) {
-                    usuariosList.remove(usuarioSeleccionado);
-                    resetInterface();
-                    mostrarMensaje("Usuario eliminado correctamente.");
+                    try {
+                        usuarioService.delete(usuarioSeleccionado);
+                        usuariosList.remove(usuarioSeleccionado);
+                        resetInterface();
+                        mostrarMensaje("Usuario eliminado correctamente.");
+                    } catch (ServiceException e) {
+                        mostrarError("Error al eliminar el usuario: " + e.getMessage());
+                    }
                 }
             });
         }
@@ -962,6 +978,25 @@ public class AbmUsuariosController implements Initializable {
             imagenPerfilImageView.setImage(imagenPerfilOriginal);
         }
 
+        // Datos del domicilio
+        Domicilio domicilio = usuario.getDomicilio();
+        if (domicilio != null) {
+            domCalleComboBox.getEditor().setText(domicilio.getCalle());
+            domNumeracionField.setText(domicilio.getNumeracion());
+            domBarrioComboBox.getEditor().setText(domicilio.getBarrio());
+            domCiudadComboBox.getEditor().setText(domicilio.getCiudad());
+            domLocalidadComboBox.getEditor().setText(domicilio.getLocalidad());
+            domProvinciaComboBox.getEditor().setText(domicilio.getProvincia());
+        } else {
+            // Limpiar campos de domicilio si no hay datos
+            domCalleComboBox.getEditor().clear();
+            domNumeracionField.clear();
+            domBarrioComboBox.getEditor().clear();
+            domCiudadComboBox.getEditor().clear();
+            domLocalidadComboBox.getEditor().clear();
+            domProvinciaComboBox.getEditor().clear();
+        }
+
         // Restablecer el estado del formulario a "sin modificaciones"
         isFormModified = false;
         altaModButton.setDisable(true);  // Solo se habilitará cuando haya una modificación
@@ -1004,46 +1039,24 @@ public class AbmUsuariosController implements Initializable {
         if (usuarioExistente == null) {
             // Crear una nueva instancia según el tipo de usuario
             switch (tipoUsuarioSeleccionado) {
-                case TipoUsuario.EMPLEADO:
+                case EMPLEADO:
                     usuario = new Empleado();
-                    usuario.setCargo(cargoComboBox.getSelectionModel().getSelectedItem());
-                    usuario.setServicio(servicioComboBox.getSelectionModel().getSelectedItem());
                     break;
-                case TipoUsuario.JEFATURA_DE_SERVICIO:
+                case JEFATURA_DE_SERVICIO:
                     usuario = new JefaturaDeServicio();
-                    usuario.setCargo(cargoComboBox.getSelectionModel().getSelectedItem());
-                    usuario.setServicio(servicioComboBox.getSelectionModel().getSelectedItem());
                     break;
-                case TipoUsuario.OFICINA_DE_PERSONAL:
+                case OFICINA_DE_PERSONAL:
                     usuario = new OficinaDePersonal();
-                    // Asignar servicio automáticamente
-                    Servicio servicioPersonal = buscarServicioPorNombre(NombreServicio.OFICINA_DE_PERSONAL);
-                    usuario.setServicio(servicioPersonal);
-                    // Cargo puede ser nulo o asignarse automáticamente si es necesario
-                    usuario.setCargo(cargoComboBox.getSelectionModel().getSelectedItem());
                     break;
-                case TipoUsuario.DIRECCION:
+                case DIRECCION:
                     usuario = new Direccion();
-                    // Asignar cargo y servicio automáticamente
-                    Cargo cargoDireccion = buscarCargoPorNumero(9999);
-                    Servicio servicioDireccion = buscarServicioPorNombre(NombreServicio.DIRECCION);
-                    usuario.setCargo(cargoDireccion);
-                    usuario.setServicio(servicioDireccion);
                     break;
                 default:
                     throw new IllegalArgumentException("Tipo de usuario desconocido: " + tipoUsuarioSeleccionado);
             }
-
         } else {
             // Actualizar el usuario existente
             usuario = usuarioExistente;
-
-            // Verificar si el tipo de usuario ha cambiado
-            if (!usuario.getClass().getSimpleName().equals(tipoUsuarioSeleccionado)) {
-                // Manejar el cambio de tipo de usuario si es necesario
-                // Por simplicidad, podríamos lanzar una excepción o crear una nueva instancia
-                throw new UnsupportedOperationException("No se puede cambiar el tipo de usuario existente.");
-            }
         }
 
         // Asignar atributos comunes
@@ -1053,6 +1066,7 @@ public class AbmUsuariosController implements Initializable {
             mostrarError("El CUIL debe ser un número válido.");
             return null;
         }
+
         usuario.setApellidos(apellidosTextField.getText());
         usuario.setNombres(nombresTextField.getText());
         usuario.setMail(mailTextField.getText());
@@ -1065,6 +1079,23 @@ public class AbmUsuariosController implements Initializable {
         usuario.setSexo(sexoComboBox.getSelectionModel().getSelectedItem());
         usuario.setEstado(usuarioHabilitadoCheckBox.isSelected());
 
+        // Asignar Cargo y Servicio
+        usuario.setCargo(cargoComboBox.getSelectionModel().getSelectedItem());
+        usuario.setServicio(servicioComboBox.getSelectionModel().getSelectedItem());
+
+        // Manejar casos específicos según el tipo de usuario
+        if (tipoUsuarioSeleccionado == TipoUsuario.DIRECCION) {
+            // Asignar cargo y servicio de dirección
+            Cargo cargoDireccion = buscarCargoPorNumero(9999);
+            Servicio servicioDireccion = buscarServicioPorNombre(NombreServicio.DIRECCION);
+            usuario.setCargo(cargoDireccion);
+            usuario.setServicio(servicioDireccion);
+        } else if (tipoUsuarioSeleccionado == TipoUsuario.OFICINA_DE_PERSONAL) {
+            // Asignar servicio de oficina de personal
+            Servicio servicioPersonal = buscarServicioPorNombre(NombreServicio.OFICINA_DE_PERSONAL);
+            usuario.setServicio(servicioPersonal);
+        }
+
         // Cargar imagen de perfil
         Image image = ImageUtils.byteArrayToImage(usuario.getProfileImage());
         if (image != null && image != imagenPerfilOriginal) {
@@ -1074,28 +1105,32 @@ public class AbmUsuariosController implements Initializable {
             usuario.setProfileImage(null);
         }
 
-        // Asignar cargo y servicio según el tipo de usuario
-        switch (tipoUsuarioSeleccionado) {
-            case TipoUsuario.EMPLEADO:
-            case TipoUsuario.JEFATURA_DE_SERVICIO:
-                usuario.setCargo(cargoComboBox.getSelectionModel().getSelectedItem());
-                usuario.setServicio(servicioComboBox.getSelectionModel().getSelectedItem());
-                break;
-            case TipoUsuario.OFICINA_DE_PERSONAL:
-                Servicio servicioPersonal = buscarServicioPorNombre(NombreServicio.OFICINA_DE_PERSONAL);
-                usuario.setServicio(servicioPersonal);
-                usuario.setCargo(cargoComboBox.getSelectionModel().getSelectedItem());
-                break;
-            case TipoUsuario.DIRECCION:
-                Cargo cargoDireccion = buscarCargoPorNumero(9999);
-                Servicio servicioDireccion = buscarServicioPorNombre(NombreServicio.DIRECCION);
-                usuario.setCargo(cargoDireccion);
-                usuario.setServicio(servicioDireccion);
-                break;
+        // Asignar domicilio
+        Domicilio domicilio = new Domicilio.Builder()
+                .setCalle(domCalleComboBox.getEditor().getText())
+                .setNumeracion(domNumeracionField.getText())
+                .setBarrio(domBarrioComboBox.getEditor().getText())
+                .setCiudad(domCiudadComboBox.getEditor().getText())
+                .setLocalidad(domLocalidadComboBox.getEditor().getText())
+                .setProvincia(domProvinciaComboBox.getEditor().getText())
+                .build();
+
+        try {
+            if (usuario.getDomicilio() == null || usuario.getDomicilio().getId() == null) {
+                // Crear nuevo domicilio
+                domicilioService.create(domicilio);
+                usuario.setDomicilio(domicilio);
+            } else {
+                // Actualizar domicilio existente
+                domicilio.setId(usuario.getDomicilio().getId());
+                domicilioService.update(domicilio);
+                usuario.setDomicilio(domicilio);
+            }
+        } catch (ServiceException e) {
+            mostrarError("Error al asignar el domicilio: " + e.getMessage());
+            return null;
         }
 
-        // Asignar domicilio...
-        // Implementar lógica de asignación de domicilio
         return usuario;
     }
 
@@ -1111,6 +1146,14 @@ public class AbmUsuariosController implements Initializable {
             mostrarError("Debe completar todos los campos obligatorios.");
             return false;
         }
+
+        // Validar campos del domicilio
+        if (domCalleComboBox.getEditor().getText().isEmpty() || domNumeracionField.getText().isEmpty()
+                || domCiudadComboBox.getEditor().getText().isEmpty() || domProvinciaComboBox.getEditor().getText().isEmpty()) {
+            mostrarError("Debe completar todos los campos de domicilio obligatorios.");
+            return false;
+        }
+
         // Validar formatos, email válido, etc.
         return true;
     }
