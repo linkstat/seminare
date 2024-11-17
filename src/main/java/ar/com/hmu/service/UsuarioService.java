@@ -3,7 +3,9 @@ package ar.com.hmu.service;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
+import ar.com.hmu.constants.UsuarioCreationResult;
 import ar.com.hmu.exceptions.ServiceException;
 import ar.com.hmu.model.Cargo;
 import ar.com.hmu.model.Domicilio;
@@ -29,13 +31,39 @@ public class UsuarioService {
     }
 
 
-    public void create(Usuario usuario) throws ServiceException {
+    public UsuarioCreationResult create(Usuario usuario) throws ServiceException {
         try {
-            usuarioRepository.create(usuario);
+            boolean includeDisabled = true;
+            Usuario existente = usuarioRepository.findUsuarioByCuil(usuario.getCuil(), includeDisabled);
+            if (existente != null) {
+                if (existente.getEstado()) {
+                    return UsuarioCreationResult.USUARIO_ACTIVO_EXISTENTE;
+                } else {
+                    return UsuarioCreationResult.USUARIO_DESHABILITADO_EXISTENTE;
+                }
+            } else {
+                // Crear nuevo usuario
+                usuarioRepository.create(usuario);
+                return UsuarioCreationResult.USUARIO_CREADO;
+            }
         } catch (SQLException e) {
             throw new ServiceException("Error al crear el usuario", e);
         }
     }
+
+    public void reactivarUsuario(Usuario usuarioExistente, Usuario nuevosDatos) throws ServiceException {
+        try {
+            usuarioExistente.setEstado(true);
+            // Actualizar otros datos si es necesario
+            usuarioExistente.setNombres(nuevosDatos.getNombres());
+            usuarioExistente.setApellidos(nuevosDatos.getApellidos());
+            // ... otros campos
+            usuarioRepository.update(usuarioExistente);
+        } catch (SQLException e) {
+            throw new ServiceException("Error al reactivar el usuario", e);
+        }
+    }
+
 
     public List<Usuario> readAll() throws ServiceException {
         try {
@@ -44,6 +72,41 @@ public class UsuarioService {
             throw new ServiceException("Error al leer todos los usuarios", e);
         }
     }
+
+    public Usuario readByUUID(UUID id) throws ServiceException {
+        try {
+            Usuario usuario = usuarioRepository.readByUUID(id);
+            if (usuario != null) {
+                // Cargar el domicilio
+                if (usuario.getDomicilioId() != null) {
+                    Domicilio domicilio = domicilioRepository.readByUUID(usuario.getDomicilioId());
+                    usuario.setDomicilio(domicilio);
+                }
+
+                // Cargar el cargo
+                if (usuario.getCargoId() != null) {
+                    Cargo cargo = cargoRepository.readByUUID(usuario.getCargoId());
+                    usuario.setCargo(cargo);
+                }
+
+                // Cargar el servicio
+                if (usuario.getServicioId() != null) {
+                    Servicio servicio = servicioRepository.readByUUID(usuario.getServicioId());
+                    usuario.setServicio(servicio);
+                }
+
+                // Asignación de roles (si es necesario)
+                usuario.setRoles(usuarioRepository.findRolesByUsuarioId(usuario.getId()));
+
+                return usuario;
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            throw new ServiceException("Error al leer el usuario por UUID", e);
+        }
+    }
+
 
     public void update(Usuario usuario) throws ServiceException {
         try {
@@ -55,9 +118,10 @@ public class UsuarioService {
 
     public void delete(Usuario usuario) throws ServiceException {
         try {
-            usuarioRepository.delete(usuario);
+            usuario.setEstado(false); // O estado = 0
+            usuarioRepository.update(usuario);
         } catch (SQLException e) {
-            throw new ServiceException("Error al eliminar el usuario", e);
+            throw new ServiceException("Error al deshabilitar el usuario", e);
         }
     }
 

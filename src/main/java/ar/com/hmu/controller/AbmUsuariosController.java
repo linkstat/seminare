@@ -477,6 +477,28 @@ public class AbmUsuariosController implements Initializable {
         nombresTextField.textProperty().addListener((observable, oldValue, newValue) -> onFormModified());
         mailTextField.textProperty().addListener((observable, oldValue, newValue) -> onFormModified());
         telTextField.textProperty().addListener((observable, oldValue, newValue) -> onFormModified());
+        domCalleComboBox.getEditor().textProperty().addListener((observable, oldValue, newValue) -> onFormModified());
+        domNumeracionField.textProperty().addListener((observable, oldValue, newValue) -> onFormModified());
+        domBarrioComboBox.getEditor().textProperty().addListener((observable, oldValue, newValue) -> onFormModified());
+        domCiudadComboBox.getEditor().textProperty().addListener((observable, oldValue, newValue) -> onFormModified());
+        domLocalidadComboBox.getEditor().textProperty().addListener((observable, oldValue, newValue) -> onFormModified());
+        domProvinciaComboBox.getEditor().textProperty().addListener((observable, oldValue, newValue) -> onFormModified());
+        // Checkbox "Sin numero" correspondiente al domicilio
+        domSinNumeroCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> onFormModified());
+
+        // Listeners para botones de imagen
+        cargarImagenButton.setOnAction(event -> {
+            onCargarImagen();
+            onFormModified();
+        });
+        revertirImagenButton.setOnAction(event -> {
+            onRevertirImagen();
+            onFormModified();
+        });
+        eliminarImagenButton.setOnAction(event -> {
+            onEliminarImagen();
+            onFormModified();
+        });
 
         // Escuchar en elementos ComboBox
         sexoComboBox.valueProperty().addListener((observable, oldValue, newValue) -> onFormModified());
@@ -621,10 +643,9 @@ public class AbmUsuariosController implements Initializable {
 
     /**
      * Evento al hacer clic en "Cargar Imagen"
-     * @param event Evento
      */
     @FXML
-    private void onCargarImagen(ActionEvent event) {
+    private void onCargarImagen() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Seleccionar Imagen de Perfil");
         fileChooser.getExtensionFilters().addAll(
@@ -642,10 +663,9 @@ public class AbmUsuariosController implements Initializable {
 
     /**
      * Evento al hacer clic en "Revertir Imagen"
-     * @param event Evento
      */
     @FXML
-    private void onRevertirImagen(ActionEvent event) {
+    private void onRevertirImagen() {
         imagenPerfilImageView.setImage(imagenPerfilOriginal);
         imagenPerfilFile = null;
         revertirImagenButton.setDisable(true);
@@ -654,10 +674,9 @@ public class AbmUsuariosController implements Initializable {
 
     /**
      * Evento al hacer clic en "Eliminar Imagen"
-     * @param event Evento
      */
     @FXML
-    private void onEliminarImagen(ActionEvent event) {
+    private void onEliminarImagen() {
         imagenPerfilImageView.setImage(null);
         imagenPerfilFile = null;
     }
@@ -794,10 +813,9 @@ public class AbmUsuariosController implements Initializable {
 
     /**
      * Evento al hacer clic en "Modificar"
-     * @param event Evento
      */
     @FXML
-    private void onModificar(ActionEvent event) {
+    private void onModificar() {
         Usuario usuarioSeleccionado = busquedaComboBox.getSelectionModel().getSelectedItem();
         if (usuarioSeleccionado != null && validarCamposObligatorios()) {
             Usuario usuarioActualizado = crearOActualizarUsuarioDesdeFormulario(usuarioSeleccionado);
@@ -841,7 +859,6 @@ public class AbmUsuariosController implements Initializable {
 
     /**
      * Evento al hacer clic en "Nuevo Agente"
-     * @param event Evento
      */
     @FXML
     private void onNuevoAgente(ActionEvent event) {
@@ -987,6 +1004,11 @@ public class AbmUsuariosController implements Initializable {
             domCiudadComboBox.getEditor().setText(domicilio.getCiudad());
             domLocalidadComboBox.getEditor().setText(domicilio.getLocalidad());
             domProvinciaComboBox.getEditor().setText(domicilio.getProvincia());
+
+            // Manejar el checkbox "Sin número"
+            boolean sinNumero = domicilio.getNumeracion() == null || domicilio.getNumeracion().isEmpty();
+            domSinNumeroCheckBox.setSelected(sinNumero);
+            domNumeracionField.setDisable(sinNumero);
         } else {
             // Limpiar campos de domicilio si no hay datos
             domCalleComboBox.getEditor().clear();
@@ -995,6 +1017,7 @@ public class AbmUsuariosController implements Initializable {
             domCiudadComboBox.getEditor().clear();
             domLocalidadComboBox.getEditor().clear();
             domProvinciaComboBox.getEditor().clear();
+            domSinNumeroCheckBox.setSelected(false);
         }
 
         // Restablecer el estado del formulario a "sin modificaciones"
@@ -1061,7 +1084,8 @@ public class AbmUsuariosController implements Initializable {
 
         // Asignar atributos comunes
         try {
-            usuario.setCuil(Long.parseLong(cuilTextField.getText()));
+            String cuilText = cuilTextField.getText().replaceAll("-", "");
+            usuario.setCuil(Long.parseLong(cuilText));
         } catch (NumberFormatException e) {
             mostrarError("El CUIL debe ser un número válido.");
             return null;

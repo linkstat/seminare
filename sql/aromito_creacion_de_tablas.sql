@@ -227,27 +227,27 @@ CREATE TABLE Usuario (
 -- Tabla Direccion
 CREATE TABLE Direccion (
     id BINARY(16) PRIMARY KEY,
-    FOREIGN KEY (id) REFERENCES Usuario(id)
+    FOREIGN KEY (id) REFERENCES Usuario(id) ON DELETE CASCADE
     -- No tiene atributos adicionales directos
 );
 
 -- Tabla JefaturaDeServicio
 CREATE TABLE JefaturaDeServicio (
     id BINARY(16) PRIMARY KEY,
-    FOREIGN KEY (id) REFERENCES Usuario(id)
+    FOREIGN KEY (id) REFERENCES Usuario(id) ON DELETE CASCADE
 );
 
 -- Tabla OficinaDePersonal
 CREATE TABLE OficinaDePersonal (
     id BINARY(16) PRIMARY KEY,
-    FOREIGN KEY (id) REFERENCES Usuario(id),
+    FOREIGN KEY (id) REFERENCES Usuario(id) ON DELETE CASCADE,
     reportesGenerados INT
 );
 
 -- Tabla Empleado
 CREATE TABLE Empleado (
     id BINARY(16) PRIMARY KEY,
-    FOREIGN KEY (id) REFERENCES Usuario(id),
+    FOREIGN KEY (id) REFERENCES Usuario(id) ON DELETE CASCADE,
     francosCompensatoriosUtilizados INT,
     horarioActualID BINARY(16),
     jefaturaID BINARY(16) NOT NULL,
