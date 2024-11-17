@@ -53,7 +53,9 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
 
     @Override
     public Usuario readByUUID(UUID id) throws SQLException {
-        String query = "SELECT *, BIN_TO_UUID(id) AS id FROM Usuario WHERE id = UUID_TO_BIN(?)";
+        String query = "SELECT BIN_TO_UUID(id) AS id, fechaAlta, estado, cuil, apellidos, nombres, sexo, mail, tel, " +
+                "BIN_TO_UUID(domicilioID), BIN_TO_UUID(cargoID), BIN_TO_UUID(servicioID), tipoUsuario, passwd, profileImage " +
+                "FROM Usuario WHERE id = UUID_TO_BIN(?)";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, id.toString());
@@ -75,7 +77,9 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
     @Override
     public List<Usuario> readAll() throws SQLException {
         List<Usuario> usuarios = new ArrayList<>();
-        String query = "SELECT *, BIN_TO_UUID(id) AS id_str FROM Usuario";
+        String query = "SELECT BIN_TO_UUID(id) AS id, fechaAlta, estado, cuil, apellidos, nombres, sexo, mail, tel, " +
+                "BIN_TO_UUID(domicilioID), BIN_TO_UUID(cargoID), BIN_TO_UUID(servicioID), tipoUsuario, passwd, profileImage " +
+                "FROM Usuario";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query);
@@ -150,9 +154,7 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
      * @throws SQLException En caso de errores durante la consulta SQL.
      */
     public Usuario findUsuarioByCuil(long cuil) throws SQLException {
-        String query = "SELECT BIN_TO_UUID(id) AS id, " +
-                "fechaAlta, estado, cuil, apellidos, nombres, " +
-                "sexo, mail, tel, " +
+        String query = "SELECT BIN_TO_UUID(id) AS id, fechaAlta, estado, cuil, apellidos, nombres, sexo, mail, tel, " +
                 "BIN_TO_UUID(domicilioID) AS domicilioID, " +
                 "BIN_TO_UUID(cargoID) AS cargoID, " +
                 "BIN_TO_UUID(servicioID) AS servicioID, " +

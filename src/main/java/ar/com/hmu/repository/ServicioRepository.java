@@ -38,7 +38,8 @@ public class ServicioRepository implements GenericDAO<Servicio> {
 
     @Override
     public Servicio readByUUID(UUID id) throws SQLException {
-        String query = "SELECT * FROM Servicio WHERE id = UUID_TO_BIN(?)";
+        String query = "SELECT BIN_TO_UUID(id) AS id, nombre, agrupacion, BIN_TO_UUID(direccionID) AS direccionID " +
+                "FROM Servicio WHERE id = UUID_TO_BIN(?)";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
@@ -58,7 +59,7 @@ public class ServicioRepository implements GenericDAO<Servicio> {
     @Override
     public List<Servicio> readAll() throws SQLException {
         List<Servicio> servicios = new ArrayList<>();
-        String query = "SELECT * FROM Servicio";
+        String query = "SELECT BIN_TO_UUID(id) AS id, nombre, agrupacion, BIN_TO_UUID(direccionID) AS direccionID FROM Servicio";
         try (Connection connection = databaseConnector.getConnection();
              Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
@@ -135,10 +136,10 @@ public class ServicioRepository implements GenericDAO<Servicio> {
      * Método para mapear filas a un ResultSet de Servicio.
      */
     private Servicio mapResultSetToServicio(ResultSet rs) throws SQLException {
-        UUID id = UUID.fromString(rs.getString("UUID"));
+        UUID id = UUID.fromString(rs.getString("id"));
         String nombre = rs.getString("nombre");
         Agrupacion agrupacion = Agrupacion.valueOf(rs.getString("agrupacion"));
-        UUID direccionId = UUID.fromString("direccionId");
+        UUID direccionId = UUID.fromString(rs.getString("direccionID"));
 
         return new Servicio(id, nombre, agrupacion, direccionId);
     }

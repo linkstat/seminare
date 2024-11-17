@@ -44,7 +44,7 @@ public class CargoRepository implements GenericDAO<Cargo> {
 
     @Override
     public Cargo readByUUID(UUID id) throws SQLException {
-        String query = "SELECT * FROM Cargo WHERE id = UUID_TO_BIN(?)";
+        String query = "SELECT BIN_TO_UUID(id) AS id, numero, descripcion, agrupacion FROM Cargo WHERE id = UUID_TO_BIN(?)";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -72,7 +72,7 @@ public class CargoRepository implements GenericDAO<Cargo> {
     @Override
     public List<Cargo> readAll() throws SQLException {
         List<Cargo> cargos = new ArrayList<>();
-        String query = "SELECT *, BIN_TO_UUID(id) as idUUID FROM Cargo";
+        String query = "SELECT BIN_TO_UUID(id) AS id, numero, descripcion, agrupacion FROM Cargo";
 
         try (Connection connection = databaseConnector.getConnection();
              Statement stmt = connection.createStatement();
@@ -80,7 +80,7 @@ public class CargoRepository implements GenericDAO<Cargo> {
 
             while (rs.next()) {
                 cargos.add(new Cargo(
-                        UUID.fromString(rs.getString("idUUID")),
+                        UUID.fromString(rs.getString("id")),
                         rs.getInt("numero"),
                         rs.getString("descripcion"),
                         Agrupacion.valueOf(rs.getString("agrupacion"))
@@ -193,7 +193,8 @@ public class CargoRepository implements GenericDAO<Cargo> {
      */
     public List<Cargo> readAllByAgrupacion(Agrupacion agrupacion) {
         List<Cargo> cargos = new ArrayList<>();
-        String query = "SELECT *, BIN_TO_UUID(id) as idUUID FROM Cargo WHERE agrupacion = ?";
+        //String query = "SELECT *, BIN_TO_UUID(id) as idUUID FROM Cargo WHERE agrupacion = ?";
+        String query = "SELECT BIN_TO_UUID(id) as id, numero, descripcion, agrupacion FROM Cargo WHERE agrupacion = ?";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -203,7 +204,7 @@ public class CargoRepository implements GenericDAO<Cargo> {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     cargos.add(new Cargo(
-                            UUID.fromString(rs.getString("idUUID")),
+                            UUID.fromString(rs.getString("id")),
                             rs.getInt("numero"),
                             rs.getString("descripcion"),
                             agrupacion

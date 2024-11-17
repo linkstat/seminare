@@ -28,7 +28,8 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
 
     @Override
     public void create(Domicilio domicilio) throws SQLException {
-        String query = "INSERT INTO Domicilio (id, calle, numeracion, barrio, ciudad, localidad, provincia) VALUES (UUID_TO_BIN(UUID()), ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO Domicilio (id, calle, numeracion, barrio, ciudad, localidad, provincia) " +
+                "VALUES (UUID_TO_BIN(UUID()), ?, ?, ?, ?, ?, ?)";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -49,7 +50,7 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
 
     @Override
     public Domicilio readByUUID(UUID id) throws SQLException {
-        String query = "SELECT * FROM Domicilio WHERE id = UUID_TO_BIN(?)";
+        String query = "SELECT BIN_TO_UUID(id) AS id, calle, numeracion, barrio, ciudad, localidad, provincia FROM Domicilio WHERE id = UUID_TO_BIN(?)";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -72,7 +73,7 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
     @Override
     public List<Domicilio> readAll() throws SQLException {
         List<Domicilio> domicilios = new ArrayList<>();
-        String query = "SELECT * FROM Domicilio";
+        String query = "SELECT BIN_TO_UUID(id) AS id, calle, numeracion, barrio, ciudad, localidad, provincia FROM Domicilio";
 
         try (Connection connection = databaseConnector.getConnection();
              Statement stmt = connection.createStatement();
