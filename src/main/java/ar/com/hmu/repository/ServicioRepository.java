@@ -19,7 +19,7 @@ public class ServicioRepository implements GenericDAO<Servicio> {
     }
 
     @Override
-    public void create(Servicio servicio) {
+    public void create(Servicio servicio) throws SQLException {
         String query = "INSERT INTO Servicio (id, nombre, agrupacion, direccionID) VALUES (UUID_TO_BIN(?), ?, ?, ?)";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -37,7 +37,7 @@ public class ServicioRepository implements GenericDAO<Servicio> {
     }
 
     @Override
-    public Servicio readByUUID(UUID id) {
+    public Servicio readByUUID(UUID id) throws SQLException {
         String query = "SELECT * FROM Servicio WHERE id = UUID_TO_BIN(?)";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -56,7 +56,7 @@ public class ServicioRepository implements GenericDAO<Servicio> {
     }
 
     @Override
-    public List<Servicio> readAll() {
+    public List<Servicio> readAll() throws SQLException {
         List<Servicio> servicios = new ArrayList<>();
         String query = "SELECT * FROM Servicio";
         try (Connection connection = databaseConnector.getConnection();
@@ -74,7 +74,7 @@ public class ServicioRepository implements GenericDAO<Servicio> {
     }
 
     @Override
-    public void update(Servicio servicio) {
+    public void update(Servicio servicio) throws SQLException {
         String query = "INSERT INTO Servicio (id, nombre, agrupacion, direccionID) VALUES (UUID_TO_BIN(?), ?, ?, UUID_TO_BIN(?))";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -92,7 +92,7 @@ public class ServicioRepository implements GenericDAO<Servicio> {
     }
 
     @Override
-    public void delete(Servicio servicio) {
+    public void delete(Servicio servicio) throws SQLException {
         String query = "DELETE FROM Servicio WHERE id = UUID_TO_BIN(?)";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {

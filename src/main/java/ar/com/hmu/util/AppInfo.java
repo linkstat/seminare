@@ -1,4 +1,4 @@
-package ar.com.hmu.utils;
+package ar.com.hmu.util;
 
 public class AppInfo {
 

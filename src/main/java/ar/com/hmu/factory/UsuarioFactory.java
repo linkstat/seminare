@@ -97,7 +97,7 @@ import java.util.UUID;
         }
 
         String servicioIdStr = resultSet.getString("servicioID");
-        if (cargoIdStr != null) {
+        if (servicioIdStr != null) {
             usuario.setServicioId(UUID.fromString(servicioIdStr));
         }
 

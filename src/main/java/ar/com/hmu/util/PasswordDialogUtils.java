@@ -1,4 +1,4 @@
-package ar.com.hmu.utils;
+package ar.com.hmu.util;
 
 import ar.com.hmu.model.Usuario;
 import ar.com.hmu.service.UsuarioService;

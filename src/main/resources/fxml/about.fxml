@@ -14,7 +14,7 @@
    <children>
       <ImageView fitWidth="144.0" layoutX="14.0" layoutY="15.0" pickOnBounds="true" preserveRatio="true">
          <image>
-            <Image url="@/images/about_aromito.png" />
+            <Image url="@../images/about_aromito.png" />
          </image>
       </ImageView>
       <Text fx:id="titleText" fill="DARKGOLDENROD" layoutX="163.0" layoutY="70.0" rotate="-5.0" stroke="DARKSLATEGRAY" strokeWidth="0.25" text="Aromito" wrappingWidth="195.64453125">

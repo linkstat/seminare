@@ -2,7 +2,7 @@ package ar.com.hmu.model;
 
 
 import java.util.List;
-import ar.com.hmu.utils.DiaSemana;
+import ar.com.hmu.util.DiaSemana;
 
 /**
  * @author Pablo Alejandro Hamann

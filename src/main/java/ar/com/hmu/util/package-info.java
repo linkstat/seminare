@@ -20,4 +20,4 @@
  * y mantener las responsabilidades de cada clase claramente definidas, apoyando otras capas sin agregarles
  * complejidad innecesaria.
  */
-package ar.com.hmu.utils;
+package ar.com.hmu.util;

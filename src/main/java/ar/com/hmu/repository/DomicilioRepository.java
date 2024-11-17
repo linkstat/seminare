@@ -27,7 +27,7 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
     }
 
     @Override
-    public void create(Domicilio domicilio) {
+    public void create(Domicilio domicilio) throws SQLException {
         String query = "INSERT INTO Domicilio (id, calle, numeracion, barrio, ciudad, localidad, provincia) VALUES (UUID_TO_BIN(UUID()), ?, ?, ?, ?, ?, ?)";
 
         try (Connection connection = databaseConnector.getConnection();
@@ -48,7 +48,7 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
     }
 
     @Override
-    public Domicilio readByUUID(UUID id) {
+    public Domicilio readByUUID(UUID id) throws SQLException {
         String query = "SELECT * FROM Domicilio WHERE id = UUID_TO_BIN(?)";
 
         try (Connection connection = databaseConnector.getConnection();
@@ -70,7 +70,7 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
     }
 
     @Override
-    public List<Domicilio> readAll() {
+    public List<Domicilio> readAll() throws SQLException {
         List<Domicilio> domicilios = new ArrayList<>();
         String query = "SELECT * FROM Domicilio";
 
@@ -97,7 +97,7 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
     }
 
     @Override
-    public void update(Domicilio domicilio) {
+    public void update(Domicilio domicilio) throws SQLException {
         String query = "UPDATE Domicilio SET calle = ?, numeracion = ?, barrio = ?, ciudad = ?, localidad = ?, provincia = ? WHERE id = UUID_TO_BIN(?)";
 
         try (Connection connection = databaseConnector.getConnection();
@@ -122,7 +122,7 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
     }
 
     @Override
-    public void delete(Domicilio domicilio) {
+    public void delete(Domicilio domicilio) throws SQLException {
         String query = "DELETE FROM Domicilio WHERE id = UUID_TO_BIN(?)";
 
         try (Connection connection = databaseConnector.getConnection();

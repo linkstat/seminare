@@ -1,18 +1,36 @@
 package ar.com.hmu.service;
 
-import ar.com.hmu.model.Usuario;
-import ar.com.hmu.repository.UsuarioRepository;
-import ar.com.hmu.utils.PasswordUtils;
-
 import java.sql.SQLException;
 import java.util.Arrays;
+
+import ar.com.hmu.exceptions.ServiceException;
+import ar.com.hmu.model.Cargo;
+import ar.com.hmu.model.Domicilio;
+import ar.com.hmu.model.Servicio;
+import ar.com.hmu.model.Usuario;
+import ar.com.hmu.repository.CargoRepository;
+import ar.com.hmu.repository.DomicilioRepository;
+import ar.com.hmu.repository.ServicioRepository;
+import ar.com.hmu.repository.UsuarioRepository;
+import ar.com.hmu.util.PasswordUtils;
+
 
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private ServicioRepository servicioRepository;
+    private CargoRepository cargoRepository;
+    private DomicilioRepository domicilioRepository;
 
     public UsuarioService(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
+    }
+
+    public UsuarioService(UsuarioRepository usuarioRepository, ServicioRepository servicioRepository, CargoRepository cargoRepository, DomicilioRepository domicilioRepository) {
+        this.usuarioRepository = usuarioRepository;
+        this.servicioRepository = servicioRepository;
+        this.cargoRepository = cargoRepository;
+        this.domicilioRepository = domicilioRepository;
     }
 
     /**
@@ -53,6 +71,29 @@ public class UsuarioService {
             Arrays.fill(confirmNewPassword, '\0');
         }
     }
+
+
+    public void loadAdditionalUserData(Usuario usuario) throws ServiceException {
+        try {
+            if (usuario.getServicioId() != null) {
+                Servicio servicio = servicioRepository.readByUUID(usuario.getServicioId());
+                usuario.setServicio(servicio);
+            }
+
+            if (usuario.getCargoId() != null) {
+                Cargo cargo = cargoRepository.readByUUID(usuario.getCargoId());
+                usuario.setCargo(cargo);
+            }
+
+            if (usuario.getDomicilioId() != null) {
+                Domicilio domicilio = domicilioRepository.readByUUID(usuario.getDomicilioId());
+                usuario.setDomicilio(domicilio);
+            }
+        } catch (SQLException e) {
+            throw new ServiceException("Error al cargar datos adicionales del usuario\nmétodo loadAdditionalUserData", e);
+        }
+    }
+
 
     public void updateProfileImage(Usuario usuario) {
         try {

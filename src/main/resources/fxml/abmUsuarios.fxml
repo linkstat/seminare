@@ -41,7 +41,7 @@
                      <Label text="Imagen de Perfil:" />
                       <ImageView fx:id="imagenPerfilImageView" fitWidth="140.0" preserveRatio="true">
                      <image>
-                        <Image url="@/images/loginImage.png" />
+                        <Image url="@../images/loginImage.png" />
                      </image>
                      <VBox.margin>
                         <Insets />

@@ -21,7 +21,7 @@ import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
 
-import ar.com.hmu.utils.AppInfo;
+import ar.com.hmu.util.AppInfo;
 
 public class aboutController {
     @FXML

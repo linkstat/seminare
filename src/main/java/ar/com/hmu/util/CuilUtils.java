@@ -1,4 +1,4 @@
-package ar.com.hmu.utils;
+package ar.com.hmu.util;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;

@@ -1,4 +1,4 @@
-package ar.com.hmu.utils;
+package ar.com.hmu.util;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;

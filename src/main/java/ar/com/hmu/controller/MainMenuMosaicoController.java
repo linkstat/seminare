@@ -2,6 +2,7 @@ package ar.com.hmu.controller;
 
 import java.io.IOException;
 
+import ar.com.hmu.model.Domicilio;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -14,17 +15,21 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.scene.text.Text;
 
+import ar.com.hmu.constants.TipoUsuario;
+import ar.com.hmu.exceptions.ServiceException;
+import ar.com.hmu.model.Cargo;
+import ar.com.hmu.model.Servicio;
 import ar.com.hmu.model.Usuario;
 import ar.com.hmu.repository.*;
 import ar.com.hmu.service.MainMenuMosaicoService;
 import ar.com.hmu.service.UsuarioService;
-import ar.com.hmu.utils.AlertUtils;
-import ar.com.hmu.utils.AppInfo;
-import ar.com.hmu.utils.PasswordDialogUtils;
-import ar.com.hmu.utils.PreferencesManager;
-import ar.com.hmu.utils.SessionUtils;
-import static ar.com.hmu.utils.SessionUtils.handleLogout;
-import static ar.com.hmu.utils.ServerStatusUtils.*;
+import ar.com.hmu.util.AlertUtils;
+import ar.com.hmu.util.AppInfo;
+import ar.com.hmu.util.PasswordDialogUtils;
+import ar.com.hmu.util.PreferencesManager;
+import ar.com.hmu.util.SessionUtils;
+import static ar.com.hmu.util.SessionUtils.handleLogout;
+import static ar.com.hmu.util.ServerStatusUtils.*;
 
 /**
  * Controlador para gestionar el comportamiento del menú principal en forma de mosaico.
@@ -125,7 +130,7 @@ public class MainMenuMosaicoController {
     private MainMenuMosaicoService mainMenuMosaicoService;  // Servicio para gestionar la lógica del menú principal
     private DatabaseConnector databaseConnector;  // Necesario para la verificación del estado del servidor.
 
-    // Inyección de dependencias en UsuarioRepository (implementación de patrón «Lazy Loading»)
+    // Inyección de dependencias en UsuarioRepository (implementación de patrón «Lazy Loading») / Ya no lo uso. Cambio de enfoque. Borrar después.
     private DomicilioRepository domicilioRepository;
     private CargoRepository cargoRepository;
     private ServicioRepository servicioRepository;
@@ -157,22 +162,33 @@ public class MainMenuMosaicoController {
      *
      * @param usuario El usuario que ha iniciado sesión.
      * @param databaseConnector   El conector de la base de datos.
-     * @param domicilioRepository Repositorio de domicilios.
-     * @param cargoRepository     Repositorio de cargos.
-     * @param servicioRepository  Repositorio de servicios.
      * @param stage               El Stage principal de la aplicación.
      */
-    public void postInitialize(Usuario usuario, DatabaseConnector databaseConnector, DomicilioRepository domicilioRepository, CargoRepository cargoRepository, ServicioRepository servicioRepository, Stage stage) {
+    public void postInitialize(Usuario usuario, DatabaseConnector databaseConnector, RolRepository rolRepository, Stage stage) {
         this.mainMenuMosaicoService = new MainMenuMosaicoService(usuario);
 
         this.usuarioActual = usuario;
         this.databaseConnector = databaseConnector;
-        this.domicilioRepository = domicilioRepository;
-        this.cargoRepository = cargoRepository;
-        this.servicioRepository = servicioRepository;
+        //this.domicilioRepository = domicilioRepository;
+        //this.cargoRepository = cargoRepository;
+        //this.servicioRepository = servicioRepository;
         this.stage = stage;  // Guardar la referencia al Stage
-        this.usuarioService = new UsuarioService(new UsuarioRepository(databaseConnector, domicilioRepository, cargoRepository, servicioRepository));
+        this.usuarioService = new UsuarioService(new UsuarioRepository(databaseConnector, rolRepository));
         this.mainMenuMosaicoService = new MainMenuMosaicoService(usuario);
+
+        // Cargar Servicio, Cargo y Domicilio
+        this.usuarioService = new UsuarioService(
+                new UsuarioRepository(databaseConnector, rolRepository),
+                new ServicioRepository(databaseConnector),
+                new CargoRepository(databaseConnector),
+                new DomicilioRepository(databaseConnector)
+        );
+
+        try {
+            usuarioService.loadAdditionalUserData(usuarioActual);
+        } catch (ServiceException e) {
+            AlertUtils.showErr(e.getMessage());
+        }
 
         // Inicializar PreferencesManager con el CUIL del usuario
         String userId = String.valueOf(usuarioActual.getCuil());
@@ -192,36 +208,8 @@ public class MainMenuMosaicoController {
         currentConnHostnameText.setText(mainMenuMosaicoService.getCurrentConnHostname());
         currentConnIPAddressText.setText(mainMenuMosaicoService.getCurrentConnIPAddress());
 
-        // Configurar visibilidad del mosaico "Alta, Baja y Modificación de Agentes"
-        abmAgentesVBox.setVisible(mainMenuMosaicoService.puedeAccederAltaBajaAgentes());
-        // Configurar la visibilidad de otros elementos según el servicio
-        /* TODO: Agregar la visibilidad de mosaicos (VBox) según tipo de usuario
-         *       Aprobación de Solicitudes: todos menos Agente
-         *       Notas y Memorandums: todos
-         *       Módulo de Partes Diarios: OficinaDePersonal
-         *       Consulta de Diagramas de Servicios: OficinaDePersonal, Direccion
-         *       Diagramación de mi Servicio: JefaturaDeServicio
-         *       Marcaciones: Empleado
-         *       Pases de Salida: Empleado
-         *       Omisiones de Ingres/Egreso: Empleado
-         *       Faltas Justificadas: Empleado
-         *       Faltas Injustificadas: Empleado
-         *       Faltas por Fuerza Mayor: Empleado
-         *       Solicitud de Horas Extra p/FC: Empleado
-         *       Gestión de Francos Compensatorios: Empleado
-         *       Módulo de Reportes: Todos excepto Empleado
-         *       Listado de Agentes: OficinaDePersonal, Direccion
-         *       AMB de Agentes: OficinaDePersonal
-         *       Listado de Servicios: OficinaDePersonal, Direccion
-         */
-
-        /* TODO: Agregar la visibilidad de elementos de menú según tipo de usuario
-         *       Todos pueden ver el menú Archivo y el menú Ayuda
-         *       Empleados: visualiza además el menú Agente
-         *       JefaturaDeServicio: visualiza además el menú Agente y el menú Jefe de Servicio
-         *       OficinaDePersonal: visualiza todos los menús excepto Dirección
-         *       Direccion: solo visualiza Direccion y los comunes
-         */
+        //Configurar visibilidad
+        configurarVisibilidadMenus();
 
         // Actualizar el estado del servidor y comenzar el chequeo periódico
         if (databaseConnector == null) {
@@ -268,6 +256,45 @@ public class MainMenuMosaicoController {
             e.printStackTrace(); // Error en la carga de preferencias, se usan valores predeterminados
             // Valores predeterminados ya están establecidos en el método get de PreferencesManager
         }
+    }
+
+
+    /**
+     * Configura la visibilidad de elementos según los roles del usuario
+     */
+    private void configurarVisibilidadMenus() {
+        // Inicializar todos los menús como no visibles
+        agenteMenu.setVisible(false);
+        jefaturaDeServicioMenu.setVisible(false);
+        oficinaDePersonalMenu.setVisible(false);
+        direccionMenu.setVisible(false);
+
+        // Configurar visibilidad de menús según roles
+        agenteMenu.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        jefaturaDeServicioMenu.setVisible(usuarioActual.hasRole(TipoUsuario.JEFATURA_DE_SERVICIO));
+        oficinaDePersonalMenu.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINA_DE_PERSONAL));
+        direccionMenu.setVisible(usuarioActual.hasRole(TipoUsuario.DIRECCION));
+
+        // Configurar visibilidad de mosaicos (VBox) según roles
+        aprobacionSolicitudesVBox.setVisible(!usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        notasMemosVBox.setVisible(usuarioActual.hasAnyRole());
+        partesDiariosVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINA_DE_PERSONAL));
+        consultaDiagramasDeServicioVBox.setVisible(usuarioActual.hasRoles(TipoUsuario.OFICINA_DE_PERSONAL, TipoUsuario.DIRECCION));
+        diagramacionDeServicioVBox.setVisible(usuarioActual.hasRole(TipoUsuario.JEFATURA_DE_SERVICIO));
+        controlMarcacionesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        pasesDeSalidaVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        omisionesIngresEgresoVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        faltasJustificadasVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        faltasInjustificadasVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        faltasRazonFuerzaMayorVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        solicitudHorasExtraFCVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        francosCompensatoriosVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        reportesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        listadoDeAgentesVBox.setVisible(usuarioActual.hasRoles(TipoUsuario.OFICINA_DE_PERSONAL, TipoUsuario.DIRECCION));
+        listadoDeServiciosVBox.setVisible(usuarioActual.hasRoles(TipoUsuario.OFICINA_DE_PERSONAL, TipoUsuario.DIRECCION));
+        abmAgentesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINA_DE_PERSONAL));
+        abmServiciosVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINA_DE_PERSONAL));
+
     }
 
 

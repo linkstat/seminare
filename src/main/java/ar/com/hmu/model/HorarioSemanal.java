@@ -4,8 +4,8 @@ package ar.com.hmu.model;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-import ar.com.hmu.utils.DiaSemana;
+
+import ar.com.hmu.util.DiaSemana;
 
 /**
  * @author Pablo Alejandro Hamann
