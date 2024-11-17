@@ -20,6 +20,11 @@ public class Cargo {
 		this.agrupacion = agrupacion;
 	}
 
+	@Override
+	public String toString() {
+		return this.numero +" - " + this.getDescripcion();
+	}
+
 	// Getters
 
 	public UUID getId() {

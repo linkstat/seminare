@@ -52,15 +52,19 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
                 "BIN_TO_UUID(cargoID) AS cargoID, " +
                 "BIN_TO_UUID(servicioID) AS servicioID, " +
                 "tipoUsuario, passwd, profile_image " +
-                "FROM Usuario WHERE id = UUID_TO_BIN(?)";
+                "FROM Usuario WHERE estado = 1 AND id = UUID_TO_BIN(?)";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, id.toString());
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
+                    // Fabrica de usuarios
                     Usuario usuario = UsuarioFactory.createUsuario(rs);
-                    usuario.setRoles(findRolesByUsuarioId(usuario.getId()));  // Asignación de roles aquí
+
+                    // Asignación de roles
+                    usuario.setRoles(findRolesByUsuarioId(usuario.getId()));
+
                     return usuario;
                 }
             }
@@ -79,15 +83,19 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
                 "BIN_TO_UUID(cargoID) AS cargoID, " +
                 "BIN_TO_UUID(servicioID) AS servicioID, " +
                 "tipoUsuario, passwd, profile_image " +
-                "FROM Usuario";
+                "FROM Usuario WHERE estado = 1";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
+                // Fabrica de usuarios
                 Usuario usuario = UsuarioFactory.createUsuario(rs);
-                usuario.setRoles(findRolesByUsuarioId(usuario.getId()));  // Carga roles del usuario
+
+                // Asignación de roles
+                usuario.setRoles(findRolesByUsuarioId(usuario.getId()));
+
                 usuarios.add(usuario);
             }
         } catch (SQLException e) {
@@ -159,7 +167,7 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
                 "BIN_TO_UUID(cargoID) AS cargoID, " +
                 "BIN_TO_UUID(servicioID) AS servicioID, " +
                 "tipoUsuario, passwd, profile_image " +
-                "FROM Usuario WHERE cuil = ?";
+                "FROM Usuario WHERE estado = 1 AND cuil = ?";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
@@ -176,6 +184,34 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
     }
 
 
+    public Usuario findUsuarioByCuil(long cuil, boolean includeDisabled) throws SQLException {
+        if(includeDisabled) {
+            String query = "SELECT BIN_TO_UUID(id) AS id, fechaAlta, estado, cuil, apellidos, nombres, sexo, mail, tel, " +
+                    "BIN_TO_UUID(domicilioID) AS domicilioID, " +
+                    "BIN_TO_UUID(cargoID) AS cargoID, " +
+                    "BIN_TO_UUID(servicioID) AS servicioID, " +
+                    "tipoUsuario, passwd, profile_image " +
+                    "FROM Usuario WHERE cuil = ?";
+            try (Connection connection = databaseConnector.getConnection();
+                 PreparedStatement stmt = connection.prepareStatement(query)) {
+
+                stmt.setLong(1, cuil);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        Usuario usuario = UsuarioFactory.createUsuario(rs);
+                        usuario.setRoles(findRolesByUsuarioId(usuario.getId()));  // Asignación de roles aquí
+                        return usuario;
+                    }
+                }
+            }
+            return null;
+        } else {
+            findUsuarioByCuil(cuil);
+        }
+        return null;
+    }
+
+
     /**
      * Devuelve el UUID de un usuario en base a su CUIL
      * @param cuil Número de CUIL
@@ -183,7 +219,7 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
      * @throws SQLException
      */
     public UUID findUUIDByCuil(long cuil) throws SQLException {
-        String query = "SELECT BIN_TO_UUID(id) AS id FROM Usuario WHERE cuil = ?";
+        String query = "SELECT BIN_TO_UUID(id) AS id FROM Usuario WHERE estado = 1 AND cuil = ?";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
@@ -210,7 +246,7 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
      * @throws SQLException si ocurre un error durante la consulta.
      */
     public String findPasswordByCuil(long cuil) throws SQLException {
-        String query = "SELECT passwd FROM Usuario WHERE cuil = ?";
+        String query = "SELECT passwd FROM Usuario WHERE estado = 1 AND cuil = ?";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
@@ -254,7 +290,7 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
 
 
     public int countUsuarios() {
-        String query = "SELECT COUNT(*) AS total FROM Usuario";
+        String query = "SELECT COUNT(*) AS total FROM Usuario WHERE estado = 1";
 
         try (Connection connection = databaseConnector.getConnection();
              Statement stmt = connection.createStatement();
@@ -270,6 +306,31 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
 
         return 0; // Retornar 0 si no hay registros (BD vacía por ejemplo)
     }
+
+
+    public int countUsuarios(boolean includeDisabled) {
+        if(includeDisabled) {
+            String query = "SELECT COUNT(*) AS total FROM Usuario WHERE estado = 1";
+
+            try (Connection connection = databaseConnector.getConnection();
+                 Statement stmt = connection.createStatement();
+                 ResultSet rs = stmt.executeQuery(query)) {
+
+                if (rs.next()) {
+                    return rs.getInt("total");
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                throw new RuntimeException("Error al contar los usuarios", e);
+            }
+
+            return 0; // Retornar 0 si no hay registros (BD vacía por ejemplo)
+        } else {
+            countUsuarios();
+        }
+        return 0;
+    }
+
 
     public List<Rol> findRolesByUsuarioId(UUID usuarioId) throws SQLException {
         List<Rol> roles = new ArrayList<>();

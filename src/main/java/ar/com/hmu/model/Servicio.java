@@ -47,6 +47,11 @@ public class Servicio {
 		this.diagramas = diagramas;
 	}
 
+	@Override
+	public String toString() {
+		return this.getNombre();
+	}
+
 	// Setters
 
 	public void setId(UUID id) {
