@@ -360,7 +360,7 @@ public abstract class Usuario {
 	 * @param tiposUsuario uno o más Enum de tipo TipoUsuario, que contiene los valores posibles.
 	 * @return verdaero o falso, según el usuario tenga el rol o no.
 	 */
-	public boolean hasRoles(TipoUsuario... tiposUsuario) {
+	public boolean hasRole(TipoUsuario... tiposUsuario) {
 		for (TipoUsuario tipoUsuario : tiposUsuario) {
 			if (hasRole(tipoUsuario)) {
 				return true;

@@ -18,12 +18,6 @@ public class Direccion extends Usuario {
 		super();
 	}
 
-	@Override
-	public void setServicio(Servicio servicio) {
-		throw new UnsupportedOperationException("No se puede cambiar el servicio para los usuarios de tipo Dirección.");
-	}
-
-
 	/**
 	 * 
 	 * @param diagramaDeServicio

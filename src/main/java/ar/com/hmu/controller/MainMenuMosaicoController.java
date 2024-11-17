@@ -276,10 +276,10 @@ public class MainMenuMosaicoController {
         direccionMenu.setVisible(usuarioActual.hasRole(TipoUsuario.DIRECCION));
 
         // Configurar visibilidad de mosaicos (VBox) según roles
-        aprobacionSolicitudesVBox.setVisible(!usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        aprobacionSolicitudesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.JEFATURA_DE_SERVICIO, TipoUsuario.OFICINA_DE_PERSONAL, TipoUsuario.DIRECCION));
         notasMemosVBox.setVisible(usuarioActual.hasAnyRole());
         partesDiariosVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINA_DE_PERSONAL));
-        consultaDiagramasDeServicioVBox.setVisible(usuarioActual.hasRoles(TipoUsuario.OFICINA_DE_PERSONAL, TipoUsuario.DIRECCION));
+        consultaDiagramasDeServicioVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINA_DE_PERSONAL, TipoUsuario.DIRECCION));
         diagramacionDeServicioVBox.setVisible(usuarioActual.hasRole(TipoUsuario.JEFATURA_DE_SERVICIO));
         controlMarcacionesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
         pasesDeSalidaVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
@@ -290,8 +290,8 @@ public class MainMenuMosaicoController {
         solicitudHorasExtraFCVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
         francosCompensatoriosVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
         reportesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
-        listadoDeAgentesVBox.setVisible(usuarioActual.hasRoles(TipoUsuario.OFICINA_DE_PERSONAL, TipoUsuario.DIRECCION));
-        listadoDeServiciosVBox.setVisible(usuarioActual.hasRoles(TipoUsuario.OFICINA_DE_PERSONAL, TipoUsuario.DIRECCION));
+        listadoDeAgentesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINA_DE_PERSONAL, TipoUsuario.DIRECCION));
+        listadoDeServiciosVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINA_DE_PERSONAL, TipoUsuario.DIRECCION));
         abmAgentesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINA_DE_PERSONAL));
         abmServiciosVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINA_DE_PERSONAL));
 

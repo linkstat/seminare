@@ -143,6 +143,32 @@ SET @JefeTraumatologiaID = UUID_TO_BIN(UUID());
 SET @JefeToxicologiaID = UUID_TO_BIN(UUID());
 
 
+-- Generar e inicializar cargos
+SET @cargoUndefinedID = UUID_TO_BIN(UUID());
+SET @cargoDirectivoInicialID = UUID_TO_BIN(UUID());
+SET @cargoJefaturaInicialID = UUID_TO_BIN(UUID());
+SET @cargoTecnicoInicialID = UUID_TO_BIN(UUID());
+SET @cargoAdministrativoInicialID = UUID_TO_BIN(UUID());
+SET @cargoServicioInicialID = UUID_TO_BIN(UUID());
+SET @cargoEnfermeriaInicialID = UUID_TO_BIN(UUID());
+SET @cargoMedicoInicialID = UUID_TO_BIN(UUID());
+SET @cargoEnfermeriaProInicialID = UUID_TO_BIN(UUID());
+SET @cargoProfesionalInicialID = UUID_TO_BIN(UUID());
+
+
+INSERT INTO Cargo (id, numero, descripcion, agrupacion) VALUES
+(@cargoUndefinedID, 0, 'Cargo sin definir', 'INDEFINIDO'),
+(@cargoDirectivoInicialID, 200, 'Directivos', 'PLANTAPOLITICA'),
+(@cargoJefaturaInicialID, 300, 'Jefaturas de Servicio', 'JEFATURA'),
+(@cargoTecnicoInicialID, 400, 'Técnicos', 'TECNICO'),
+(@cargoAdministrativoInicialID, 500, 'Administrativos', 'ADMINISTRATIVO'),
+(@cargoServicioInicialID, 600, 'Servicios', 'SERVICIO'),
+(@cargoEnfermeriaInicialID, 700, 'Enfermería Técnicos', 'ENFERMERIA'),
+(@cargoMedicoInicialID, 800, 'Médicos', 'MEDICO'),
+(@cargoEnfermeriaProInicialID, 900, 'Enfermería Profesionales', 'ENFERMERIA'),
+(@cargoProfesionalInicialID, 1200, 'Profesionales sin agrupación específica', 'PROFESIONAL');
+
+
 -- Generar una contraseña inicial usando Bcrypt
 /* Por defecto, utlizaremos la contraseña Aromito1
  * En GNU/Linux, la herramienta 'htpasswd' (parte de Apache HTTP Server tools), genera un hash de bcrypt con:
@@ -237,6 +263,7 @@ WHERE U.apellidos = 'Vitali' AND U.tipoUsuario = 'Direccion'
 LIMIT 1;
 -- Opcionalmente, verificar que se obtuvo el ID correctamente
 SELECT BIN_TO_UUID(@subdirID) AS subdirID;
+
 
 -- Insertar Servicios
 INSERT INTO Servicio (id, nombre, agrupacion, direccionID)
@@ -445,6 +472,14 @@ SET tel = '3517553799'
 WHERE id = @JefeInformaticaID;
 -- Verificamos nuevo valor:
 SELECT nombres, apellidos, tel FROM Usuario WHERE id = @JefeInformaticaID;
+
+
+-- Inicializar algunos cargos...
+UPDATE Usuario SET cargoID = @cargoUndefinedID;
+UPDATE Usuario SET cargoID = @cargoTecnicoInicialID WHERE servicioID = @BiomedicaID;
+UPDATE Usuario SET cargoID = @cargoTecnicoInicialID WHERE servicioID = @InformaticaID;
+UPDATE Usuario SET cargoID = @cargoJefaturaInicialID WHERE id = @JefeInformaticaID;
+UPDATE Usuario SET cargoID = @cargoJefaturaInicialID WHERE id = @JefePersonalID;
 
 
 -- Borrar un usuario
