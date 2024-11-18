@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="10" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/23.0.1" fx:controller="ar.com.hmu.controller.ListaServiciosController">
+    <TableView fx:id="serviciosTableView">
+        <columns>
+            <TableColumn fx:id="nombreServicioColumn" text="Nombre de Servicio" />
+            <TableColumn fx:id="cantidadUsuariosColumn" text="Cantidad de Usuarios" />
+            <TableColumn fx:id="apellidoJefeColumn" text="Apellido del Jefe" />
+        </columns>
+    </TableView>
+   <padding>
+      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+   </padding>
+</VBox>

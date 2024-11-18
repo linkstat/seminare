@@ -51,18 +51,33 @@ public class UsuarioService {
         }
     }
 
-    public void reactivarUsuario(Usuario usuarioExistente, Usuario nuevosDatos) throws ServiceException {
+    public void reactivarUsuario(Usuario usuario) throws ServiceException {
         try {
-            usuarioExistente.setEstado(true);
-            // Actualizar otros datos si es necesario
-            usuarioExistente.setNombres(nuevosDatos.getNombres());
-            usuarioExistente.setApellidos(nuevosDatos.getApellidos());
-            // ... otros campos
-            usuarioRepository.update(usuarioExistente);
+            boolean includeDisabled = true;
+            Usuario existente = usuarioRepository.findUsuarioByCuil(usuario.getCuil(), includeDisabled);
+            if (existente != null && !existente.getEstado()) {
+                // Reactivar y actualizar datos
+                existente.setEstado(true);
+                existente.setApellidos(usuario.getApellidos());
+                existente.setNombres(usuario.getNombres());
+                existente.setMail(usuario.getMail());
+                existente.setTel(usuario.getTel());
+                existente.setSexo(usuario.getSexo());
+                existente.setCargo(usuario.getCargo());
+                existente.setServicio(usuario.getServicio());
+                existente.setProfileImage(usuario.getProfileImage());
+                existente.setDomicilio(usuario.getDomicilio());
+
+                // Actualizar en la base de datos
+                usuarioRepository.update(existente);
+            } else {
+                throw new ServiceException("No se puede reactivar el usuario. El usuario no existe o ya está activo.");
+            }
         } catch (SQLException e) {
             throw new ServiceException("Error al reactivar el usuario", e);
         }
     }
+
 
 
     public List<Usuario> readAll() throws ServiceException {

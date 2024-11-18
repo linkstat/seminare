@@ -5,9 +5,7 @@
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -16,7 +14,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Line?>
 
-<BorderPane fx:id="rootPane" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ar.com.hmu.controller.AbmUsuariosController">
+<BorderPane fx:id="rootPane" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ar.com.hmu.controller.AbmUsuarioController">
 
     <!-- Sección de Búsqueda -->
     <top>
@@ -52,7 +50,7 @@
                        <Button fx:id="eliminarImagenButton" minWidth="101.0" onAction="#onEliminarImagen" text="Eliminar Imagen" />
                </children>
             </VBox>
-            <Line endX="10.199981689453125" endY="175.60000610351562" layoutX="153.0" layoutY="146.0" startX="10.20001220703125" startY="-131.39999389648438" stroke="LIGHTGRAY" />
+            <Line endX="10.3" endY="165.0" layoutX="153.0" layoutY="146.0" startX="10.3" startY="-130.0" stroke="LIGHTGRAY" />
             <VBox fillWidth="false" layoutX="187.0" layoutY="14.0" spacing="8.0">
                <children>
                   <VBox>
@@ -100,12 +98,12 @@
                   </VBox>
                </children>
             </VBox>
-            <Line endX="10.199981689453125" endY="161.20001220703125" layoutX="420.0" layoutY="146.0" startX="10.20001220703125" startY="-131.39999389648438" stroke="LIGHTGRAY" />
+            <Line endX="10.3" endY="165.0" layoutX="420.0" layoutY="146.0" startX="10.3" startY="-130.0" stroke="LIGHTGRAY" />
             <VBox fillWidth="false" layoutX="452.0" layoutY="13.0" spacing="8.0">
                <children>
                      <!-- Fila 12: Asignar Domicilio -->
                      <Label text="Domicilio:" />
-                  <Line endX="282.49285888671875" endY="-2.138376294169575E-4" startX="-100.0" stroke="LIGHTGRAY" />
+                  <Line endX="380.0" stroke="LIGHTGRAY" />
                   <HBox spacing="8.0">
                      <children>
                         <VBox>
@@ -153,12 +151,12 @@
                   </VBox>
                </children>
             </VBox>
-            <Line endX="827.0" endY="32.000030517578125" layoutX="1.0" layoutY="298.0" startX="15.0" startY="32.000030517578125" stroke="LIGHTGRAY" />
+            <Line endX="825.0" endY="30.0" layoutY="300.0" startX="15.0" startY="30.0" stroke="LIGHTGRAY" />
             <VBox layoutX="14.0" layoutY="346.0">
                <children>
                      <!-- Fila 7: Tipo de Usuario -->
                      <Label text="Tipo de Usuario:" />
-                     <ComboBox fx:id="tipoUsuarioComboBox" editable="true" onAction="#onTipoUsuarioSelected" prefWidth="148.0" promptText="Agente" />
+                     <ComboBox fx:id="tipoUsuarioComboBox" onAction="#onTipoUsuarioSelected" prefWidth="148.0" promptText="Agente" />
                </children>
             </VBox>
             <VBox layoutX="187.0" layoutY="345.0">
@@ -166,7 +164,7 @@
                      <!-- Fila 10: Cargo -->
                      <Label text="Cargo:" />
                      <HBox spacing="10">
-                         <ComboBox fx:id="cargoComboBox" editable="true" prefWidth="111.0" />
+                         <ComboBox fx:id="cargoComboBox" prefWidth="111.0" />
                          <Button fx:id="gestionarCargosButton" onAction="#onAbmCargo" text="Gestionar Cargos..." />
                      </HBox>
                </children>
@@ -177,7 +175,7 @@
                      <Label text="Servicio:" />
                   <HBox spacing="10.0">
                      <children>
-                           <ComboBox fx:id="servicioComboBox" editable="true" prefWidth="222.0" />
+                           <ComboBox fx:id="servicioComboBox" prefWidth="222.0" />
                         <Button fx:id="gestionarServiciosButton" onAction="#onAbmServicio" text="Gestionar Servicios..." />
                      </children>
                   </HBox>
@@ -193,29 +191,35 @@
 
     <!-- Sección de Acciones -->
     <bottom>
-        <HBox alignment="CENTER_RIGHT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" spacing="10">
+        <HBox alignment="CENTER_RIGHT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" spacing="10" BorderPane.alignment="TOP_CENTER">
             <padding>
                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
             </padding>
-         <VBox HBox.hgrow="ALWAYS">
-            <children>
-                  <!-- Fila 13: Resetear Contraseña -->
-                  <Label text="Contraseña:" />
-                  <Button fx:id="resetPasswdButton" onAction="#onResetPassword" text="Resetear Contraseña" />
-            </children>
-         </VBox>
-         <VBox HBox.hgrow="ALWAYS">
+         <VBox fillWidth="false" prefHeight="51.0" prefWidth="334.0" spacing="2.0" HBox.hgrow="ALWAYS">
             <children>
                   <!-- Fila 6: Estado -->
-                  <Label text="Estado:" />
-                   <RadioButton fx:id="usuarioHabilitadoCheckBox" text="Habilitado">
-                  <toggleGroup>
-                     <ToggleGroup fx:id="estadoToggleGroup" />
-                  </toggleGroup>
-               </RadioButton>
-                   <RadioButton fx:id="usuarioDeshabilitadoCheckBox" text="Deshabilitado" toggleGroup="$estadoToggleGroup" />
+                  <Label text="Roles de usuario:" />
+               <HBox spacing="22.0">
+                  <children>
+                     <VBox spacing="2.0">
+                        <children>
+                           <CheckBox fx:id="rolAgenteCheckBox" mnemonicParsing="false" text="Agente" />
+                           <CheckBox fx:id="rolJefeServicioCheckBox" mnemonicParsing="false" text="Oficina de Personal" />
+                        </children>
+                     </VBox>
+                     <VBox spacing="2.0">
+                        <children>
+                           <CheckBox fx:id="rolDireccionCheckBox" mnemonicParsing="false" text="Directivo" />
+                           <CheckBox fx:id="rolOficinaPersonalCheckBox" mnemonicParsing="false" text="Jefe de Servicio" />
+                        </children>
+                     </VBox>
+                  </children>
+               </HBox>
             </children>
          </VBox>
+         <Line endX="10.0" endY="50.0" startX="10.0" stroke="LIGHTGRAY" />
+            <Button fx:id="resetPasswdButton" onAction="#onResetPassword" text="Resetear Contraseña" />
+         <Line endX="10.0" endY="50.0" layoutX="315.0" layoutY="21.0" startX="10.0" stroke="LIGHTGRAY" />
             <Button fx:id="altaModButton" disable="true" minWidth="70.0" onAction="#onAlta" text="Alta / Mod." />
             <Button fx:id="cancelarButton" disable="true" minWidth="70.0" onAction="#onModificar" text="Cancelar" />
             <Button fx:id="eliminarButton" disable="true" minWidth="70.0" onAction="#onEliminar" text="Eliminar" />

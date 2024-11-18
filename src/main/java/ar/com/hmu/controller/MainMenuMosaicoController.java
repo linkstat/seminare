@@ -3,13 +3,17 @@ package ar.com.hmu.controller;
 import java.io.IOException;
 
 import ar.com.hmu.service.*;
+import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -17,9 +21,6 @@ import javafx.scene.text.Text;
 
 import ar.com.hmu.constants.TipoUsuario;
 import ar.com.hmu.exceptions.ServiceException;
-import ar.com.hmu.model.Cargo;
-import ar.com.hmu.model.Domicilio;
-import ar.com.hmu.model.Servicio;
 import ar.com.hmu.model.Usuario;
 import ar.com.hmu.repository.*;
 import ar.com.hmu.util.AlertUtils;
@@ -57,6 +58,16 @@ public class MainMenuMosaicoController {
     private MenuItem logoutMenuItem;
     @FXML
     private MenuItem exitMenuItem;
+    @FXML
+    private MenuItem listadoAgentesMenuItem;
+    @FXML
+    private MenuItem listadoServiciosMenuItem;
+    @FXML
+    private MenuItem abmAgentesMenuItem;
+    @FXML
+    private MenuItem abmServiciosMenuItem;
+    @FXML
+    private MenuItem abmCargosMenuItem;
     @FXML
     private MenuItem licenciasDeUsoMenuItem;
     @FXML
@@ -185,7 +196,7 @@ public class MainMenuMosaicoController {
         // Inicialización de servicios con los repositorios necesarios
         this.usuarioService = new UsuarioService(usuarioRepository, servicioRepository, cargoRepository, domicilioRepository);
         this.cargoService = new CargoService(cargoRepository);
-        this.servicioService = new ServicioService(servicioRepository);
+        this.servicioService = new ServicioService(servicioRepository, usuarioRepository);
         this.domicilioService = new DomicilioService(domicilioRepository);
 
         this.mainMenuMosaicoService = new MainMenuMosaicoService(usuario);
@@ -320,6 +331,21 @@ public class MainMenuMosaicoController {
         // Configura la funcionalidad del menú: Archivo -> Salir
         exitMenuItem.setOnAction(event -> System.exit(0));
 
+        // Configura la funcionalidad del menú: Oficina de Personal -> Listado de Agentes
+        listadoAgentesMenuItem.setOnAction(this::handleAbmAgentes);
+
+        // Configura la funcionalidad del menú: Oficina de Personal -> Listado de Servicios
+        listadoServiciosMenuItem.setOnAction(this::handleAbmAgentes);
+
+        // Configura la funcionalidad del menú: Oficina de Personal -> ABM de Agentes
+        abmAgentesMenuItem.setOnAction(this::handleAbmAgentes);
+
+        // Configura la funcionalidad del menú: Oficina de Personal -> ABM de Servicios
+        abmServiciosMenuItem.setOnAction(this::handleAbmServicios);
+
+        // Configura la funcionalidad del menú: Oficina de Personal -> ABM de Cargos
+        abmCargosMenuItem.setOnAction(this::handleAbmCargos);
+
         // Configura la funcionalidad del menú: Ayuda -> Licencias de uso
         licenciasDeUsoMenuItem.setOnAction(event -> handleLicenciasDeUso());
 
@@ -341,10 +367,10 @@ public class MainMenuMosaicoController {
         solicitudHorasExtraFCVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
         francosCompensatoriosVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
         reportesVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
-        listadoDeAgentesVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
-        listadoDeServiciosVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
-        abmAgentesVBox.setOnMouseClicked(event -> handleAbmAgentes());
-        abmServiciosVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
+        listadoDeAgentesVBox.setOnMouseClicked(this::handleListadoDeAgentes);
+        listadoDeServiciosVBox.setOnMouseClicked(this::handleListadoDeServicios);
+        abmAgentesVBox.setOnMouseClicked(this::handleAbmAgentes);
+        abmServiciosVBox.setOnMouseClicked(this::handleAbmServicios);
 
         // Configura la funcionalidad del botón "Cerrar sesión"
         logoutButton.setOnAction(event -> handleLogout((Stage) logoutButton.getScene().getWindow()));
@@ -354,6 +380,7 @@ public class MainMenuMosaicoController {
     /**
      * Maneja la opción "Modificar Contraseña" abriendo una nueva ventana para cambiar la contraseña.
      */
+    @FXML
     private void handleChangePassword() {
         PasswordDialogUtils.showChangePasswordDialog(usuarioActual, usuarioService,
                 (message) -> {}, // Callback vacío para continuar después del cambio de contraseña exitoso
@@ -365,6 +392,7 @@ public class MainMenuMosaicoController {
     /**
      * Muestra una alerta indicando que el módulo está en construcción.
      */
+    @FXML
     private void showModuleUnderConstructionAlert() {
         AlertUtils.showInfo("Estamos trabajando para Usted\nMódulo en construcción");
     }
@@ -374,7 +402,8 @@ public class MainMenuMosaicoController {
      * Método para el alta, baja, modificación de usuarios (agentes).
      * Este método carga la ventana de ABM de usuarios y la muestra al usuario.
      */
-    private void handleAbmAgentes() {
+    @FXML
+    private void handleAbmAgentes(Event event) {
         try {
             // Usa los servicios ya inicializados
             UsuarioService usuarioService = this.usuarioService;
@@ -383,10 +412,10 @@ public class MainMenuMosaicoController {
             DomicilioService domicilioService = this.domicilioService;
 
             // Configurar la fábrica de controladores
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/abmUsuarios.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/abmUsuario.fxml"));
             loader.setControllerFactory(controllerClass -> {
-                if (controllerClass == AbmUsuariosController.class) {
-                    AbmUsuariosController controller = new AbmUsuariosController();
+                if (controllerClass == AbmUsuarioController.class) {
+                    AbmUsuarioController controller = new AbmUsuarioController();
                     controller.setServices(usuarioService, cargoService, servicioService, domicilioService);
                     return controller;
                 } else {
@@ -420,9 +449,94 @@ public class MainMenuMosaicoController {
     }
 
 
+    @FXML
+    private void handleAbmCargos(Event event) {
+        // El código es similar al anterior
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/abmCargo.fxml"));
+            Parent root = loader.load();
+
+            AbmCargoController controller = loader.getController();
+            controller.setCargoService(cargoService);
+
+            Stage stage = new Stage();
+            stage.setTitle("Gestión de Cargos");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(stage); // Reemplaza 'stage' con tu Stage principal
+            stage.showAndWait();
+        } catch (IOException e) {
+            AlertUtils.showErr("Error al cargar la ventana de gestión de cargos: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleListadoDeAgentes(Event event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/listaUsuarios.fxml"));
+            Parent root = loader.load();
+
+            ListaUsuariosController controller = loader.getController();
+            controller.setUsuarioService(usuarioService);
+
+            Stage stage = new Stage();
+            stage.setTitle("Listado de Agentes");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initOwner(((Node) event.getSource()).getScene().getWindow());
+            stage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Manejo de errores
+        }
+    }
+
+    @FXML
+    private void handleListadoDeServicios(Event event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/listaServicios.fxml"));
+            Parent root = loader.load();
+
+            ListaServiciosController controller = loader.getController();
+            controller.setServicioService(servicioService);
+
+            Stage stage = new Stage();
+            stage.setTitle("Lista de Servicios");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(((Node) event.getSource()).getScene().getWindow());
+            stage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleAbmServicios(Event event) {
+        // El código es similar al anterior
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/abmServicio.fxml"));
+            Parent root = loader.load();
+
+            AbmServicioController controller = loader.getController();
+            controller.setServicioService(servicioService);
+
+            Stage stage = new Stage();
+            stage.setTitle("Gestión de Servicios");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(stage); // Reemplaza 'stage' con tu Stage principal
+            stage.showAndWait();
+        } catch (IOException e) {
+            AlertUtils.showErr("Error al cargar la ventana de gestión de servicios: " + e.getMessage());
+        }
+    }
+
+
     /**
      * Muestra la ventana de "Licencias de uso".
      */
+    @FXML
     private void handleLicenciasDeUso() {
         try {
             // Cargar el FXML de la ventana "Licencias de uso"
@@ -452,6 +566,7 @@ public class MainMenuMosaicoController {
     /**
      * Muestra la ventana de "Acerca de...".
      */
+    @FXML
     private void handleAcercaDeAromito() {
         try {
             // Cargar el FXML de la ventana "Acerca de"

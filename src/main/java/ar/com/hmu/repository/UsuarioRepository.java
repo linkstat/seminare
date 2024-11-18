@@ -1,5 +1,6 @@
 package ar.com.hmu.repository;
 
+import ar.com.hmu.constants.TipoUsuario;
 import ar.com.hmu.factory.UsuarioFactory;
 import ar.com.hmu.model.*;
 import ar.com.hmu.repository.dao.GenericDAO;
@@ -375,5 +376,36 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
             stmt.executeUpdate();
         }
     }
+
+
+    public int countUsuariosByServicio(UUID servicioId) throws SQLException {
+        String query = "SELECT COUNT(*) FROM Usuario WHERE servicioID = UUID_TO_BIN(?) AND estado = 1";
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, servicioId.toString());
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
+    }
+
+    public String getApellidoJefeByServicio(UUID servicioId) throws SQLException {
+        String query = "SELECT apellidos FROM Usuario WHERE servicioID = UUID_TO_BIN(?) AND tipoUsuario = ? AND estado = 1 LIMIT 1";
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, servicioId.toString());
+            stmt.setString(2, TipoUsuario.JEFATURA_DE_SERVICIO.name());
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("apellidos");
+                }
+            }
+        }
+        return "";
+    }
+
 
 }
