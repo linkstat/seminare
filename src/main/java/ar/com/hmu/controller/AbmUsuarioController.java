@@ -89,9 +89,6 @@ public class AbmUsuarioController implements Initializable {
 
     // Sección de Acciones
     @FXML private Button resetPasswdButton;
-    @FXML private RadioButton usuarioHabilitadoCheckBox;
-    @FXML private RadioButton usuarioDeshabilitadoCheckBox;
-    @FXML private ToggleGroup estadoToggleGroup;
     @FXML private Button altaModButton;
     @FXML private Button cancelarButton;
     @FXML private Button eliminarButton;
@@ -182,11 +179,6 @@ public class AbmUsuarioController implements Initializable {
 
         cancelarButton.setVisible(true);    // Visible al comienzo
         cancelarButton.setText("Salir");    // Pero con el texto "Salir"
-
-        // Configurar ToggleGroup
-        estadoToggleGroup = new ToggleGroup();
-        usuarioHabilitadoCheckBox.setToggleGroup(estadoToggleGroup);
-        usuarioDeshabilitadoCheckBox.setToggleGroup(estadoToggleGroup);
 
         // Cargar imagen por defecto
         imagenPerfilOriginal = imagenPerfilImageView.getImage();
@@ -425,10 +417,6 @@ public class AbmUsuarioController implements Initializable {
 
         // Acciones
         resetPasswdButton.setDisable(!enabled);
-
-        // CheckBoxes de Estado
-        usuarioHabilitadoCheckBox.setDisable(!enabled);
-        usuarioDeshabilitadoCheckBox.setDisable(!enabled);
 
         // Botones de acción
         altaModButton.setDisable(!enabled);
@@ -1086,10 +1074,6 @@ public class AbmUsuarioController implements Initializable {
             domSinNumeroCheckBox.setSelected(false);
         }
 
-        // Actualizar el estado del CheckBox
-        usuarioHabilitadoCheckBox.setSelected(usuario.getEstado());
-        usuarioHabilitadoCheckBox.setDisable(true); // Deshabilitar edición
-
         // Restablecer el estado del formulario a "sin modificaciones"
         isFormModified = false;
         altaModButton.setDisable(true);  // Solo se habilitará cuando haya una modificación
@@ -1253,11 +1237,11 @@ public class AbmUsuarioController implements Initializable {
         }
 
         // Validar campos del domicilio
-        if (domCalleComboBox.getEditor().getText().isEmpty() || domNumeracionField.getText().isEmpty()
-                || domCiudadComboBox.getEditor().getText().isEmpty() || domProvinciaComboBox.getEditor().getText().isEmpty()) {
-            mostrarError("Debe completar todos los campos de domicilio obligatorios.");
-            return false;
-        }
+//        if (domCalleComboBox.getEditor().getText().isEmpty() || domNumeracionField.getText().isEmpty()
+//                || domCiudadComboBox.getEditor().getText().isEmpty() || domProvinciaComboBox.getEditor().getText().isEmpty()) {
+//            mostrarError("Debe completar todos los campos de domicilio obligatorios.");
+//            return false;
+//        }
 
         // Validar formatos, email válido, etc.
         return true;
