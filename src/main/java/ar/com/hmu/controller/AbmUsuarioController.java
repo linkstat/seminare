@@ -1,17 +1,23 @@
 package ar.com.hmu.controller;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.UUID;
+import java.util.*;
 
+import ar.com.hmu.constants.UsuarioCreationResult;
 import ar.com.hmu.exceptions.ServiceException;
 import ar.com.hmu.service.DomicilioService;
+import ar.com.hmu.util.AlertUtils;
 import javafx.collections.transformation.FilteredList;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.stage.Modality;
 import javafx.util.StringConverter;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -33,7 +39,7 @@ import ar.com.hmu.service.UsuarioService;
 import ar.com.hmu.util.CuilUtils;
 import ar.com.hmu.util.ImageUtils;
 
-public class AbmUsuariosController implements Initializable {
+public class AbmUsuarioController implements Initializable {
 
     // Contenedor
     @FXML
@@ -66,10 +72,18 @@ public class AbmUsuariosController implements Initializable {
     @FXML private ComboBox<String> domLocalidadComboBox;
     @FXML private ComboBox<String> domProvinciaComboBox;
 
-    // Tipo de Usuario y Asignaciones
+    // Tipo de Usuario y Asignación de Roles
     @FXML private ComboBox<TipoUsuario> tipoUsuarioComboBox;
+    @FXML private CheckBox rolAgenteCheckBox;
+    @FXML private CheckBox rolJefeServicioCheckBox;
+    @FXML private CheckBox rolOficinaPersonalCheckBox;
+    @FXML private CheckBox rolDireccionCheckBox;
+
+    // Gestión de Cargo
     @FXML private ComboBox<Cargo> cargoComboBox;
     @FXML private Button gestionarCargosButton;
+
+    // Gestión de Servicio
     @FXML private ComboBox<Servicio> servicioComboBox;
     @FXML private Button gestionarServiciosButton;
 
@@ -90,6 +104,10 @@ public class AbmUsuariosController implements Initializable {
     private ObservableList<Cargo> cargosList = FXCollections.observableArrayList();
     private ObservableList<Servicio> serviciosList = FXCollections.observableArrayList();
 
+    // Inicializar el conjunto de roles
+    Set<Rol> rolesSeleccionados = new HashSet<>();
+
+    // Imagen de perfil
     private File imagenPerfilFile;
     private Image imagenPerfilOriginal;
 
@@ -399,7 +417,8 @@ public class AbmUsuariosController implements Initializable {
         gestionarServiciosButton.setDisable(!enabled);
 
         // Imagen de Perfil
-        imagenPerfilImageView.setDisable(!enabled);
+        //imagenPerfilImageView.setDisable(!enabled); //en vez de deshabilitar, establecemos imagen por defecto:
+        imagenPerfilImageView.setImage(imagenPerfilOriginal);
         cargarImagenButton.setDisable(!enabled);
         revertirImagenButton.setDisable(!enabled);
         eliminarImagenButton.setDisable(!enabled);
@@ -485,6 +504,17 @@ public class AbmUsuariosController implements Initializable {
         domProvinciaComboBox.getEditor().textProperty().addListener((observable, oldValue, newValue) -> onFormModified());
         // Checkbox "Sin numero" correspondiente al domicilio
         domSinNumeroCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> onFormModified());
+        domSinNumeroCheckBox.setOnAction(event -> {
+            if (domSinNumeroCheckBox.isSelected()) {
+                domNumeracionField.setText("0");
+                domNumeracionField.setDisable(true);
+            } else {
+                domNumeracionField.setText("");
+                domNumeracionField.setDisable(false);
+            }
+            onFormModified();
+        });
+
 
         // Listeners para botones de imagen
         cargarImagenButton.setOnAction(event -> {
@@ -548,7 +578,7 @@ public class AbmUsuariosController implements Initializable {
                     servicioComboBox.setDisable(true);
                     gestionarServiciosButton.setDisable(true);
 
-                    Cargo cargoDireccion = buscarCargoPorNumero(9999);
+                    Cargo cargoDireccion = buscarCargoPorNumero(0);
                     cargoComboBox.getSelectionModel().select(cargoDireccion);
                     cargoComboBox.setDisable(true);
                     gestionarCargosButton.setDisable(true);
@@ -754,10 +784,34 @@ public class AbmUsuariosController implements Initializable {
                 Usuario nuevoUsuario = crearOActualizarUsuarioDesdeFormulario(null);
                 if (nuevoUsuario != null) {
                     try {
-                        usuarioService.create(nuevoUsuario);
-                        usuariosList.add(nuevoUsuario);
-                        resetInterface();
-                        mostrarMensaje("Usuario agregado correctamente.");
+                        UsuarioCreationResult result = usuarioService.create(nuevoUsuario);
+                        switch (result) {
+                            case USUARIO_CREADO:
+                                usuariosList.add(nuevoUsuario);
+                                resetInterface();
+                                mostrarMensaje("Usuario agregado correctamente.");
+                                break;
+
+                            case USUARIO_ACTIVO_EXISTENTE:
+                                mostrarError("Ya existe un usuario activo con el CUIL proporcionado.");
+                                break;
+
+                            case USUARIO_DESHABILITADO_EXISTENTE:
+                                boolean reactivar = mostrarConfirmacion("El usuario con este CUIL está deshabilitado. ¿Desea reactivarlo y actualizar sus datos?");
+                                if (reactivar) {
+                                    try {
+                                        usuarioService.reactivarUsuario(nuevoUsuario);
+                                        usuariosList.add(nuevoUsuario);
+                                        resetInterface();
+                                        mostrarMensaje("Usuario reactivado y actualizado correctamente.");
+                                    } catch (ServiceException e) {
+                                        mostrarError("Error al reactivar el usuario: " + e.getMessage());
+                                    }
+                                } else {
+                                    mostrarMensaje("Operación cancelada por el usuario.");
+                                }
+                                break;
+                        }
                     } catch (ServiceException e) {
                         mostrarError("Error al agregar el usuario: " + e.getMessage());
                     }
@@ -827,6 +881,7 @@ public class AbmUsuariosController implements Initializable {
                 mostrarMensaje("Usuario modificado correctamente.");
             }
         }
+        resetInterface();
     }
 
 
@@ -854,6 +909,7 @@ public class AbmUsuariosController implements Initializable {
                 }
             });
         }
+        resetInterface();
     }
 
 
@@ -995,20 +1051,30 @@ public class AbmUsuariosController implements Initializable {
             imagenPerfilImageView.setImage(imagenPerfilOriginal);
         }
 
+        //Cargar roles en los CheckBoxes
+        rolAgenteCheckBox.setSelected(rolesSeleccionados.contains(new Rol(TipoUsuario.EMPLEADO)));
+        rolJefeServicioCheckBox.setSelected(rolesSeleccionados.contains(new Rol(TipoUsuario.JEFATURA_DE_SERVICIO)));
+        rolOficinaPersonalCheckBox.setSelected(rolesSeleccionados.contains(new Rol(TipoUsuario.OFICINA_DE_PERSONAL)));
+        rolDireccionCheckBox.setSelected(rolesSeleccionados.contains(new Rol(TipoUsuario.DIRECCION)));
+
         // Datos del domicilio
         Domicilio domicilio = usuario.getDomicilio();
         if (domicilio != null) {
             domCalleComboBox.getEditor().setText(domicilio.getCalle());
-            domNumeracionField.setText(domicilio.getNumeracion());
+            String numeracion = domicilio.getNumeracion();
+            boolean sinNumero = "0".equals(numeracion) || numeracion == null || numeracion.isEmpty();
+            domSinNumeroCheckBox.setSelected(sinNumero);
+            if (sinNumero) {
+                domNumeracionField.setText("0");
+                domNumeracionField.setDisable(true);
+            } else {
+                domNumeracionField.setText(numeracion);
+                domNumeracionField.setDisable(false);
+            }
             domBarrioComboBox.getEditor().setText(domicilio.getBarrio());
             domCiudadComboBox.getEditor().setText(domicilio.getCiudad());
             domLocalidadComboBox.getEditor().setText(domicilio.getLocalidad());
             domProvinciaComboBox.getEditor().setText(domicilio.getProvincia());
-
-            // Manejar el checkbox "Sin número"
-            boolean sinNumero = domicilio.getNumeracion() == null || domicilio.getNumeracion().isEmpty();
-            domSinNumeroCheckBox.setSelected(sinNumero);
-            domNumeracionField.setDisable(sinNumero);
         } else {
             // Limpiar campos de domicilio si no hay datos
             domCalleComboBox.getEditor().clear();
@@ -1019,6 +1085,10 @@ public class AbmUsuariosController implements Initializable {
             domProvinciaComboBox.getEditor().clear();
             domSinNumeroCheckBox.setSelected(false);
         }
+
+        // Actualizar el estado del CheckBox
+        usuarioHabilitadoCheckBox.setSelected(usuario.getEstado());
+        usuarioHabilitadoCheckBox.setDisable(true); // Deshabilitar edición
 
         // Restablecer el estado del formulario a "sin modificaciones"
         isFormModified = false;
@@ -1077,6 +1147,8 @@ public class AbmUsuariosController implements Initializable {
                 default:
                     throw new IllegalArgumentException("Tipo de usuario desconocido: " + tipoUsuarioSeleccionado);
             }
+            usuario.setEstado(true); // Nuevo usuario, estado activo por defecto
+            //aquí setear la fecha de creación
         } else {
             // Actualizar el usuario existente
             usuario = usuarioExistente;
@@ -1101,38 +1173,46 @@ public class AbmUsuariosController implements Initializable {
             return null;
         }
         usuario.setSexo(sexoComboBox.getSelectionModel().getSelectedItem());
-        usuario.setEstado(usuarioHabilitadoCheckBox.isSelected());
 
         // Asignar Cargo y Servicio
         usuario.setCargo(cargoComboBox.getSelectionModel().getSelectedItem());
         usuario.setServicio(servicioComboBox.getSelectionModel().getSelectedItem());
 
-        // Manejar casos específicos según el tipo de usuario
-        if (tipoUsuarioSeleccionado == TipoUsuario.DIRECCION) {
-            // Asignar cargo y servicio de dirección
-            Cargo cargoDireccion = buscarCargoPorNumero(9999);
-            Servicio servicioDireccion = buscarServicioPorNombre(NombreServicio.DIRECCION);
-            usuario.setCargo(cargoDireccion);
-            usuario.setServicio(servicioDireccion);
-        } else if (tipoUsuarioSeleccionado == TipoUsuario.OFICINA_DE_PERSONAL) {
-            // Asignar servicio de oficina de personal
-            Servicio servicioPersonal = buscarServicioPorNombre(NombreServicio.OFICINA_DE_PERSONAL);
-            usuario.setServicio(servicioPersonal);
-        }
-
         // Cargar imagen de perfil
-        Image image = ImageUtils.byteArrayToImage(usuario.getProfileImage());
-        if (image != null && image != imagenPerfilOriginal) {
-            byte[] imageBytes = ImageUtils.imageToByteArray(image);
+        if (imagenPerfilImageView.getImage() != null && imagenPerfilImageView.getImage() != imagenPerfilOriginal) {
+            byte[] imageBytes = ImageUtils.imageToByteArray(imagenPerfilImageView.getImage());
             usuario.setProfileImage(imageBytes);
         } else {
             usuario.setProfileImage(null);
         }
 
+        // Asignar Tipo de usuario
+        usuario.setTipoUsuario(tipoUsuarioSeleccionado);
+
+        // Agregar roles basados en los CheckBoxes
+        if (rolAgenteCheckBox.isSelected()) {
+            rolesSeleccionados.add(new Rol(TipoUsuario.EMPLEADO));
+        }
+        if (rolJefeServicioCheckBox.isSelected()) {
+            rolesSeleccionados.add(new Rol(TipoUsuario.JEFATURA_DE_SERVICIO));
+        }
+        if (rolOficinaPersonalCheckBox.isSelected()) {
+            rolesSeleccionados.add(new Rol(TipoUsuario.OFICINA_DE_PERSONAL));
+        }
+        if (rolDireccionCheckBox.isSelected()) {
+            rolesSeleccionados.add(new Rol(TipoUsuario.DIRECCION));
+        }
+
+        // Convertir Set a List si fuera necesario (prebas, después borrar si no hace falta)
+        //List<Rol> rolesList = new ArrayList<>(rolesSeleccionados);
+        usuario.setRoles(rolesSeleccionados);
+
         // Asignar domicilio
+        String numeracion = domSinNumeroCheckBox.isSelected() ? "0" : domNumeracionField.getText();
         Domicilio domicilio = new Domicilio.Builder()
+                .setId(UUID.randomUUID()) // Deberíamos verificar antes, que no hay un UUID ya generado
                 .setCalle(domCalleComboBox.getEditor().getText())
-                .setNumeracion(domNumeracionField.getText())
+                .setNumeracion(numeracion)
                 .setBarrio(domBarrioComboBox.getEditor().getText())
                 .setCiudad(domCiudadComboBox.getEditor().getText())
                 .setLocalidad(domLocalidadComboBox.getEditor().getText())
@@ -1157,6 +1237,7 @@ public class AbmUsuariosController implements Initializable {
 
         return usuario;
     }
+
 
 
     /**
@@ -1198,6 +1279,14 @@ public class AbmUsuariosController implements Initializable {
         servicioComboBox.getSelectionModel().clearSelection();
         imagenPerfilImageView.setImage(imagenPerfilOriginal);
         // Limpiar domicilio...
+        domCalleComboBox.getEditor().clear();
+        domNumeracionField.clear();
+        domNumeracionField.setDisable(false);
+        domSinNumeroCheckBox.setSelected(false);
+        domBarrioComboBox.getEditor().clear();
+        domCiudadComboBox.getEditor().clear();
+        domLocalidadComboBox.getEditor().clear();
+        domProvinciaComboBox.getEditor().clear();
     }
 
 
@@ -1231,6 +1320,17 @@ public class AbmUsuariosController implements Initializable {
         alert.setHeaderText(null);
         alert.setContentText(mensaje);
         alert.showAndWait();
+    }
+
+
+    private boolean mostrarConfirmacion(String mensaje) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmación");
+        alert.setHeaderText(null);
+        alert.setContentText(mensaje);
+
+        Optional<ButtonType> result = alert.showAndWait();
+        return result.isPresent() && result.get() == ButtonType.OK;
     }
 
     /**
@@ -1271,17 +1371,49 @@ public class AbmUsuariosController implements Initializable {
      */
     @FXML
     private void onAbmCargo(ActionEvent event) {
-        mostrarMensaje("Módulo de gestión de cargos en construcción.");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/abmCargo.fxml"));
+            Parent root = loader.load();
+
+            AbmCargoController controller = loader.getController();
+            controller.setCargoService(cargoService);
+
+            Stage stage = new Stage();
+            stage.setTitle("Gestión de Cargos");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(((Node) event.getSource()).getScene().getWindow());
+            stage.showAndWait();
+
+            // Recargar la lista de cargos después de cerrar la ventana
+            cargarCargos();
+        } catch (IOException e) {
+            AlertUtils.showErr("Error al cargar la ventana de gestión de cargos: " + e.getMessage());
+        }
     }
 
 
-    /**
-     * Eventos para gestionar servicios (en construcción)
-     * @param event Evento
-     */
     @FXML
     private void onAbmServicio(ActionEvent event) {
-        mostrarMensaje("Módulo de gestión de servicios en construcción.");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/abmServicio.fxml"));
+            Parent root = loader.load();
+
+            AbmServicioController controller = loader.getController();
+            controller.setServicioService(servicioService);
+
+            Stage stage = new Stage();
+            stage.setTitle("Gestión de Servicios");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(((Node) event.getSource()).getScene().getWindow());
+            stage.showAndWait();
+
+            // Recargar la lista de servicios después de cerrar la ventana
+            cargarServicios();
+        } catch (IOException e) {
+            AlertUtils.showErr("Error al cargar la ventana de gestión de servicios: " + e.getMessage());
+        }
     }
 
 }

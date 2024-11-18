@@ -6,14 +6,18 @@ import java.util.UUID;
 
 import ar.com.hmu.exceptions.ServiceException;
 import ar.com.hmu.model.Servicio;
+import ar.com.hmu.repository.DatabaseConnector;
 import ar.com.hmu.repository.ServicioRepository;
+import ar.com.hmu.repository.UsuarioRepository;
 
 public class ServicioService {
 
     private final ServicioRepository servicioRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    public ServicioService(ServicioRepository servicioRepository) {
+    public ServicioService(ServicioRepository servicioRepository, UsuarioRepository usuarioRepository) {
         this.servicioRepository = servicioRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     public void create(Servicio servicio) throws ServiceException {
@@ -72,6 +76,23 @@ public class ServicioService {
             throw new ServiceException("Error al contar los servicios", e);
         }
     }
+
+    public int obtenerCantidadUsuariosPorServicio(UUID servicioId) throws ServiceException {
+        try {
+            return usuarioRepository.countUsuariosByServicio(servicioId);
+        } catch (SQLException e) {
+            throw new ServiceException("Error al obtener la cantidad de usuarios del servicio", e);
+        }
+    }
+
+    public String obtenerApellidoJefePorServicio(UUID servicioId) throws ServiceException {
+        try {
+            return usuarioRepository.getApellidoJefeByServicio(servicioId);
+        } catch (SQLException e) {
+            throw new ServiceException("Error al obtener el apellido del jefe del servicio", e);
+        }
+    }
+
 
 }
 

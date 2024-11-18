@@ -113,15 +113,17 @@
                       <Menu mnemonicParsing="false" text="Reportes">
                         <items>
                               <MenuItem mnemonicParsing="false" text="Módulo de Reportes" />
-                              <MenuItem mnemonicParsing="false" text="Listado de Agentes" />
-                              <MenuItem mnemonicParsing="false" text="Listado de Servicios" />
+                              <MenuItem fx:id="listadoAgentesMenuItem" mnemonicParsing="false" text="Listado de Agentes" />
+                              <MenuItem fx:id="listadoServiciosMenuItem" mnemonicParsing="false" text="Listado de Servicios" />
                               <MenuItem mnemonicParsing="false" text="Consulta de Diagramas de Servicios" />
                         </items>
                       </Menu>
                         <Menu mnemonicParsing="false" text="Altas, Bajas y Modificaciones">
                            <items>
-                              <MenuItem mnemonicParsing="false" text="ABM de Agentes" />
-                              <MenuItem mnemonicParsing="false" text="ABM de Servicios" />
+                              <MenuItem fx:id="abmAgentesMenuItem" mnemonicParsing="false" text="ABM de Agentes" />
+                              <MenuItem fx:id="abmServiciosMenuItem" mnemonicParsing="false" text="ABM de Servicios" />
+                              <MenuItem fx:id="abmCargosMenuItem" mnemonicParsing="false" text="ABM de Cargos" />
+                              <MenuItem mnemonicParsing="false" text="ABM de Códigos de Novedades" />
                            </items>
                         </Menu>
                   </items>
@@ -590,7 +592,7 @@
                         </Text>
                      </children>
                   </VBox>
-                  <VBox fx:id="listadoDeAgentesVBox" alignment="TOP_CENTER" styleClass="mosaic">
+                  <VBox fx:id="listadoDeAgentesVBox" alignment="TOP_CENTER" onMouseClicked="#handleListadoDeAgentes" styleClass="mosaic">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>
@@ -636,7 +638,7 @@
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                      </TilePane.margin>
                   </VBox>
-                  <VBox fx:id="listadoDeServiciosVBox" alignment="TOP_CENTER" styleClass="mosaic">
+                  <VBox fx:id="listadoDeServiciosVBox" alignment="TOP_CENTER" onMouseClicked="#handleListadoDeServicios" styleClass="mosaic">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>

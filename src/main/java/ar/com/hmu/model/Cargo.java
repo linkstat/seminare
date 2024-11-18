@@ -1,6 +1,5 @@
 package ar.com.hmu.model;
 
-
 import java.util.UUID;
 
 /**
@@ -12,6 +11,9 @@ public class Cargo {
 	private Integer numero;
 	private String descripcion;
 	private Agrupacion agrupacion;
+
+	public Cargo() {
+	}
 
 	public Cargo(UUID id, Integer numero, String descripcion, Agrupacion agrupacion) {
 		this.id = id;

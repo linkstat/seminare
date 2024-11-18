@@ -2,6 +2,9 @@ package ar.com.hmu.util;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
+
+import java.util.Optional;
 
 /**
  * Utilidad para mostrar alertas emergentes en una aplicación JavaFX.
@@ -53,4 +56,15 @@ public class AlertUtils {
     public static void showInfo(String content) {
         showAlert(AlertType.INFORMATION, "Información", null, content);
     }
+
+    public static boolean showConfirm(String message) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmación");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+
+        Optional<ButtonType> result = alert.showAndWait();
+        return result.isPresent() && result.get() == ButtonType.OK;
+    }
+
 }

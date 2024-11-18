@@ -1,10 +1,7 @@
 package ar.com.hmu.model;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import ar.com.hmu.constants.TipoUsuario;
 import ar.com.hmu.util.PasswordUtils;
@@ -90,6 +87,10 @@ public abstract class Usuario {
 
 	public String getNombreCompleto() {
 		return nombres + " " + apellidos;
+	}
+
+	public String getApellidosNombres() {
+		return apellidos + ", " + nombres;
 	}
 
 	public Sexo getSexo() {
@@ -251,6 +252,10 @@ public abstract class Usuario {
 
 	public void setRoles(List<Rol> roles) {
 		this.roles = roles;
+	}
+
+	public void setRoles(Set<Rol> roles) {
+		this.roles = new ArrayList<>(roles);
 	}
 
 	public void addRol(Rol rol) {

@@ -81,6 +81,7 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
 
             while (rs.next()) {
                 domicilios.add(new Domicilio.Builder()
+                        .setId(UUID.fromString(rs.getString("id")))
                         .setCalle(rs.getString("calle"))
                         .setNumeracion(rs.getString("numeracion"))
                         .setBarrio(rs.getString("barrio"))
