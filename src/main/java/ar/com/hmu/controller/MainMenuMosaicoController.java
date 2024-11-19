@@ -388,10 +388,13 @@ public class MainMenuMosaicoController {
 
 
     private void handleLogoutAction() {
-        // Clean up resources
+        //Guardar propiedades de ventana
+        saveWindowPreferences();
+
+        // Limpieza de recursos
         cleanup();
 
-        // Proceed with logout
+        // Cerrar la sesión
         handleLogout((Stage) logoutButton.getScene().getWindow());
     }
 
