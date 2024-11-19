@@ -132,9 +132,11 @@ public class DatabaseConnector {
                     "ping -n 1 " + host :
                     "ping -c 1 " + host;
 
-            Process process = Runtime.getRuntime().exec(command);
-            int returnVal = process.waitFor();
-            return (returnVal == 0);
+            ProcessBuilder processBuilder = new ProcessBuilder();
+            processBuilder.command(command.split(" ")); // Divide el comando en partes
+            Process process = processBuilder.start(); // Inicia el proceso
+            int returnVal = process.waitFor(); // Espera a que el proceso termine
+            return (returnVal == 0); // Retorna true si el comando se ejecuta con éxito
         } catch (IOException | InterruptedException e) {
             return false; // Ping fallido
         }

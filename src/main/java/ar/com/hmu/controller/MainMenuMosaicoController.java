@@ -3,6 +3,7 @@ package ar.com.hmu.controller;
 import java.io.IOException;
 
 import ar.com.hmu.service.*;
+import ar.com.hmu.util.*;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -23,11 +24,7 @@ import ar.com.hmu.constants.TipoUsuario;
 import ar.com.hmu.exceptions.ServiceException;
 import ar.com.hmu.model.Usuario;
 import ar.com.hmu.repository.*;
-import ar.com.hmu.util.AlertUtils;
-import ar.com.hmu.util.AppInfo;
-import ar.com.hmu.util.PasswordDialogUtils;
-import ar.com.hmu.util.PreferencesManager;
-import ar.com.hmu.util.SessionUtils;
+
 import static ar.com.hmu.util.SessionUtils.handleLogout;
 import static ar.com.hmu.util.ServerStatusUtils.*;
 
@@ -140,6 +137,8 @@ public class MainMenuMosaicoController {
     private MainMenuMosaicoService mainMenuMosaicoService;  // Servicio para gestionar la lógica del menú principal
     private DatabaseConnector databaseConnector;  // Necesario para la verificación del estado del servidor.
 
+    private ServerStatusUtils serverStatusUtils;
+
     // Repositorios
     private DomicilioRepository domicilioRepository;
     private CargoRepository cargoRepository;
@@ -232,8 +231,9 @@ public class MainMenuMosaicoController {
         if (databaseConnector == null) {
             throw new IllegalStateException("MainMenuMosaicoController: DatabaseConnector no está configurado. No se puede verificar el estado del servidor.");
         }
-        updateServerStatusUI(databaseConnector, serverStatusLabel, serverStatusIcon);
-        startPeriodicServerCheck(databaseConnector, serverStatusLabel, serverStatusIcon);
+        serverStatusUtils = new ServerStatusUtils(databaseConnector, serverStatusLabel, serverStatusIcon);
+        serverStatusUtils.updateServerStatusUI();
+        serverStatusUtils.startPeriodicServerCheck();
 
         // Configurar el evento de cierre de la ventana
         this.stage.setOnCloseRequest(event -> saveWindowPreferences());

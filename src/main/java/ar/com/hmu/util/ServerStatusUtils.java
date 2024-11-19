@@ -16,45 +16,28 @@ import ar.com.hmu.repository.DatabaseConnector;
 
 public class ServerStatusUtils {
 
-    private static Timeline serverCheckTimeline;
-    private static int checkIntervalInSeconds = 4;  // Intervalo inicial de 4 segundos
+    private Timeline serverCheckTimeline;
+    private int checkIntervalInSeconds = 4;  // Intervalo inicial de 4 segundos
+    private DatabaseConnector databaseConnector;
+    private Label statusLabel;
+    private ImageView statusIcon;
 
-    /**
-     * Ajusta el intervalo de chequeo según el estado del servidor.
-     *
-     * @param serverIsFunctional true si el servidor está operativo; false si hay algún problema.
-     * @param databaseConnector  el conector de base de datos para verificar la conectividad.
-     * @param statusLabel        el Label donde se muestra el estado del servidor.
-     * @param statusIcon         el ImageView donde se muestra el ícono del estado del servidor.
-     */
-    public static void adjustCheckInterval(boolean serverIsFunctional, DatabaseConnector databaseConnector, Label statusLabel, ImageView statusIcon) {
-        if (serverIsFunctional) {
-            checkIntervalInSeconds = 16; // Si el servidor está en línea y funcional, aumentar el intervalo de chequeo a 16 segundos
-        } else {
-            checkIntervalInSeconds = 4;  // Si el servidor tiene problemas, reducir el intervalo de chequeo a 4 segundos
-        }
 
-        if (serverCheckTimeline != null) {
-            serverCheckTimeline.stop();
-            serverCheckTimeline.getKeyFrames().setAll(new KeyFrame(Duration.seconds(checkIntervalInSeconds), event -> {
-                boolean updatedServerStatus = updateServerStatusUI(databaseConnector, statusLabel, statusIcon);
-                adjustCheckInterval(updatedServerStatus, databaseConnector, statusLabel, statusIcon);
-            }));
-            serverCheckTimeline.play();
-        }
+    public ServerStatusUtils(DatabaseConnector databaseConnector, Label statusLabel, ImageView statusIcon) {
+        this.databaseConnector = databaseConnector;
+        this.statusLabel = statusLabel;
+        this.statusIcon = statusIcon;
     }
+
 
     /**
      * Inicia un chequeo periódico del estado del servidor con un intervalo dinámico.
      *
-     * @param databaseConnector conector de base de datos para verificar la conectividad.
-     * @param statusLabel       el Label donde se muestra el estado del servidor.
-     * @param statusIcon        el ImageView donde se muestra el ícono del estado del servidor.
      */
-    public static void startPeriodicServerCheck(DatabaseConnector databaseConnector, Label statusLabel, ImageView statusIcon) {
+    public void startPeriodicServerCheck() {
         serverCheckTimeline = new Timeline(new KeyFrame(Duration.seconds(checkIntervalInSeconds), event -> {
-            boolean serverIsFunctional = updateServerStatusUI(databaseConnector, statusLabel, statusIcon);
-            adjustCheckInterval(serverIsFunctional, databaseConnector, statusLabel, statusIcon);
+            boolean serverIsFunctional = updateServerStatusUI();
+            adjustCheckInterval(serverIsFunctional);
         }));
         serverCheckTimeline.setCycleCount(Timeline.INDEFINITE); // Se ejecuta indefinidamente
         serverCheckTimeline.play(); // Inicia el Timeline
@@ -63,12 +46,9 @@ public class ServerStatusUtils {
     /**
      * Verifica el estado del servidor y actualiza el Label e ícono correspondientes.
      *
-     * @param databaseConnector conector de base de datos para verificar la conectividad.
-     * @param statusLabel       el Label donde se muestra el estado del servidor.
-     * @param statusIcon        el ImageView donde se muestra el ícono del estado del servidor.
      * @return true si el servidor está en línea y funcional, false si hay algún problema.
      */
-    public static boolean updateServerStatusUI(DatabaseConnector databaseConnector, Label statusLabel, ImageView statusIcon) {
+    public boolean updateServerStatusUI() {
         if (databaseConnector != null) {
             try {
                 // Llamamos al método checkServerStatus() para obtener el estado del servidor
@@ -126,6 +106,36 @@ public class ServerStatusUtils {
             statusLabel.setStyle(DatabaseConnectorStatus.NULL_DB_CONNECTOR_STYLE);
             statusIcon.setImage(new Image(Objects.requireNonNull(ServerStatusUtils.class.getResourceAsStream(DatabaseConnectorStatus.NULL_DB_CONNECTOR_ICON))));
             return false;
+        }
+    }
+
+
+    public void stop() {
+        if (serverCheckTimeline != null) {
+            serverCheckTimeline.stop();
+        }
+    }
+
+
+    /**
+     * Ajusta el intervalo de chequeo según el estado del servidor.
+     *
+     * @param serverIsFunctional true si el servidor está operativo; false si hay algún problema.
+     */
+    private void adjustCheckInterval(boolean serverIsFunctional) {
+        if (serverIsFunctional) {
+            checkIntervalInSeconds = 16; // Si el servidor está en línea y funcional, aumentar el intervalo de chequeo a 16 segundos
+        } else {
+            checkIntervalInSeconds = 4;  // Si el servidor tiene problemas, reducir el intervalo de chequeo a 4 segundos
+        }
+
+        if (serverCheckTimeline != null) {
+            serverCheckTimeline.stop();
+            serverCheckTimeline.getKeyFrames().setAll(new KeyFrame(Duration.seconds(checkIntervalInSeconds), event -> {
+                boolean updatedServerStatus = updateServerStatusUI();
+                adjustCheckInterval(updatedServerStatus);
+            }));
+            serverCheckTimeline.play();
         }
     }
 
