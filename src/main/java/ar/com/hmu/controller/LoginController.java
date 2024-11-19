@@ -3,6 +3,7 @@ package ar.com.hmu.controller;
 import java.io.IOException;
 import java.util.Arrays;
 
+import ar.com.hmu.util.*;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -17,13 +18,8 @@ import ar.com.hmu.auth.LoginService;
 import ar.com.hmu.model.Usuario;
 import ar.com.hmu.service.UsuarioService;
 import ar.com.hmu.repository.*;
-import ar.com.hmu.util.AlertUtils;
-import ar.com.hmu.util.AppInfo;
-import ar.com.hmu.util.CuilUtils;
-import ar.com.hmu.util.PasswordDialogUtils;
+
 import static ar.com.hmu.util.ServerStatusUtils.*;
-import ar.com.hmu.util.SessionUtils;
-import ar.com.hmu.util.PreferencesManager;
 
 /**
  * Controlador encargado de gestionar la interfaz de usuario de la pantalla de login.
@@ -68,6 +64,7 @@ public class LoginController {
     private DatabaseConnector databaseConnector;  // DatabaseConnector para la verificación del estado del servidor de BD
     private RolRepository rolRepository;
     private UsuarioService usuarioService; // objeto para persistencia en la BD
+    private ServerStatusUtils serverStatusUtils;
 
     /**
      * Método para establecer el {@link LoginService} que se utilizará para la autenticación.
@@ -150,11 +147,13 @@ public class LoginController {
      */
     public void postInitialize() {
 
-        // Verificar estado del servidor
-        updateServerStatusUI(databaseConnector, serverStatusLabel, serverStatusIcon);
-        if (databaseConnector == null || loginService == null) {
-            throw new IllegalStateException("Las dependencias no han sido configuradas correctamente.");
+        // Actualizar el estado del servidor y comenzar el chequeo periódico
+        if (databaseConnector == null) {
+            throw new IllegalStateException("MainMenuMosaicoController: DatabaseConnector no está configurado. No se puede verificar el estado del servidor.");
         }
+        serverStatusUtils = new ServerStatusUtils(databaseConnector, serverStatusLabel, serverStatusIcon);
+        serverStatusUtils.updateServerStatusUI();
+        serverStatusUtils.startPeriodicServerCheck();
 
         // Inicialización de repositorios
         ServicioRepository servicioRepository = new ServicioRepository(databaseConnector);
@@ -165,9 +164,16 @@ public class LoginController {
         // Inicialización de UsuarioService con el constructor unificado
         this.usuarioService = new UsuarioService(usuarioRepository, servicioRepository, cargoRepository, domicilioRepository);
 
+    }
 
-        boolean isServerUp = updateServerStatusUI(databaseConnector, serverStatusLabel, serverStatusIcon);  // Actualizar el estado del servidor
-        startPeriodicServerCheck(databaseConnector, serverStatusLabel, serverStatusIcon);  // Iniciar chequeo periódico del servidor
+
+    /**
+     * Opcionalmente, parar el chequeo de estado del servidor cuando el se elimine el controlador
+     */
+    public void cleanup() {
+        if (serverStatusUtils != null) {
+            serverStatusUtils.stop();
+        }
     }
 
 
@@ -329,6 +335,9 @@ public class LoginController {
                             () -> SessionUtils.handleLogout((Stage) loginButton.getScene().getWindow()) // Callback para cerrar la sesión si se cancela
                     );
                 } else {
+                    // Realizar limpieza (actualmente, detener la verificación de estado de servidor)
+                    cleanup();
+
                     // Continuar al menú principal
                     showMainMenu(usuario);
                 }

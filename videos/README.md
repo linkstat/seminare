@@ -1,6 +1,7 @@
 # Video de Presentación del Proyecto
 
 Este directorio contiene el video demostrativo que ilustra el funcionamiento del proyecto en sus primeras fases de desarrollo. 
+[Video-Toma-1](https://youtu.be/VcM4n_cIZRA)
 
 ## Contenido del Video
 
@@ -25,7 +26,7 @@ Además, el video incluye referencias breves al código fuente utilizado para im
 ## Acceso al Video
 
 Puedes visualizar el video directamente desde este enlace:  
-[Ver Video](https://github.com/linkstat/seminare/tree/main/videos)
+[Ver Video en YouTube](https://youtu.be/VcM4n_cIZRA)
 
 ---
 

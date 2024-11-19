@@ -2,13 +2,16 @@ package ar.com.hmu.util;
 
 import ar.com.hmu.auth.LoginService;
 import ar.com.hmu.config.AppConfigReader;
+import ar.com.hmu.controller.MainMenuMosaicoController;
 import ar.com.hmu.repository.*;
 import ar.com.hmu.controller.LoginController;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import java.io.IOException;
+import java.util.Objects;
 
 public class SessionUtils {
 
@@ -46,6 +49,9 @@ public class SessionUtils {
             stage.setTitle("Inicio de sesión" + " :: " + AppInfo.PRG_LONG_TITLE);
             stage.setResizable(false);
 
+            // Establecer el ícono de la aplicación
+            setStageIcon(stage, AppInfo.ICON_IMAGE);
+
             Scene scene = new Scene(root);
             stage.setScene(scene);
 
@@ -58,6 +64,21 @@ public class SessionUtils {
         } catch (IOException e) {
             e.printStackTrace();
             AlertUtils.showErr("Error al cargar la pantalla de inicio de sesión:\n" + e.getMessage());
+        }
+    }
+
+    private static void setStageIcon(Stage stage, String iconPath) {
+        try {
+            Image icon = new Image(Objects.requireNonNull(
+                    SessionUtils.class.getResourceAsStream(iconPath)
+            ));
+            if (icon.isError()) {
+                throw new IllegalArgumentException("Error al cargar el icono: " + iconPath);
+            }
+            stage.getIcons().add(icon);
+        } catch (Exception e) {
+            e.printStackTrace(); // Imprimir mensaje completo del error por consola
+            System.err.println("No se pudo establecer el icono: " + e.getMessage());
         }
     }
 

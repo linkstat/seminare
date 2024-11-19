@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ar.com.hmu</groupId>
@@ -8,8 +8,9 @@
 
     <properties>
         <!-- Java version -->
-        <maven.compiler.source>23</maven.compiler.source>
-        <maven.compiler.target>23</maven.compiler.target>
+        <java.version>23.0.1</java.version>
+        <maven.compiler.source>23.0.1</maven.compiler.source>
+        <maven.compiler.target>23.0.1</maven.compiler.target>
     </properties>
 
     <dependencies>
@@ -45,7 +46,7 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
-            <version>5.8.0</version>
+            <version>6.3.2</version>
         </dependency>
         <!-- SnakeYAML Dependencies -->
         <dependency>
@@ -80,6 +81,10 @@
                 <version>0.0.8</version>
                 <executions>
                     <execution>
+                        <id>default-cli</id>
+                        <configuration>
+                            <mainClass>ar.com.hmu.ui.LoginScreen</mainClass>
+                        </configuration>
                         <goals>
                             <goal>run</goal>
                         </goals>
