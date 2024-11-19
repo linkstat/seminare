@@ -71,11 +71,20 @@ public class DatabaseConnector {
         try {
             return DriverManager.getConnection(url, dbUser, dbPass);
         } catch (SQLException e) {
-            if (e.getMessage().contains("Unable to obtain Principal Name for authentication")) {
-                String exceptionMessage = "Error de autenticación: No se pudo autenticar con el servidor de base de datos " +dbType + " en " +dbHost +":" +dbPort +" con el usuario " +dbName +". Verificar credenciales en el archivo de configuración YAML.";
+            String sqlState = e.getSQLState();
+            int errorCode = e.getErrorCode();
+
+            if ("28000".equals(sqlState) && errorCode == 1045) {
+                // Authentication error
+                String exceptionMessage = "Error de autenticación: No se pudo autenticar con el servidor de base de datos "
+                        + dbType + " en " + dbHost + ":" + dbPort + " con el usuario '" + dbUser
+                        + "'. Verificar credenciales en el archivo de configuración YAML.";
                 throw new DatabaseAuthenticationException(exceptionMessage, e, DatabaseErrorType.AUTHENTICATION_FAILURE);
             } else {
-                throw new DatabaseConnectionException(e, dbHost, dbPort, dbName, dbUser);
+                // Other SQL exceptions
+                String exceptionMessage = "Error al conectar a la base de datos '" + dbName + "' en " + dbHost + ":" + dbPort
+                        + " para el usuario '" + dbUser + "'. Revisa el archivo de configuración 'config.yaml'";
+                throw new DatabaseConnectionException(exceptionMessage, e, dbHost, dbPort, dbName, dbUser);
             }
         }
     }
@@ -107,10 +116,8 @@ public class DatabaseConnector {
      * @return true si el puerto del servicio de BD está abierto y accesible; false si no lo está.
      */
     public boolean isDatabaseServiceAvailable() {
-        String host = this.dbHost;
-        int port = this.dbPort;
         try (Socket socket = new Socket()) {
-            socket.connect(new InetSocketAddress(host, port), 2000); // Timeout de 2 segundos
+            socket.connect(new InetSocketAddress(this.dbHost, this.dbPort), 2000); // Timeout of 2 seconds
             return true; // Conexión exitosa
         } catch (IOException e) {
             return false; // Conexión fallida
@@ -160,23 +167,37 @@ public class DatabaseConnector {
      * </ul>
      */
     public String[] checkServerStatus() {
-        // Nivel 1: Intentar conexión con las credenciales
-        if (canConnectToDatabase()) {
-            return new String[] {DatabaseConnectorStatus.FUNCTIONAL_MSG, DatabaseConnectorStatus.FUNCTIONAL_COLOR, DatabaseConnectorStatus.FUNCTIONAL_ICON};
+        // Intentar conexión con las credenciales
+        try (Connection connection = getConnection()) {
+            // Conexión exitosa
+            return new String[] {
+                DatabaseConnectorStatus.FUNCTIONAL_MSG,
+                DatabaseConnectorStatus.FUNCTIONAL_COLOR,
+                DatabaseConnectorStatus.FUNCTIONAL_ICON
+            };
+        } catch (DatabaseAuthenticationException e) {
+            // Error de autenticación
+            return new String[] {
+                    DatabaseConnectorStatus.AUTH_PROBLEM_MSG,
+                    DatabaseConnectorStatus.AUTH_PROBLEM_COLOR,
+                    DatabaseConnectorStatus.AUTH_PROBLEM_ICON
+            };
+        } catch (DatabaseConnectionException e) {
+            // Error de conexión
+            return new String[] {
+                    DatabaseConnectorStatus.DB_SERVICE_PROBLEM_MSG,
+                    DatabaseConnectorStatus.DB_SERVICE_PROBLEM_COLOR,
+                    DatabaseConnectorStatus.DB_SERVICE_PROBLEM_ICON
+            };
+        } catch (Exception e) {
+            // Error desconocido
+            return new String[] {
+                    DatabaseConnectorStatus.UNKNOWN_ERROR_MSG,
+                    DatabaseConnectorStatus.UNKNOWN_ERROR_STYLE,
+                    DatabaseConnectorStatus.UNKNOWN_ERROR_ICON
+            };
         }
-
-        // Nivel 2: Si la conexión con las credenciales falla, intentamos conectar al puerto directamente
-        if (isDatabaseServiceAvailable()) {
-            return new String[] {DatabaseConnectorStatus.AUTH_PROBLEM_MSG, DatabaseConnectorStatus.AUTH_PROBLEM_COLOR, DatabaseConnectorStatus.AUTH_PROBLEM_ICON};
-        }
-
-        // Nivel 3: Si la conexión al puerto falla, intentamos un ping ICMP
-        if (isHostReachable()) {
-            return new String[] {DatabaseConnectorStatus.DB_SERVICE_PROBLEM_MSG, DatabaseConnectorStatus.DB_SERVICE_PROBLEM_COLOR, DatabaseConnectorStatus.DB_SERVICE_PROBLEM_ICON};
-        }
-
-        // Si ninguna verificación tiene éxito, el servidor está completamente fuera de línea
-        return new String[] {DatabaseConnectorStatus.UNREACHABLE_SERVER_MSG, DatabaseConnectorStatus.UNREACHABLE_SERVER_COLOR, DatabaseConnectorStatus.UNREACHABLE_SERVER_ICON};
     }
+
 
 }

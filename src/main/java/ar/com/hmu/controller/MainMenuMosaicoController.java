@@ -243,6 +243,15 @@ public class MainMenuMosaicoController {
 
     }
 
+    /**
+     * Método que detiene el verificador de estado del servidor.
+     * La idea, es llamar a este método cuando se vaya a eliminar el controlador
+     */
+    public void cleanup() {
+        if (serverStatusUtils != null) {
+            serverStatusUtils.stop();
+        }
+    }
 
     /**
      * Método que configura el tamaño de la ventana al momento de cerrarse.
@@ -373,9 +382,19 @@ public class MainMenuMosaicoController {
         abmServiciosVBox.setOnMouseClicked(this::handleAbmServicios);
 
         // Configura la funcionalidad del botón "Cerrar sesión"
-        logoutButton.setOnAction(event -> handleLogout((Stage) logoutButton.getScene().getWindow()));
+        logoutButton.setOnAction(event -> handleLogoutAction());
 
     }
+
+
+    private void handleLogoutAction() {
+        // Clean up resources
+        cleanup();
+
+        // Proceed with logout
+        handleLogout((Stage) logoutButton.getScene().getWindow());
+    }
+
 
     /**
      * Maneja la opción "Modificar Contraseña" abriendo una nueva ventana para cambiar la contraseña.

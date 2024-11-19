@@ -164,9 +164,6 @@ public class LoginController {
         // Inicialización de UsuarioService con el constructor unificado
         this.usuarioService = new UsuarioService(usuarioRepository, servicioRepository, cargoRepository, domicilioRepository);
 
-        //TODO: Borrarme
-        //boolean isServerUp = updateServerStatusUI(databaseConnector, serverStatusLabel, serverStatusIcon);  // Actualizar el estado del servidor
-        //startPeriodicServerCheck(databaseConnector, serverStatusLabel, serverStatusIcon);  // Iniciar chequeo periódico del servidor
     }
 
 
@@ -338,6 +335,9 @@ public class LoginController {
                             () -> SessionUtils.handleLogout((Stage) loginButton.getScene().getWindow()) // Callback para cerrar la sesión si se cancela
                     );
                 } else {
+                    // Realizar limpieza (actualmente, detener la verificación de estado de servidor)
+                    cleanup();
+
                     // Continuar al menú principal
                     showMainMenu(usuario);
                 }
