@@ -2,6 +2,7 @@ package ar.com.hmu.model;
 
 import ar.com.hmu.constants.TipoUsuario;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class Rol {
@@ -66,12 +67,11 @@ public class Rol {
         if (this == obj) return true;
         if (!(obj instanceof Rol)) return false;
         Rol other = (Rol) obj;
-        return tipoUsuario == other.tipoUsuario;
+        return Objects.equals(id, other.id);
     }
 
     @Override
     public int hashCode() {
-        return tipoUsuario != null ? tipoUsuario.hashCode() : 0;
+        return Objects.hash(id);
     }
-
 }

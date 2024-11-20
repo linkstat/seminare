@@ -1,25 +1,23 @@
 package ar.com.hmu.auth;
 
-import ar.com.hmu.model.Usuario;
-import ar.com.hmu.repository.UsuarioRepository;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import java.sql.SQLException;
 import java.util.Arrays;
+
+import org.springframework.security.crypto.bcrypt.BCrypt;
+
+import ar.com.hmu.exceptions.ServiceException;
+import ar.com.hmu.model.Usuario;
+import ar.com.hmu.service.UsuarioService;
 
 /**
  * Servicio que gestiona la lógica de negocio relacionada con el inicio de sesión de usuarios.
  */
 public class LoginService {
 
-    private UsuarioRepository usuarioRepository;
+    private UsuarioService usuarioService;
 
-    /**
-     * Constructor que inicializa el `LoginService` con un objeto {@link UsuarioRepository}.
-     *
-     * @param usuarioRepository el repositorio de usuarios.
-     */
-    public LoginService(UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
+    public LoginService(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
     }
 
     /**
@@ -33,8 +31,7 @@ public class LoginService {
     public boolean validateUser(long cuil, char[] passwordCharArray) throws SQLException {
         String rawPassword = null;
         try {
-            String storedHash = usuarioRepository.findPasswordByCuil(cuil);
-
+            String storedHash = usuarioService.findPasswordByCuil(cuil);
             if (storedHash == null) {
                 return false; // Usuario no encontrado
             }
@@ -49,23 +46,23 @@ public class LoginService {
 
             return passwordMatches;
 
-        } catch (SQLException e) {
-            throw new SQLException("Error al conectar con la base de datos para validar el usuario", e);
+        } catch (ServiceException e) {
+            throw new RuntimeException("Error al validar el usuario contra la base de datos", e);
         } finally {
             // Limpiar el char[] para evitar que la contraseña quede en la memoria
             if (passwordCharArray != null) {
                 Arrays.fill(passwordCharArray, '\0');
             }
-
             // Limpiar el String para evitar que la contraseña en crudo permanezca en la memoria
-            rawPassword = null; // El garbage collector eventualmente lo eliminará
+            if (rawPassword != null) {
+                rawPassword = null;  // El garbage collector eventualmente lo eliminará
+            }
+
         }
-
     }
 
-    public Usuario getUsuarioByCuil(long cuil) throws SQLException {
-        return usuarioRepository.findUsuarioByCuil(cuil);
+    public Usuario getUsuarioByCuil(long cuil) throws ServiceException {
+        return usuarioService.findUsuarioByCuil(cuil);
     }
-
 
 }

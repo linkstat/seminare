@@ -151,6 +151,7 @@ public class MainMenuMosaicoController {
     private CargoService cargoService;
     private ServicioService servicioService;
     private DomicilioService domicilioService;
+    private RolService rolService;
 
     private Usuario usuarioActual;
     private Stage stage;  // Necesario para guardar las propiedades de ventana (asi lo llamo desde LoginController)
@@ -165,6 +166,18 @@ public class MainMenuMosaicoController {
 
 
 
+    public void setDatabaseConnector(DatabaseConnector databaseConnector) {
+        this.databaseConnector = databaseConnector;
+    }
+
+    public void setServices(UsuarioService usuarioService, CargoService cargoService, ServicioService servicioService, DomicilioService domicilioService, RolService rolService) {
+        this.usuarioService = usuarioService;
+        this.cargoService = cargoService;
+        this.servicioService = servicioService;
+        this.domicilioService = domicilioService;
+        this.rolService = rolService;
+    }
+
     /**
      * Inicializa los componentes después de que el archivo FXML ha sido cargado.
      */
@@ -177,26 +190,11 @@ public class MainMenuMosaicoController {
      * Establece el usuario actual y actualiza la interfaz gráfica con sus datos.
      *
      * @param usuario El usuario que ha iniciado sesión.
-     * @param databaseConnector   El conector de la base de datos.
      * @param stage               El Stage principal de la aplicación.
      */
-    public void postInitialize(Usuario usuario, DatabaseConnector databaseConnector, RolRepository rolRepository, Stage stage) {
+    public void postInitialize(Usuario usuario, Stage stage) {
         this.usuarioActual = usuario;
-        this.databaseConnector = databaseConnector;
-        this.rolRepository = rolRepository;
         this.stage = stage;  // Guardo la referencia al Stage
-
-        // Inicialización de repositorios
-        this.usuarioRepository = new UsuarioRepository(databaseConnector, rolRepository);
-        this.servicioRepository = new ServicioRepository(databaseConnector);
-        this.cargoRepository = new CargoRepository(databaseConnector);
-        this.domicilioRepository = new DomicilioRepository(databaseConnector);
-
-        // Inicialización de servicios con los repositorios necesarios
-        this.usuarioService = new UsuarioService(usuarioRepository, servicioRepository, cargoRepository, domicilioRepository);
-        this.cargoService = new CargoService(cargoRepository);
-        this.servicioService = new ServicioService(servicioRepository, usuarioRepository);
-        this.domicilioService = new DomicilioService(domicilioRepository);
 
         this.mainMenuMosaicoService = new MainMenuMosaicoService(usuario);
 
@@ -432,13 +430,14 @@ public class MainMenuMosaicoController {
             CargoService cargoService = this.cargoService;
             ServicioService servicioService = this.servicioService;
             DomicilioService domicilioService = this.domicilioService;
+            RolService rolService = this.rolService;
 
             // Configurar la fábrica de controladores
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/abmUsuario.fxml"));
             loader.setControllerFactory(controllerClass -> {
                 if (controllerClass == AbmUsuarioController.class) {
                     AbmUsuarioController controller = new AbmUsuarioController();
-                    controller.setServices(usuarioService, cargoService, servicioService, domicilioService);
+                    controller.setServices(usuarioService, cargoService, servicioService, domicilioService, rolService);
                     return controller;
                 } else {
                     // Manejo predeterminado
@@ -454,15 +453,14 @@ public class MainMenuMosaicoController {
             Parent abmUsuariosRoot = loader.load();
 
             // Crear una nueva escena y un nuevo Stage (ventana)
-            Stage stage = new Stage();
+            Stage stage = new Stage();  // Alternativa, que es lo mismo:  stage.setScene(new Scene(root))
             Scene scene = new Scene(abmUsuariosRoot);
             stage.setScene(scene);
             stage.setTitle("Alta, Baja y Modificación de Agentes" + " :: " + AppInfo.PRG_LONG_TITLE);
             stage.initModality(Modality.WINDOW_MODAL);
-            stage.initOwner(abmAgentesVBox.getScene().getWindow()); // Con esto, establecemos la ventana actual como propietaria, evitando múltiples instancias
-
+            stage.initOwner(((Node) event.getSource()).getScene().getWindow()); // Con esto, establecemos la ventana actual como propietaria, evitando múltiples instancias. Supuestamente, es mejor que lo que hacía antes:  stage.initOwner(abmAgentesVBox.getScene().getWindow());
             // Mostrar la nueva ventana
-            stage.show();
+            stage.show();  // También se sugiere el uso de:  stage.showAndWait(), lo que tal vez por ahí estaría bueno en conjunto con:  stage.initModality(Modality.WINDOW_MODAL)
         } catch (IOException e) {
             // Mostrar un error si no se puede cargar la vista
             AlertUtils.showErr("Error al cargar la pantalla de ABM de Usuarios: " + e.getMessage());
@@ -485,7 +483,7 @@ public class MainMenuMosaicoController {
             stage.setTitle("Gestión de Cargos");
             stage.setScene(new Scene(root));
             stage.initModality(Modality.APPLICATION_MODAL);
-            stage.initOwner(stage); // Reemplaza 'stage' con tu Stage principal
+            stage.initOwner(stage);
             stage.showAndWait();
         } catch (IOException e) {
             AlertUtils.showErr("Error al cargar la ventana de gestión de cargos: " + e.getMessage());
@@ -547,7 +545,7 @@ public class MainMenuMosaicoController {
             stage.setTitle("Gestión de Servicios");
             stage.setScene(new Scene(root));
             stage.initModality(Modality.APPLICATION_MODAL);
-            stage.initOwner(stage); // Reemplaza 'stage' con tu Stage principal
+            stage.initOwner(stage);
             stage.showAndWait();
         } catch (IOException e) {
             AlertUtils.showErr("Error al cargar la ventana de gestión de servicios: " + e.getMessage());

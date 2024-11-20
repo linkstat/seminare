@@ -7,10 +7,7 @@ import java.util.UUID;
 
 import ar.com.hmu.constants.UsuarioCreationResult;
 import ar.com.hmu.exceptions.ServiceException;
-import ar.com.hmu.model.Cargo;
-import ar.com.hmu.model.Domicilio;
-import ar.com.hmu.model.Servicio;
-import ar.com.hmu.model.Usuario;
+import ar.com.hmu.model.*;
 import ar.com.hmu.repository.*;
 import ar.com.hmu.util.PasswordUtils;
 
@@ -21,13 +18,14 @@ public class UsuarioService {
     private final ServicioRepository servicioRepository;
     private final CargoRepository cargoRepository;
     private final DomicilioRepository domicilioRepository;
+    private final RolService rolService;
 
-
-    public UsuarioService(UsuarioRepository usuarioRepository, ServicioRepository servicioRepository, CargoRepository cargoRepository, DomicilioRepository domicilioRepository) {
+    public UsuarioService(UsuarioRepository usuarioRepository, ServicioRepository servicioRepository, CargoRepository cargoRepository, DomicilioRepository domicilioRepository, RolService rolService) {
         this.usuarioRepository = usuarioRepository;
         this.servicioRepository = servicioRepository;
         this.cargoRepository = cargoRepository;
         this.domicilioRepository = domicilioRepository;
+        this.rolService = rolService;
     }
 
 
@@ -44,12 +42,19 @@ public class UsuarioService {
             } else {
                 // Crear nuevo usuario
                 usuarioRepository.create(usuario);
+
+                // Assign roles using RolService
+                for (Rol rol : usuario.getRoles()) {
+                    rolService.asignarRol(usuario.getId(), rol.getId());
+                }
+
                 return UsuarioCreationResult.USUARIO_CREADO;
             }
         } catch (SQLException e) {
             throw new ServiceException("Error al crear el usuario", e);
         }
     }
+
 
     public void reactivarUsuario(Usuario usuario) throws ServiceException {
         try {
@@ -78,7 +83,26 @@ public class UsuarioService {
         }
     }
 
+    public String findPasswordByCuil(long cuil) throws ServiceException {
+        try {
+            return usuarioRepository.findPasswordByCuil(cuil);
+        } catch (SQLException e) {
+            throw new ServiceException("Error al recuperar la contraseña del usuario", e);
+        }
+    }
 
+    public Usuario findUsuarioByCuil(long cuil) throws ServiceException {
+        try {
+            Usuario usuario = usuarioRepository.findUsuarioByCuil(cuil);
+            if (usuario != null) {
+                // Load additional user data if necessary
+                loadAdditionalUserData(usuario);
+            }
+            return usuario;
+        } catch (SQLException e) {
+            throw new ServiceException("Error al recuperar usuario por CUIL", e);
+        }
+    }
 
     public List<Usuario> readAll() throws ServiceException {
         try {
@@ -111,7 +135,7 @@ public class UsuarioService {
                 }
 
                 // Asignación de roles (si es necesario)
-                usuario.setRoles(usuarioRepository.findRolesByUsuarioId(usuario.getId()));
+                usuario.setRoles(rolService.findRolesByUsuarioId(usuario.getId()));
 
                 return usuario;
             } else {
@@ -126,19 +150,36 @@ public class UsuarioService {
     public void update(Usuario usuario) throws ServiceException {
         try {
             usuarioRepository.update(usuario);
+
+            // Update roles
+            // First, remove existing roles
+            rolService.revocarTodosLosRoles(usuario.getId());
+
+            // Then, assign new roles
+            for (Rol rol : usuario.getRoles()) {
+                rolService.asignarRol(usuario.getId(), rol.getId());
+            }
+
         } catch (SQLException e) {
             throw new ServiceException("Error al actualizar el usuario", e);
         }
     }
 
+
     public void delete(Usuario usuario) throws ServiceException {
         try {
-            usuario.setEstado(false); // O estado = 0
+            // Remove roles
+            rolService.revocarTodosLosRoles(usuario.getId());
+
+            // Deactivate user
+            usuario.setEstado(false);
             usuarioRepository.update(usuario);
+
         } catch (SQLException e) {
             throw new ServiceException("Error al deshabilitar el usuario", e);
         }
     }
+
 
 
     /**
@@ -214,6 +255,11 @@ public class UsuarioService {
                 Domicilio domicilio = domicilioRepository.readByUUID(usuario.getDomicilioId());
                 usuario.setDomicilio(domicilio);
             }
+
+            // Cargar roles usando RolService
+            usuario.setRoles(rolService.findRolesByUsuarioId(usuario.getId()));
+
+
         } catch (SQLException e) {
             throw new ServiceException("Error al cargar datos adicionales del usuario\nmétodo loadAdditionalUserData", e);
         }

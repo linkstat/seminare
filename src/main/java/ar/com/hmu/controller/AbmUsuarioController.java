@@ -7,7 +7,8 @@ import java.util.*;
 
 import ar.com.hmu.constants.UsuarioCreationResult;
 import ar.com.hmu.exceptions.ServiceException;
-import ar.com.hmu.service.DomicilioService;
+import ar.com.hmu.repository.RolRepository;
+import ar.com.hmu.service.*;
 import ar.com.hmu.util.AlertUtils;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXMLLoader;
@@ -33,9 +34,6 @@ import javafx.stage.Stage;
 import ar.com.hmu.constants.NombreServicio;
 import ar.com.hmu.constants.TipoUsuario;
 import ar.com.hmu.model.*;
-import ar.com.hmu.service.CargoService;
-import ar.com.hmu.service.ServicioService;
-import ar.com.hmu.service.UsuarioService;
 import ar.com.hmu.util.CuilUtils;
 import ar.com.hmu.util.ImageUtils;
 
@@ -125,6 +123,7 @@ public class AbmUsuarioController implements Initializable {
     private CargoService cargoService;
     private ServicioService servicioService;
     private DomicilioService domicilioService;
+    private RolService rolService;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -181,13 +180,16 @@ public class AbmUsuarioController implements Initializable {
         cancelarButton.setText("Salir");    // Pero con el texto "Salir"
 
         // Cargar imagen por defecto
-        imagenPerfilOriginal = imagenPerfilImageView.getImage();
+        imagenPerfilOriginal = new Image(getClass().getResourceAsStream("/images/loginImage.png"));
+        imagenPerfilImageView.setImage(imagenPerfilOriginal);
 
         // Eventos adicionales
         tipoUsuarioComboBox.setOnAction(this::onTipoUsuarioSelected);
         nuevoAgenteButton.setOnAction(this::onNuevoAgente);
-        altaModButton.setOnAction(this::onAltaMod);
         cancelarButton.setOnAction(this::onCancelar);
+        altaModButton.setOnAction(event -> {
+            try { onAltaMod(event); } catch (ServiceException e) { mostrarError("Error al realizar la operación: " + e.getMessage()); }
+        });
 
         // Habilitar solo el ComboBox y el botón "Nuevo Agente"
         busquedaComboBox.setDisable(false);
@@ -241,11 +243,12 @@ public class AbmUsuarioController implements Initializable {
      * @param cargoService para la gestión de Cargos
      * @param servicioService para la gestión de Servicios
      */
-    public void setServices(UsuarioService usuarioService, CargoService cargoService, ServicioService servicioService, DomicilioService domicilioService) {
+    public void setServices(UsuarioService usuarioService, CargoService cargoService, ServicioService servicioService, DomicilioService domicilioService, RolService rolService) {
         this.usuarioService = usuarioService;
         this.cargoService = cargoService;
         this.servicioService = servicioService;
         this.domicilioService = domicilioService;
+        this.rolService = rolService;
     }
 
 
@@ -401,10 +404,18 @@ public class AbmUsuarioController implements Initializable {
         domLocalidadComboBox.setDisable(!enabled);
         domProvinciaComboBox.setDisable(!enabled);
 
-        // Tipo de Usuario y Asignaciones
+        // Tipo de Usuario y Roles
         tipoUsuarioComboBox.setDisable(!enabled);
+        rolAgenteCheckBox.setDisable(!enabled);
+        rolJefeServicioCheckBox.setDisable(!enabled);
+        rolOficinaPersonalCheckBox.setDisable(!enabled);
+        rolDireccionCheckBox.setDisable(!enabled);
+
+        // Cargos
         cargoComboBox.setDisable(!enabled);
         gestionarCargosButton.setDisable(!enabled);
+
+        // Servicios
         servicioComboBox.setDisable(!enabled);
         gestionarServiciosButton.setDisable(!enabled);
 
@@ -557,21 +568,40 @@ public class AbmUsuarioController implements Initializable {
     private void onTipoUsuarioSelected(ActionEvent event) {
         TipoUsuario tipoUsuario = tipoUsuarioComboBox.getSelectionModel().getSelectedItem();
 
+        // Resetear los checkBox de Roles
+        rolAgenteCheckBox.setSelected(false);
+        rolAgenteCheckBox.setDisable(false);
+        rolJefeServicioCheckBox.setSelected(false);
+        rolJefeServicioCheckBox.setDisable(false);
+        rolOficinaPersonalCheckBox.setSelected(false);
+        rolOficinaPersonalCheckBox.setDisable(false);
+        rolDireccionCheckBox.setSelected(false);
+        rolDireccionCheckBox.setDisable(false);
+
         if (tipoUsuario != null) {
             switch (tipoUsuario) {
                 case DIRECCION:
-                    // Asignar servicio y cargo automáticamente
+                    // Establecer checkbox de rol automáticamente
+                    rolDireccionCheckBox.setSelected(true);
+                    rolDireccionCheckBox.setDisable(true);
+
+                    // Asignar servicio automáticamente
                     Servicio servicioDireccion = buscarServicioPorNombre(NombreServicio.DIRECCION);
                     servicioComboBox.getSelectionModel().select(servicioDireccion);
                     servicioComboBox.setDisable(true);
                     gestionarServiciosButton.setDisable(true);
 
+                    // Asignar cargo automáticamente
                     Cargo cargoDireccion = buscarCargoPorNumero(0);
                     cargoComboBox.getSelectionModel().select(cargoDireccion);
                     cargoComboBox.setDisable(true);
                     gestionarCargosButton.setDisable(true);
                     break;
                 case OFICINA_DE_PERSONAL:
+                    // Establecer checkbox de rol automáticamente
+                    rolOficinaPersonalCheckBox.setSelected(true);
+                    rolOficinaPersonalCheckBox.setDisable(true);
+
                     // Asignar servicio automáticamente
                     Servicio servicioPersonal = buscarServicioPorNombre(NombreServicio.OFICINA_DE_PERSONAL);
                     servicioComboBox.getSelectionModel().select(servicioPersonal);
@@ -583,9 +613,15 @@ public class AbmUsuarioController implements Initializable {
                     gestionarCargosButton.setDisable(false);
                     break;
                 case JEFATURA_DE_SERVICIO:
-                    // Habilitar todos los elementos para selección normal
+                    // Establecer checkbox de rol automáticamente
+                    rolJefeServicioCheckBox.setSelected(true);
+                    rolJefeServicioCheckBox.setDisable(true);
+
+                    // Habilitar todos los servicios para selección normal
                     servicioComboBox.setDisable(false);
                     gestionarServiciosButton.setDisable(false);
+
+                    // Habilitar todos los cargos para selección normal
                     cargoComboBox.setDisable(false);
                     gestionarCargosButton.setDisable(false);
 
@@ -593,9 +629,15 @@ public class AbmUsuarioController implements Initializable {
                     validarJefesDeServicio();
                     break;
                 case EMPLEADO:
-                    // Habilitar todos los elementos para selección normal
+                    // Establecer checkbox de rol automáticamente
+                    rolAgenteCheckBox.setSelected(true);
+                    rolAgenteCheckBox.setDisable(true);
+
+                    // Habilitar todos los servicios para selección normal
                     servicioComboBox.setDisable(false);
                     gestionarServiciosButton.setDisable(false);
+
+                    // Habilitar todos los cargos para selección normal
                     cargoComboBox.setDisable(false);
                     gestionarCargosButton.setDisable(false);
                     break;
@@ -604,6 +646,12 @@ public class AbmUsuarioController implements Initializable {
                     servicioComboBox.setDisable(false);
                     break;
             }
+        } else {
+            // Si no hay un Tipo de Usuario seleccionado, deshabilitar todos los checkbox de roles
+            rolAgenteCheckBox.setDisable(true);
+            rolJefeServicioCheckBox.setDisable(true);
+            rolOficinaPersonalCheckBox.setDisable(true);
+            rolDireccionCheckBox.setDisable(true);
         }
     }
 
@@ -731,7 +779,7 @@ public class AbmUsuarioController implements Initializable {
      * @param event Evento
      */
     @FXML
-    public void onAlta(ActionEvent event) {
+    public void onAlta(ActionEvent event) throws ServiceException {
         if (isCancelMode) {
             // Confirmar si desea cancelar
             Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
@@ -760,7 +808,7 @@ public class AbmUsuarioController implements Initializable {
      * @param event Evento
      */
     @FXML
-    private void onAltaMod(ActionEvent event) {
+    private void onAltaMod(ActionEvent event) throws ServiceException {
         if (!isFormModified) {
             mostrarMensaje("No se han realizado cambios para modificar.");
             return;
@@ -857,7 +905,7 @@ public class AbmUsuarioController implements Initializable {
      * Evento al hacer clic en "Modificar"
      */
     @FXML
-    private void onModificar() {
+    private void onModificar() throws ServiceException {
         Usuario usuarioSeleccionado = busquedaComboBox.getSelectionModel().getSelectedItem();
         if (usuarioSeleccionado != null && validarCamposObligatorios()) {
             Usuario usuarioActualizado = crearOActualizarUsuarioDesdeFormulario(usuarioSeleccionado);
@@ -1032,18 +1080,28 @@ public class AbmUsuarioController implements Initializable {
         sexoComboBox.getSelectionModel().select(usuario.getSexo());
 
         // Cargar imagen de perfil
-        Image image = ImageUtils.byteArrayToImage(usuario.getProfileImage());
-        if (image != null) {
-            imagenPerfilImageView.setImage(image);
-        } else {
-            imagenPerfilImageView.setImage(imagenPerfilOriginal);
-        }
+        ImageUtils.setProfileImage(imagenPerfilImageView, usuario.getProfileImage(), imagenPerfilOriginal);
 
         //Cargar roles en los CheckBoxes
-        rolAgenteCheckBox.setSelected(rolesSeleccionados.contains(new Rol(TipoUsuario.EMPLEADO)));
-        rolJefeServicioCheckBox.setSelected(rolesSeleccionados.contains(new Rol(TipoUsuario.JEFATURA_DE_SERVICIO)));
-        rolOficinaPersonalCheckBox.setSelected(rolesSeleccionados.contains(new Rol(TipoUsuario.OFICINA_DE_PERSONAL)));
-        rolDireccionCheckBox.setSelected(rolesSeleccionados.contains(new Rol(TipoUsuario.DIRECCION)));
+        Set<Rol> roles = usuario.getRoles();
+        for (Rol rol : roles) {
+            switch (rol.getTipoUsuario()) {
+                case EMPLEADO:
+                    rolAgenteCheckBox.setSelected(true);
+                    break;
+                case JEFATURA_DE_SERVICIO:
+                    rolJefeServicioCheckBox.setSelected(true);
+                    break;
+                case OFICINA_DE_PERSONAL:
+                    rolOficinaPersonalCheckBox.setSelected(true);
+                    break;
+                case DIRECCION:
+                    rolDireccionCheckBox.setSelected(true);
+                    break;
+                default:
+                    break;
+            }
+        }
 
         // Datos del domicilio
         Domicilio domicilio = usuario.getDomicilio();
@@ -1109,7 +1167,7 @@ public class AbmUsuarioController implements Initializable {
      * @param usuarioExistente un objeto de tipo Usuario
      * @return un objeto de tipo Usuario
      */
-    private Usuario crearOActualizarUsuarioDesdeFormulario(Usuario usuarioExistente) {
+    private Usuario crearOActualizarUsuarioDesdeFormulario(Usuario usuarioExistente) throws ServiceException {
         TipoUsuario tipoUsuarioSeleccionado = tipoUsuarioComboBox.getSelectionModel().getSelectedItem();
         Usuario usuario;
 
@@ -1163,32 +1221,31 @@ public class AbmUsuarioController implements Initializable {
         usuario.setServicio(servicioComboBox.getSelectionModel().getSelectedItem());
 
         // Cargar imagen de perfil
-        if (imagenPerfilImageView.getImage() != null && imagenPerfilImageView.getImage() != imagenPerfilOriginal) {
-            byte[] imageBytes = ImageUtils.imageToByteArray(imagenPerfilImageView.getImage());
-            usuario.setProfileImage(imageBytes);
-        } else {
-            usuario.setProfileImage(null);
-        }
+        ImageUtils.setProfileImage(imagenPerfilImageView, usuario.getProfileImage(), imagenPerfilOriginal);
 
         // Asignar Tipo de usuario
         usuario.setTipoUsuario(tipoUsuarioSeleccionado);
 
         // Agregar roles basados en los CheckBoxes
+        Set<Rol> rolesSeleccionados = new HashSet<>();
+
         if (rolAgenteCheckBox.isSelected()) {
-            rolesSeleccionados.add(new Rol(TipoUsuario.EMPLEADO));
+            Rol rolAgente = rolService.findByTipoUsuario(TipoUsuario.EMPLEADO);
+            rolesSeleccionados.add(rolAgente);
         }
         if (rolJefeServicioCheckBox.isSelected()) {
-            rolesSeleccionados.add(new Rol(TipoUsuario.JEFATURA_DE_SERVICIO));
+            Rol rolAgente = rolService.findByTipoUsuario(TipoUsuario.JEFATURA_DE_SERVICIO);
+            rolesSeleccionados.add(rolAgente);
         }
         if (rolOficinaPersonalCheckBox.isSelected()) {
-            rolesSeleccionados.add(new Rol(TipoUsuario.OFICINA_DE_PERSONAL));
+            Rol rolAgente = rolService.findByTipoUsuario(TipoUsuario.OFICINA_DE_PERSONAL);
+            rolesSeleccionados.add(rolAgente);
         }
         if (rolDireccionCheckBox.isSelected()) {
-            rolesSeleccionados.add(new Rol(TipoUsuario.DIRECCION));
+            Rol rolAgente = rolService.findByTipoUsuario(TipoUsuario.DIRECCION);
+            rolesSeleccionados.add(rolAgente);
         }
 
-        // Convertir Set a List si fuera necesario (prebas, después borrar si no hace falta)
-        //List<Rol> rolesList = new ArrayList<>(rolesSeleccionados);
         usuario.setRoles(rolesSeleccionados);
 
         // Asignar domicilio
@@ -1221,7 +1278,6 @@ public class AbmUsuarioController implements Initializable {
 
         return usuario;
     }
-
 
 
     /**

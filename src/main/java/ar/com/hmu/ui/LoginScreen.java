@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import ar.com.hmu.controller.LoginController;
 import ar.com.hmu.repository.*;
+import ar.com.hmu.service.*;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -42,30 +43,43 @@ public class LoginScreen extends Application {
             Font.loadFont(getClass().getResourceAsStream("/fonts/pristina.ttf"), 10);
             Font.loadFont(getClass().getResourceAsStream("/fonts/BarlowCondensed-Regular.ttf"), 10);
 
-            // Inicialización de repositorios
+            // Inicialización en LoginScreen o clase de aplicación principal
             AppConfigReader appConfigReader = new AppConfigReader();
             DatabaseConnector databaseConnector = new DatabaseConnector(appConfigReader);
+
+            // Inicialización de repositorios
             RolRepository rolRepository = new RolRepository(databaseConnector);
-            UsuarioRepository usuarioRepository = new UsuarioRepository(databaseConnector, rolRepository);
-//            DomicilioRepository domicilioRepository = new DomicilioRepository(databaseConnector);
-//            CargoRepository cargoRepository = new CargoRepository(databaseConnector);
-//            ServicioRepository servicioRepository = new ServicioRepository(databaseConnector);
+            UsuarioRepository usuarioRepository = new UsuarioRepository(databaseConnector);
+            ServicioRepository servicioRepository = new ServicioRepository(databaseConnector);
+            CargoRepository cargoRepository = new CargoRepository(databaseConnector);
+            DomicilioRepository domicilioRepository = new DomicilioRepository(databaseConnector);
 
             // Inicialización de servicios
-            LoginService loginService = new LoginService(usuarioRepository);
+            RolService rolService = new RolService(rolRepository);
+            UsuarioService usuarioService = new UsuarioService(
+                    usuarioRepository, servicioRepository, cargoRepository, domicilioRepository, rolService
+            );
+            LoginService loginService = new LoginService(usuarioService);
+            ServicioService servicioService = new ServicioService(servicioRepository, usuarioRepository);
+            CargoService cargoService = new CargoService(cargoRepository);
+            DomicilioService domicilioService = new DomicilioService(domicilioRepository);
 
             // Cargar el archivo FXML
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/loginScreen.fxml"));
             Parent root = loader.load();
-
-            // Obtener el controlador y pasarle el LoginService
-            LoginController controller = loader.getController();
+            LoginController controller = loader.getController();  // Obtener el controlador y pasarle el LoginService
             if (controller == null) {
                 throw new IllegalStateException("El controlador no fue inicializado correctamente.");
             }
+
+            // Pass services to the controller
             controller.setLoginService(loginService);
             controller.setDatabaseConnector(databaseConnector);
-            controller.setRolRepository(rolRepository);
+            controller.setRolService(rolService);
+            controller.setUsuarioService(usuarioService);
+            controller.setCargoService(cargoService);
+            controller.setServicioService(servicioService);
+            controller.setDomicilioService(domicilioService);
 
             // Llamar al método que depende de las dependencias inicializadas
             controller.postInitialize();
@@ -85,22 +99,6 @@ public class LoginScreen extends Application {
             e.printStackTrace(); // Imprimir mensaje completo del error por consola
             System.err.println("Error durante la inicialización de la aplicación: " + e.getMessage());
         }
-    }
-
-    /**
-     * Inicializa el servicio de autenticación configurando la base de datos y los repositorios necesarios.
-     *
-     * @return una instancia de {@link LoginService} para la validación de credenciales.
-     */
-    private LoginService initializeLoginService() {
-        AppConfigReader appConfigReader = new AppConfigReader();
-        DatabaseConnector databaseConnector = new DatabaseConnector(appConfigReader);
-        RolRepository rolRepository = new RolRepository(databaseConnector);
-        //DomicilioRepository domicilioRepository = new DomicilioRepository(databaseConnector);
-        //CargoRepository cargoRepository = new CargoRepository(databaseConnector);
-        //ServicioRepository servicioRepository = new ServicioRepository(databaseConnector);
-        UsuarioRepository usuarioRepository = new UsuarioRepository(databaseConnector, rolRepository);
-        return new LoginService(usuarioRepository);
     }
 
     /**

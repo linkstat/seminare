@@ -1,6 +1,5 @@
 package ar.com.hmu.repository;
 
-import ar.com.hmu.exceptions.ServiceException;
 import ar.com.hmu.model.Agrupacion;
 import ar.com.hmu.model.Cargo;
 import ar.com.hmu.repository.dao.GenericDAO;

@@ -35,7 +35,7 @@ public abstract class Usuario {
 	private UUID servicioId;
 
 	// Gestión de roles de usuario
-	private List<Rol> roles = new ArrayList<>();
+	private Set<Rol> roles = new HashSet<>();
 
 
 	// Constructor por defecto
@@ -154,7 +154,7 @@ public abstract class Usuario {
 		return servicioId;
 	}
 
-	public List<Rol> getRoles() {
+	public Set<Rol> getRoles() {
 		return roles;
 	}
 
@@ -250,12 +250,8 @@ public abstract class Usuario {
 		this.servicioId = servicioId;
 	}
 
-	public void setRoles(List<Rol> roles) {
-		this.roles = roles;
-	}
-
 	public void setRoles(Set<Rol> roles) {
-		this.roles = new ArrayList<>(roles);
+		this.roles = roles;
 	}
 
 	public void addRol(Rol rol) {
@@ -366,22 +362,17 @@ public abstract class Usuario {
 	 * @return verdaero o falso, según el usuario tenga el rol o no.
 	 */
 	public boolean hasRole(TipoUsuario... tiposUsuario) {
-		for (TipoUsuario tipoUsuario : tiposUsuario) {
-			if (hasRole(tipoUsuario)) {
-				return true;
+		if (roles == null || roles.isEmpty()) {
+			return false;
+		}
+		for (TipoUsuario roleToCheck : tiposUsuario) {
+			for (Rol rol : roles) {
+				if (rol.getNombre().equalsIgnoreCase(roleToCheck.getInternalName())) {
+					return true;
+				}
 			}
 		}
 		return false;
-	}
-
-	/**
-	 * Método que indica si el usuario posé un determinado rol
-	 * @param roleName cadena de texto con el rol consultado
-	 * @return verdadero o false, según el usaario tenga el rol o no
-	 */
-	public boolean hasRole(String roleName) {
-		return roles.stream()
-				.anyMatch(rol -> rol.getNombre().equalsIgnoreCase(roleName));
 	}
 
 	/**

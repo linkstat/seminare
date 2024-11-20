@@ -7,6 +7,8 @@ import java.io.IOException;
 
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+
 import javax.imageio.ImageIO;
 
 public class ImageUtils {
@@ -48,5 +50,23 @@ public class ImageUtils {
         }
         return null;
     }
+
+    /**
+     * Sets the profile image on the given ImageView. If the provided imageBytes are null or empty,
+     * the defaultImage is used.
+     *
+     * @param imageView    The ImageView to set the image on.
+     * @param imageBytes   The byte array of the image to set.
+     * @param defaultImage The default Image to use if imageBytes is null or empty.
+     */
+    public static void setProfileImage(ImageView imageView, byte[] imageBytes, Image defaultImage) {
+        Image image = byteArrayToImage(imageBytes);
+        if (image != null) {
+            imageView.setImage(image);
+        } else {
+            imageView.setImage(defaultImage);
+        }
+    }
+
 
 }

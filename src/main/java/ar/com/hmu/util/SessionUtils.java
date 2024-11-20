@@ -5,6 +5,8 @@ import ar.com.hmu.config.AppConfigReader;
 import ar.com.hmu.controller.MainMenuMosaicoController;
 import ar.com.hmu.repository.*;
 import ar.com.hmu.controller.LoginController;
+import ar.com.hmu.service.RolService;
+import ar.com.hmu.service.UsuarioService;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -31,17 +33,26 @@ public class SessionUtils {
             }
 
             // Configurar las dependencias
+            // Configuración y conector
             AppConfigReader appConfigReader = new AppConfigReader();
             DatabaseConnector databaseConnector = new DatabaseConnector(appConfigReader);
+            // Repositorios
             RolRepository rolRepository = new RolRepository(databaseConnector);
-            DomicilioRepository domicilioRepository = new DomicilioRepository(databaseConnector);
-            CargoRepository cargoRepository = new CargoRepository(databaseConnector);
+            UsuarioRepository usuarioRepository = new UsuarioRepository(databaseConnector);
             ServicioRepository servicioRepository = new ServicioRepository(databaseConnector);
-            UsuarioRepository usuarioRepository = new UsuarioRepository(databaseConnector, rolRepository);
-            LoginService loginService = new LoginService(usuarioRepository);
+            CargoRepository cargoRepository = new CargoRepository(databaseConnector);
+            DomicilioRepository domicilioRepository = new DomicilioRepository(databaseConnector);
 
+            // Services
+            RolService rolService = new RolService(rolRepository);
+            UsuarioService usuarioService = new UsuarioService(usuarioRepository, servicioRepository, cargoRepository, domicilioRepository, rolService);
+            LoginService loginService = new LoginService(usuarioService);
+
+            // Set services to controller
             controller.setLoginService(loginService);
             controller.setDatabaseConnector(databaseConnector);
+            controller.setRolService(rolService);
+            controller.setUsuarioService(usuarioService);
             controller.postInitialize();
 
             // Configurar la nueva ventana

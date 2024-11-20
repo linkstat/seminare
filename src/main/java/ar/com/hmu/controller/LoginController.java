@@ -3,6 +3,7 @@ package ar.com.hmu.controller;
 import java.io.IOException;
 import java.util.Arrays;
 
+import ar.com.hmu.service.*;
 import ar.com.hmu.util.*;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -16,7 +17,6 @@ import javafx.stage.Stage;
 
 import ar.com.hmu.auth.LoginService;
 import ar.com.hmu.model.Usuario;
-import ar.com.hmu.service.UsuarioService;
 import ar.com.hmu.repository.*;
 
 import static ar.com.hmu.util.ServerStatusUtils.*;
@@ -31,28 +31,20 @@ import static ar.com.hmu.util.ServerStatusUtils.*;
  * obtenidos del servicio de autenticación, mostrando mensajes adecuados para informar al usuario.
  */
 public class LoginController {
-
     @FXML
     private TextField usernameField;
-
     @FXML
     private PasswordField passwordField;
-
     @FXML
     private TextField passwordFieldVisible;
-
     @FXML
     private CheckBox showPasswordCheckBox;
-
     @FXML
     private CheckBox rememberMeCheckBox;
-
     @FXML
     private Button loginButton;
-
     @FXML
     private ImageView serverStatusIcon;
-
     @FXML
     private Label serverStatusLabel;
 
@@ -62,9 +54,12 @@ public class LoginController {
 
     private LoginService loginService;  // LoginService para la autenticación del usuario
     private DatabaseConnector databaseConnector;  // DatabaseConnector para la verificación del estado del servidor de BD
-    private RolRepository rolRepository;
+    private RolService rolService;
     private UsuarioService usuarioService; // objeto para persistencia en la BD
     private ServerStatusUtils serverStatusUtils;
+    private CargoService cargoService;
+    private ServicioService servicioService;
+    private DomicilioService domicilioService;
 
     /**
      * Método para establecer el {@link LoginService} que se utilizará para la autenticación.
@@ -75,14 +70,25 @@ public class LoginController {
         this.loginService = loginService;
     }
 
-    /**
-     * Método para Inyectar RolRepository
-     * @param rolRepository repositorio de Roles
-     */
-    public void setRolRepository(RolRepository rolRepository) {
-        this.rolRepository = rolRepository;
+    public void setUsuarioService(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
     }
 
+    public void setRolService(RolService rolService) {
+        this.rolService = rolService;
+    }
+
+    public void setCargoService(CargoService cargoService) {
+        this.cargoService = cargoService;
+    }
+
+    public void setServicioService(ServicioService servicioService) {
+        this.servicioService = servicioService;
+    }
+
+    public void setDomicilioService(DomicilioService domicilioService) {
+        this.domicilioService = domicilioService;
+    }
 
     /**
      * Inicializa los componentes de la interfaz de usuario al cargar la pantalla de inicio de sesión.
@@ -156,13 +162,13 @@ public class LoginController {
         serverStatusUtils.startPeriodicServerCheck();
 
         // Inicialización de repositorios
-        ServicioRepository servicioRepository = new ServicioRepository(databaseConnector);
-        CargoRepository cargoRepository = new CargoRepository(databaseConnector);
-        DomicilioRepository domicilioRepository = new DomicilioRepository(databaseConnector);
-        UsuarioRepository usuarioRepository = new UsuarioRepository(databaseConnector, rolRepository);
-
-        // Inicialización de UsuarioService con el constructor unificado
-        this.usuarioService = new UsuarioService(usuarioRepository, servicioRepository, cargoRepository, domicilioRepository);
+        // Remove re-initialization of repositories and services: Use the services passed via setters instead
+        //ServicioRepository servicioRepository = new ServicioRepository(databaseConnector);
+        //CargoRepository cargoRepository = new CargoRepository(databaseConnector);
+        //DomicilioRepository domicilioRepository = new DomicilioRepository(databaseConnector);
+        //UsuarioRepository usuarioRepository = new UsuarioRepository(databaseConnector);
+        // Inicialización de UsuarioService
+        //this.usuarioService = new UsuarioService(usuarioRepository, servicioRepository, cargoRepository, domicilioRepository, rolService);
 
     }
 
@@ -422,8 +428,13 @@ public class LoginController {
             // Obtener el Stage actual y pasar el Stage al controlador
             Stage stage = (Stage) loginButton.getScene().getWindow();
 
-            // Pasar usuario, databaseConnector, y stage a postInitialize
-            controller.postInitialize(usuario, databaseConnector, rolRepository, stage);
+            // Pass services to the controller
+            controller.setServices(usuarioService, cargoService, servicioService, domicilioService, rolService);
+
+            // Pass databaseConnector to the controller
+            controller.setDatabaseConnector(databaseConnector);
+
+            controller.postInitialize(usuario, stage);
 
             Scene scene = new Scene(root);
             stage.setScene(scene);

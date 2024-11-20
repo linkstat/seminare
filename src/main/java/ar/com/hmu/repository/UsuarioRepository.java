@@ -5,9 +5,8 @@ import ar.com.hmu.factory.UsuarioFactory;
 import ar.com.hmu.model.*;
 import ar.com.hmu.repository.dao.GenericDAO;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.sql.Date;
+import java.util.*;
 
 /**
  * Clase encargada de las operaciones relacionadas con la entidad Usuario en la base de datos.
@@ -15,11 +14,9 @@ import java.util.UUID;
 public class UsuarioRepository implements GenericDAO<Usuario> {
 
     private DatabaseConnector databaseConnector;
-    private RolRepository rolRepository;
 
-    public UsuarioRepository(DatabaseConnector databaseConnector, RolRepository rolRepository) {
+    public UsuarioRepository(DatabaseConnector databaseConnector) {
         this.databaseConnector = databaseConnector;
-        this.rolRepository = rolRepository;
     }
 
     @Override
@@ -28,6 +25,8 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
             String query = "INSERT INTO Usuario (id, fechaAlta, estado, cuil, apellidos, nombres, sexo, mail, passwd, tipoUsuario) " +
                     "VALUES (UUID_TO_BIN(?), ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement stmt = connection.prepareStatement(query)) {
+
+                // Almacenar datos comunes de usuario
                 stmt.setString(1, usuario.getId().toString());
                 stmt.setDate(2, Date.valueOf(usuario.getFechaAlta()));
                 stmt.setBoolean(3, usuario.getEstado());
@@ -39,6 +38,7 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
                 stmt.setString(9, usuario.getEncryptedPassword());
                 stmt.setString(10, usuario.getTipoUsuario().getInternalName());
                 stmt.executeUpdate();
+
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -62,9 +62,6 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
                 if (rs.next()) {
                     // Fabrica de usuarios
                     Usuario usuario = UsuarioFactory.createUsuario(rs);
-
-                    // Asignación de roles
-                    usuario.setRoles(findRolesByUsuarioId(usuario.getId()));
 
                     return usuario;
                 }
@@ -93,10 +90,6 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
             while (rs.next()) {
                 // Fabrica de usuarios
                 Usuario usuario = UsuarioFactory.createUsuario(rs);
-
-                // Asignación de roles
-                usuario.setRoles(findRolesByUsuarioId(usuario.getId()));
-
                 usuarios.add(usuario);
             }
         } catch (SQLException e) {
@@ -132,7 +125,6 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
                     : null);
 
             stmt.setString(15, usuario.getId().toString());
-
             stmt.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException("Error al actualizar el usuario", e);
@@ -141,12 +133,12 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
 
     @Override
     public void delete(Usuario usuario) throws SQLException {
-        String query = "DELETE FROM Usuario WHERE id = UUID_TO_BIN(?)";
-        try (Connection connection = databaseConnector.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(query)) {
-
-            stmt.setString(1, usuario.getId().toString());
-            stmt.executeUpdate();
+        try (Connection connection = databaseConnector.getConnection()) {
+            String query = "DELETE FROM Usuario WHERE id = UUID_TO_BIN(?)";
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                stmt.setString(1, usuario.getId().toString());
+                stmt.executeUpdate();
+            }
         } catch (SQLException e) {
             throw new RuntimeException("Error al eliminar el usuario", e);
         }
@@ -176,7 +168,6 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     Usuario usuario = UsuarioFactory.createUsuario(rs);
-                    usuario.setRoles(findRolesByUsuarioId(usuario.getId()));  // Asignación de roles aquí
                     return usuario;
                 }
             }
@@ -200,7 +191,6 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
                 try (ResultSet rs = stmt.executeQuery()) {
                     if (rs.next()) {
                         Usuario usuario = UsuarioFactory.createUsuario(rs);
-                        usuario.setRoles(findRolesByUsuarioId(usuario.getId()));  // Asignación de roles aquí
                         return usuario;
                     }
                 }
@@ -331,52 +321,6 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
         }
         return 0;
     }
-
-
-    public List<Rol> findRolesByUsuarioId(UUID usuarioId) throws SQLException {
-        List<Rol> roles = new ArrayList<>();
-        String query = "SELECT r.*, BIN_TO_UUID(r.id) AS id_str FROM Rol r " +
-                "JOIN Usuario_Rol ur ON r.id = ur.rol_id " +
-                "WHERE ur.usuario_id = UUID_TO_BIN(?)";
-
-        try (Connection connection = databaseConnector.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, usuarioId.toString());
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    Rol rol = new Rol();
-                    rol.setId(UUID.fromString(rs.getString("id_str")));
-                    rol.setNombre(rs.getString("nombre"));
-                    rol.setDescripcion(rs.getString("descripcion"));
-                    roles.add(rol);
-                }
-            }
-        }
-
-        return roles;
-    }
-
-    // Métodos CRUD adicionales, incluyendo asignar y revocar roles
-    public void asignarRol(UUID usuarioId, UUID rolId) throws SQLException {
-        String query = "INSERT INTO Usuario_Rol (usuario_id, rol_id) VALUES (BIN_TO_UUID(?), BIN_TO_UUID(?))";
-        try (Connection connection = databaseConnector.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, usuarioId.toString());
-            stmt.setString(2, rolId.toString());
-            stmt.executeUpdate();
-        }
-    }
-
-    public void revocarRol(UUID usuarioId, UUID rolId) throws SQLException {
-        String query = "DELETE FROM Usuario_Rol WHERE usuario_id = BIN_TO_UUID(?) AND rol_id = BIN_TO_UUID(?)";
-        try (Connection connection = databaseConnector.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, usuarioId.toString());
-            stmt.setString(2, rolId.toString());
-            stmt.executeUpdate();
-        }
-    }
-
 
     public int countUsuariosByServicio(UUID servicioId) throws SQLException {
         String query = "SELECT COUNT(*) FROM Usuario WHERE servicioID = UUID_TO_BIN(?) AND estado = 1";
