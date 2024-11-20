@@ -1,37 +1,28 @@
-# Video de Presentación del Proyecto
+# Videos de Presentación del Proyecto
 
-Este directorio contiene el video demostrativo que ilustra el funcionamiento del proyecto en sus primeras fases de desarrollo. 
-[Video-Toma-1](https://youtu.be/VcM4n_cIZRA)
+Este directorio contiene una serie de videos demostrativos que ilustran el funcionamiento del proyecto. A continuación, puedes encontrar los enlaces directos a los videos y una playlist completa.
 
-## Contenido del Video
+## Videos
 
-El video muestra las principales funcionalidades implementadas, incluyendo:
+| Video                | Descripción                             | Enlace |
+|----------------------|-----------------------------------------|--------|
+| [![Video-Toma-1](https://img.youtube.com/vi/VcM4n_cIZRA/0.jpg)](https://youtu.be/VcM4n_cIZRA) | **Video-Toma-1**: Introducción y primeras funcionalidades del proyecto. | [Ver en YouTube](https://youtu.be/VcM4n_cIZRA) |
+| [![Aromito - Inicio de sesión](https://img.youtube.com/vi/QoWztppetV4/0.jpg)](https://youtu.be/QoWztppetV4) | **Aromito - Inicio de sesión**: Pantalla inicial del sistema y autenticación. | [Ver en YouTube](https://youtu.be/QoWztppetV4) |
 
+---
+
+## Playlist Completa
+
+Si deseas ver todos los videos relacionados con este proyecto, puedes acceder a la playlist en el siguiente enlace:  
+[![Playlist](https://img.youtube.com/vi/VcM4n_cIZRA/0.jpg)](https://www.youtube.com/playlist?list=PLf-_LCj5h0nk6QA_6FNygSMEo1jqXo0tT)  
+[Ver la Playlist Completa](https://www.youtube.com/playlist?list=PLf-_LCj5h0nk6QA_6FNygSMEo1jqXo0tT)
+
+---
+
+### Notas
+Los videos muestran las principales funcionalidades implementadas, incluyendo:
 - **Pantalla de inicio de sesión**: Con opcionalidades adicionales.
 - **Menú principal**: Compuesto por mosaicos interactivos.
 - **Barra de menú**: Organización de accesos según roles de usuario.
 - **Módulos ABM (Altas, Bajas, Modificaciones)**:
   - Gestión de usuarios.
-  - Gestión de servicios.
-  - Gestión de cargos.
-- **Pantalla de reportes**:
-  - Listado de usuarios.
-  - Listado de servicios.
-  - Listado de usuarios por servicio.
-- **Pantalla de licencias de uso**.
-- **Pantalla "Acerca de"**.
-
-Además, el video incluye referencias breves al código fuente utilizado para implementar estas funcionalidades.
-
-## Acceso al Video
-
-Puedes visualizar el video directamente desde este enlace:  
-[Ver Video en YouTube](https://youtu.be/VcM4n_cIZRA)
-
----
-
-### Notas
-
-- El video está diseñado para ofrecer una visión general del alcance funcional del proyecto.
-- Si tienes comentarios o sugerencias, no dudes en abrir un issue o contactar al equipo.
-
