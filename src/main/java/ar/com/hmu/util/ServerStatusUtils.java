@@ -10,9 +10,8 @@ import javafx.scene.image.Image;
 import javafx.util.Duration;
 
 import ar.com.hmu.constants.DatabaseConnectorStatus;
-import ar.com.hmu.exceptions.DatabaseAuthenticationException;
-import ar.com.hmu.exceptions.DatabaseConnectionException;
 import ar.com.hmu.repository.DatabaseConnector;
+import ar.com.hmu.repository.ServerStatus;
 
 public class ServerStatusUtils {
 
@@ -36,7 +35,8 @@ public class ServerStatusUtils {
      */
     public void startPeriodicServerCheck() {
         serverCheckTimeline = new Timeline(new KeyFrame(Duration.seconds(checkIntervalInSeconds), event -> {
-            boolean serverIsFunctional = updateServerStatusUI();
+            ServerStatus serverStatus = updateServerStatusUI();
+            boolean serverIsFunctional = (serverStatus == ServerStatus.ONLINE);
             adjustCheckInterval(serverIsFunctional);
         }));
         serverCheckTimeline.setCycleCount(Timeline.INDEFINITE); // Se ejecuta indefinidamente
@@ -46,23 +46,41 @@ public class ServerStatusUtils {
     /**
      * Verifica el estado del servidor y actualiza el Label e ícono correspondientes.
      *
-     * @return true si el servidor está en línea y funcional, false si hay algún problema.
+     * @return serverStatus el estado del servidor
      */
-    public boolean updateServerStatusUI() {
-        String[] serverStatus = databaseConnector.checkServerStatus();
+    public ServerStatus updateServerStatusUI() {
+        ServerStatus serverStatus = databaseConnector.checkServerStatus();
 
-        // Update UI components
-        statusLabel.setText(serverStatus[0]);
-        statusLabel.setStyle("-fx-text-fill: " + serverStatus[1] + ";");
-        try {
-            Image icon = new Image(Objects.requireNonNull(getClass().getResourceAsStream(serverStatus[2])));
-            statusIcon.setImage(icon);
-        } catch (NullPointerException | IllegalArgumentException e) {
-            System.err.println(DatabaseConnectorStatus.ICON_LOAD_ERR + e.getMessage());
-            statusIcon.setImage(new Image(getClass().getResourceAsStream(DatabaseConnectorStatus.ICON_LOAD_ERR_ICON)));
+        // Actualizar los componentes de la interfaz en función del estado del servidor
+        switch (serverStatus) {
+            case ONLINE:
+                statusLabel.setText(DatabaseConnectorStatus.FUNCTIONAL_MSG);
+                statusLabel.setStyle("-fx-text-fill: " + DatabaseConnectorStatus.FUNCTIONAL_COLOR + ";");
+                statusIcon.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream(DatabaseConnectorStatus.FUNCTIONAL_ICON))));
+                break;
+            case AUTHENTICATION_ERROR:
+                statusLabel.setText(DatabaseConnectorStatus.AUTH_PROBLEM_MSG);
+                statusLabel.setStyle("-fx-text-fill: " + DatabaseConnectorStatus.AUTH_PROBLEM_COLOR + ";");
+                statusIcon.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream(DatabaseConnectorStatus.AUTH_PROBLEM_ICON))));
+                break;
+            case DATABASE_SERVICE_DOWN:
+                statusLabel.setText(DatabaseConnectorStatus.DB_SERVICE_PROBLEM_MSG);
+                statusLabel.setStyle("-fx-text-fill: " + DatabaseConnectorStatus.DB_SERVICE_PROBLEM_COLOR + ";");
+                statusIcon.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream(DatabaseConnectorStatus.DB_SERVICE_PROBLEM_ICON))));
+                break;
+            case HOST_UNREACHABLE:
+                statusLabel.setText(DatabaseConnectorStatus.HOST_UNREACHABLE_MSG);
+                statusLabel.setStyle("-fx-text-fill: " + DatabaseConnectorStatus.HOST_UNREACHABLE_COLOR + ";");
+                statusIcon.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream(DatabaseConnectorStatus.HOST_UNREACHABLE_ICON))));
+                break;
+            default:
+                statusLabel.setText(DatabaseConnectorStatus.UNKNOWN_ERROR_MSG);
+                statusLabel.setStyle("-fx-text-fill: " + DatabaseConnectorStatus.UNKNOWN_ERROR_COLOR + ";");
+                statusIcon.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream(DatabaseConnectorStatus.UNKNOWN_ERROR_ICON))));
+                break;
         }
 
-        return DatabaseConnectorStatus.FUNCTIONAL_MSG.equals(serverStatus[0]);
+        return serverStatus;
     }
 
 
@@ -88,8 +106,9 @@ public class ServerStatusUtils {
         if (serverCheckTimeline != null) {
             serverCheckTimeline.stop();
             serverCheckTimeline.getKeyFrames().setAll(new KeyFrame(Duration.seconds(checkIntervalInSeconds), event -> {
-                boolean updatedServerStatus = updateServerStatusUI();
-                adjustCheckInterval(updatedServerStatus);
+                ServerStatus updatedServerStatus = updateServerStatusUI();
+                boolean isFunctional = (updatedServerStatus == ServerStatus.ONLINE);
+                adjustCheckInterval(isFunctional);
             }));
             serverCheckTimeline.play();
         }

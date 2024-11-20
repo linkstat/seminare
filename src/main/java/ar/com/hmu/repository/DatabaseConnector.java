@@ -152,52 +152,45 @@ public class DatabaseConnector {
     /**
      * Verifica el estado del servidor combinando múltiples niveles de verificación de conectividad.
      * <p>
-     * Este método verifica si el servidor de base de datos está disponible realizando tres niveles de pruebas:
-     * <ol>
-     *      <li>Intentar conectarse a la BD con las credenciales especificadas en el archivo de configuración YAML.</li>
-     *      <li>Si falla, intenta una conexión TCP al puerto especificado. Si es exitoso, hay problemas de autenticación.</li>
-     *      <li>Si falla, probar si el servidor está en línea mediante un ping ICMP. Si es exitoso, el servicio de BD no está en ejecución.</li>
-     *</ol>
-     * @return una descripción del estado del servidor:
-     * <ul>
-     *      <li>"Servidor en línea y funcional."</li>
-     *      <li>"Servidor en línea, pero error de validación para la conexión a la BD."</li>
-     *      <li>"Servidor parcialmente en línea: el servicio de BD no está en ejecución."</li>
-     *      <li>"Servidor completamente fuera de línea / apagado."</li>
-     * </ul>
+     * Este método verifica si el servidor de base de datos está disponible realizando tres niveles de pruebas.
+     * @return el estado del servidor
      */
-    public String[] checkServerStatus() {
-        // Intentar conexión con las credenciales
+    public ServerStatus checkServerStatus() {
+        int timeoutMillis = 2000; // Tiempo de espera de 2 seg. para la prueba de conexión TCP
+
+        if (!isDatabasePortOpen(timeoutMillis)) {
+            // El host no está disponible o el servicio de base de datos no está escuchando en el puerto
+            return ServerStatus.HOST_UNREACHABLE;
+        }
+
+        // Intentar conectarse con credenciales
         try (Connection connection = getConnection()) {
             // Conexión exitosa
-            return new String[] {
-                DatabaseConnectorStatus.FUNCTIONAL_MSG,
-                DatabaseConnectorStatus.FUNCTIONAL_COLOR,
-                DatabaseConnectorStatus.FUNCTIONAL_ICON
-            };
+            return ServerStatus.ONLINE;
         } catch (DatabaseAuthenticationException e) {
             // Error de autenticación
-            return new String[] {
-                    DatabaseConnectorStatus.AUTH_PROBLEM_MSG,
-                    DatabaseConnectorStatus.AUTH_PROBLEM_COLOR,
-                    DatabaseConnectorStatus.AUTH_PROBLEM_ICON
-            };
+            return ServerStatus.AUTHENTICATION_ERROR;
         } catch (DatabaseConnectionException e) {
-            // Error de conexión
-            return new String[] {
-                    DatabaseConnectorStatus.DB_SERVICE_PROBLEM_MSG,
-                    DatabaseConnectorStatus.DB_SERVICE_PROBLEM_COLOR,
-                    DatabaseConnectorStatus.DB_SERVICE_PROBLEM_ICON
-            };
+            // El servicio de base de datos no funciona o hay otros problemas de conexión
+            return ServerStatus.DATABASE_SERVICE_DOWN;
         } catch (Exception e) {
             // Error desconocido
-            return new String[] {
-                    DatabaseConnectorStatus.UNKNOWN_ERROR_MSG,
-                    DatabaseConnectorStatus.UNKNOWN_ERROR_STYLE,
-                    DatabaseConnectorStatus.UNKNOWN_ERROR_ICON
-            };
+            return ServerStatus.UNKNOWN_ERROR;
         }
     }
 
+    /**
+     * Método para realizar la prueba de conexión TCP y ajustar el checkServerStatus en consecuencia.
+     * @param timeoutMillis tiempo (especificado en milisegundos)
+     * @return verdadero o falso indicando el estado de la conexión
+     */
+    public boolean isDatabasePortOpen(int timeoutMillis) {
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress(this.dbHost, this.dbPort), timeoutMillis);
+            return true; // Conexión exitosa
+        } catch (IOException e) {
+            return false; // La conexión falló
+        }
+    }
 
 }
