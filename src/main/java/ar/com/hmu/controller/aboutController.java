@@ -1,7 +1,9 @@
 package ar.com.hmu.controller;
 
 import java.awt.Desktop;
+import java.io.InputStream;
 import java.net.URI;
+import java.util.Objects;
 
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
@@ -62,7 +64,13 @@ public class aboutController {
         descriptionText.setFont(Font.font("Barlow Condensed", 19));
 
         // Opcionalmente, también se podría setear la imagen del logo (pero usamos la que se estableció por defecto en el fxml)
-        logoImageView.setImage(new Image(getClass().getResourceAsStream(AppInfo.LOGO_IMAGE)));
+        InputStream imageStream = getClass().getResourceAsStream(AppInfo.LOGO_IMAGE);
+        if (imageStream != null) {
+            logoImageView.setImage(new Image(imageStream));
+        } else {
+            System.err.println("Error: No se pudo encontrar la imagen: " + AppInfo.LOGO_IMAGE);
+            // Opcional: usar una imagen alternativa o una imagen predeterminada
+        }
 
         // Establecer los valores de las etiquetas utilizando las constantes
         versionLabel.setText("Versión: " + AppInfo.VERSION);

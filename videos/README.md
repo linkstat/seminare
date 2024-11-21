@@ -4,10 +4,11 @@ Este directorio contiene una serie de videos demostrativos que ilustran el funci
 
 ## Videos
 
-| Video                | Descripción                             | Enlace |
-|----------------------|-----------------------------------------|--------|
-| [![Video-Toma-1](https://img.youtube.com/vi/VcM4n_cIZRA/0.jpg)](https://youtu.be/VcM4n_cIZRA) | **Video-Toma-1**: Introducción y primeras funcionalidades del proyecto. | [Ver en YouTube](https://youtu.be/VcM4n_cIZRA) |
-| [![Aromito - Inicio de sesión](https://img.youtube.com/vi/QoWztppetV4/0.jpg)](https://youtu.be/QoWztppetV4) | **Aromito - Inicio de sesión**: Pantalla inicial del sistema y autenticación. | [Ver en YouTube](https://youtu.be/QoWztppetV4) |
+| Video                                                                                                      | Descripción                                                                                                  | Enlace                                                       |
+|------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------|
+| [![Aromito - Inicio de sesión](https://img.youtube.com/vi/QoWztppetV4/0.jpg)](https://youtu.be/QoWztppetV4) | **Aromito - Inicio de sesión**: Pantalla inicial del sistema y autenticación.                                | [Ver en YouTube](https://youtu.be/QoWztppetV4)             |
+| [![Aromito - Roles de usuario, contraseñas y preferencias](https://img.youtube.com/vi/aHtovp8jqzY/0.jpg)](https://youtu.be/aHtovp8jqzY) | **Aromito - Roles de usuario, contraseñas y preferencias**: Configuración avanzada para usuarios y roles.    | [Ver en YouTube](https://youtu.be/aHtovp8jqzY)            |
+| [![Primer video charlando sobre el desarrollo del programa Aromito](https://img.youtube.com/vi/VcM4n_cIZRA/0.jpg)](https://youtu.be/VcM4n_cIZRA) | **Primer video charlando sobre el desarrollo del programa Aromito**: Introducción y primeras funcionalidades del proyecto. | [Ver en YouTube](https://youtu.be/VcM4n_cIZRA)            |
 
 ---
 

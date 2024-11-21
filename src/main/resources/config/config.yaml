@@ -4,7 +4,7 @@
 #
 db:
   dbType: mariadb
-  dbHost: 10.22.9.2
+  dbHost: localhost
   dbPort: 3306
   dbName: aromito
   dbUser: aromito
