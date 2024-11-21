@@ -336,7 +336,7 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
         return 0;
     }
 
-    public String getApellidoJefeByServicio(UUID servicioId) throws SQLException {
+    public String findApellidoJefeByServicio(UUID servicioId) throws SQLException {
         String query = "SELECT apellidos FROM Usuario WHERE servicioID = UUID_TO_BIN(?) AND tipoUsuario = ? AND estado = 1 LIMIT 1";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {

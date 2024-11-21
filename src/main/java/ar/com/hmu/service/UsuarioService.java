@@ -3,6 +3,7 @@ package ar.com.hmu.service;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import ar.com.hmu.constants.UsuarioCreationResult;
@@ -106,8 +107,26 @@ public class UsuarioService {
 
     public List<Usuario> readAll() throws ServiceException {
         try {
-            return usuarioRepository.readAll();
-        } catch (SQLException e) {
+            List<Usuario> usuarios = usuarioRepository.readAll();
+            for (Usuario usuario : usuarios) {
+                // Load Domicilio
+                Domicilio domicilio = domicilioRepository.findByUsuarioId(usuario.getId());
+                usuario.setDomicilio(domicilio);
+
+                // Load Roles
+                Set<Rol> roles = rolService.findRolesByUsuarioId(usuario.getId());
+                usuario.setRoles(roles);
+
+                // Load Cargo
+                Cargo cargo = cargoRepository.findById(usuario.getCargoId());
+                usuario.setCargo(cargo);
+
+                // Load Servicio
+                Servicio servicio = servicioRepository.findById(usuario.getServicioId());
+                usuario.setServicio(servicio);
+            }
+            return usuarios;
+        } catch (Exception e) {
             throw new ServiceException("Error al leer todos los usuarios", e);
         }
     }

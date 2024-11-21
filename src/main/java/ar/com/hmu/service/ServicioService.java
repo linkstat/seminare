@@ -6,7 +6,6 @@ import java.util.UUID;
 
 import ar.com.hmu.exceptions.ServiceException;
 import ar.com.hmu.model.Servicio;
-import ar.com.hmu.repository.DatabaseConnector;
 import ar.com.hmu.repository.ServicioRepository;
 import ar.com.hmu.repository.UsuarioRepository;
 
@@ -87,7 +86,7 @@ public class ServicioService {
 
     public String obtenerApellidoJefePorServicio(UUID servicioId) throws ServiceException {
         try {
-            return usuarioRepository.getApellidoJefeByServicio(servicioId);
+            return usuarioRepository.findApellidoJefeByServicio(servicioId);
         } catch (SQLException e) {
             throw new ServiceException("Error al obtener el apellido del jefe del servicio", e);
         }
