@@ -109,7 +109,7 @@
                         <VBox>
                            <children>
                               <Label text="Calle:" />
-                              <ComboBox fx:id="domCalleComboBox" editable="true" prefWidth="222.0" promptText="Teniente General Juan Domingo Perón" />
+                              <ComboBox fx:id="domCalleComboBox" editable="true" prefWidth="222.0" promptText="Avenida Siempre Viva Michael Jackson" />
                            </children>
                         </VBox>
                         <VBox>
@@ -204,13 +204,13 @@
                      <VBox spacing="2.0">
                         <children>
                            <CheckBox fx:id="rolAgenteCheckBox" mnemonicParsing="false" text="Agente" />
-                           <CheckBox fx:id="rolJefeServicioCheckBox" mnemonicParsing="false" text="Oficina de Personal" />
+                           <CheckBox fx:id="rolJefeServicioCheckBox" mnemonicParsing="false" text="Jefe de Servicio" />
                         </children>
                      </VBox>
                      <VBox spacing="2.0">
                         <children>
                            <CheckBox fx:id="rolDireccionCheckBox" mnemonicParsing="false" text="Directivo" />
-                           <CheckBox fx:id="rolOficinaPersonalCheckBox" mnemonicParsing="false" text="Jefe de Servicio" />
+                           <CheckBox fx:id="rolOficinaPersonalCheckBox" mnemonicParsing="false" text="Oficina de Personal" />
                         </children>
                      </VBox>
                   </children>
