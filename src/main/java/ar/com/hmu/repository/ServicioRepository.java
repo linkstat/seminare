@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import ar.com.hmu.model.Agrupacion;
+import ar.com.hmu.model.Cargo;
 import ar.com.hmu.model.Servicio;
 import ar.com.hmu.repository.dao.GenericDAO;
 
@@ -104,6 +105,31 @@ public class ServicioRepository implements GenericDAO<Servicio> {
             e.printStackTrace();
             throw new RuntimeException("Error al eliminar el servicio", e);
         }
+    }
+
+    public Servicio findById(UUID id) throws SQLException {
+        String query = "SELECT BIN_TO_UUID(id) AS id, nombre, agrupacion, direccionID,  FROM Servicio WHERE id = UUID_TO_BIN(?)";
+
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+
+            stmt.setString(1, id.toString());
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Servicio servicio = new Servicio();
+                    servicio.setId(UUID.fromString(rs.getString("id")));
+                    servicio.setNombre(rs.getString("nombre"));
+                    servicio.setAgrupacion(Agrupacion.valueOf(rs.getString("agrupacion")));
+                    servicio.setDireccionId(UUID.fromString(rs.getString("direccionID")));
+                    return servicio;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLException("Error al buscar la descripción por número", e);
+        }
+        return null;
     }
 
     /**

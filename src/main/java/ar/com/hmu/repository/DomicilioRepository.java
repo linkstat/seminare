@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.UUID;
 
 import ar.com.hmu.factory.DomicilioFactory;
+import ar.com.hmu.model.Agrupacion;
 import ar.com.hmu.model.Domicilio;
+import ar.com.hmu.model.Servicio;
 import ar.com.hmu.repository.dao.GenericDAO;
 
 
@@ -140,6 +142,37 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
             e.printStackTrace();
             throw new RuntimeException("Error al eliminar el domicilio", e);
         }
+    }
+
+    public Domicilio findByUsuarioId(UUID id) throws SQLException {
+        String query = "SELECT BIN_TO_UUID(d.id) AS id, d.calle, d.numeracion, d.barrio, d.ciudad, d.localidad, d.provincia " +
+                "FROM Domicilio d JOIN Usuario u ON d.id = u.domicilioID " +
+                "WHERE u.domicilioID = UUID_TO_BIN(?)";
+
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+
+            stmt.setString(1, id.toString());
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Domicilio domicilio = new Domicilio.Builder()
+                            .setId(UUID.fromString(rs.getString("id")))
+                            .setCalle(rs.getString("calle"))
+                            .setNumeracion(rs.getString("numeracion"))
+                            .setBarrio(rs.getString("barrio"))
+                            .setCiudad(rs.getString("ciudad"))
+                            .setLocalidad(rs.getString("localidad"))
+                            .setProvincia(rs.getString("provincia"))
+                            .build();
+                    return domicilio;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLException("Error al buscar la descripción por número", e);
+        }
+        return null;
     }
 
 }

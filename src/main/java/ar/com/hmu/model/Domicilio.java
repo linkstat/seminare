@@ -7,13 +7,13 @@ import java.util.UUID;
  * Implementa el patrón de diseño Builder para permitir la creación de objetos con parámetros opcionales.
  */
 public class Domicilio {
-	private UUID id;
-	private String calle;
-	private String numeracion;
-	private String barrio;
-	private String ciudad;
-	private String localidad;
-	private String provincia;
+	private final UUID id;
+	private final String calle;
+	private final String numeracion;
+	private final String barrio;
+	private final String ciudad;
+	private final String localidad;
+	private final String provincia;
 
 	/**
 	 * Constructor privado que inicializa un objeto Domicilio con los valores proporcionados por el Builder.
@@ -127,6 +127,21 @@ public class Domicilio {
 		 * @return un nuevo objeto Domicilio.
 		 */
 		public Domicilio build() {
+			// Validaciones opcionales antes de construir el objeto
+			if (id == null) {
+				throw new IllegalStateException("El ID no puede ser null");
+			}
+			if(barrio != null) {
+				if(ciudad != null) {
+					throw new IllegalStateException("Si define barrio, debe indicar de qué ciudad");
+				}
+			}
+			if(localidad != null) {
+				if(provincia != null) {
+					throw new IllegalStateException("Si define localidad, debe indicar de qué provincia");
+				}
+			}
+
 			return new Domicilio(this);
 		}
 
@@ -134,34 +149,12 @@ public class Domicilio {
 
 
 	// Setters
-
-	public void setId(UUID id) {
-		this.id = id;
-	}
-
-	public void setCalle(String calle) {
-		this.calle = calle;
-	}
-
-	public void setNumeracion(String numeracion) {
-		this.numeracion = numeracion;
-	}
-
-	public void setBarrio(String barrio) {
-		this.barrio = barrio;
-	}
-
-	public void setCiudad(String ciudad) {
-		this.ciudad = ciudad;
-	}
-
-	public void setLocalidad(String localidad) {
-		this.localidad = localidad;
-	}
-
-	public void setProvincia(String provincia) {
-		this.provincia = provincia;
-	}
+	/* No se definen setters para reforzar la inmutabilidad (porque todos los campos se han marcado como final).
+	 * Mantenemos Domicilio como inmutable, porque es lo recomendable cuando se usa el patrón Builder.
+	 * Esto evita la modificación de objetos después de su creación, mejorando la seguridad y consistencia de los datos.
+	 * En lugar de usar el constructor predeterminado y los setters, se usa el Builder para establecer todas las
+	 * propiedades necesarias antes de construir el objeto.
+	 */
 
 
 	// Getters

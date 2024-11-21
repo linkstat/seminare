@@ -2,6 +2,7 @@ package ar.com.hmu.repository;
 
 import ar.com.hmu.model.Agrupacion;
 import ar.com.hmu.model.Cargo;
+import ar.com.hmu.model.Rol;
 import ar.com.hmu.repository.dao.GenericDAO;
 import java.sql.*;
 import java.util.ArrayList;
@@ -157,6 +158,31 @@ public class CargoRepository implements GenericDAO<Cargo> {
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Error al buscar el número por descripción", e);
+        }
+        return null;
+    }
+
+    public Cargo findById(UUID id) throws SQLException {
+        String query = "SELECT BIN_TO_UUID(id) AS id, numero, descripcion, agrupacion FROM Cargo WHERE id = UUID_TO_BIN(?)";
+
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+
+            stmt.setString(1, id.toString());
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Cargo cargo = new Cargo();
+                    cargo.setId(UUID.fromString(rs.getString("id")));
+                    cargo.setNumero(rs.getInt("numero"));
+                    cargo.setDescripcion(rs.getString("descripcion"));
+                    cargo.setAgrupacion(Agrupacion.valueOf(rs.getString("agrupacion")));
+                    return cargo;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new SQLException("Error al buscar la descripción por número", e);
         }
         return null;
     }
