@@ -98,6 +98,7 @@ public class AbmUsuarioController implements Initializable {
     private ObservableList<TipoUsuario> tiposUsuarioList = FXCollections.observableArrayList(TipoUsuario.values());
     private ObservableList<Cargo> cargosList = FXCollections.observableArrayList();
     private ObservableList<Servicio> serviciosList = FXCollections.observableArrayList();
+    private String storedNumeracion = null;  // Almaceno el valor anterior de numeración de calle para uso en el comportamiento de checkBoxSinNumero
 
     // Inicializar el conjunto de roles
     Set<Rol> rolesSeleccionados = new HashSet<>();
@@ -204,6 +205,7 @@ public class AbmUsuarioController implements Initializable {
     private void cargarUsuarios() {
         try {
             List<Usuario> usuarios = usuarioService.readAll();
+            //List<Usuario> usuariosPrimarios = usuarioService.readAllPrimarios();
             usuariosList.clear();
             usuariosList.addAll(usuarios);
         } catch (ServiceException e) {
@@ -405,6 +407,7 @@ public class AbmUsuarioController implements Initializable {
         domProvinciaComboBox.setDisable(!enabled);
 
         // Tipo de Usuario y Roles
+        //TODO: Verificar, que se habilite solo si es nuevo usuario. Sino, tomar los valores desde la carga del usuario
         tipoUsuarioComboBox.setDisable(!enabled);
         rolAgenteCheckBox.setDisable(!enabled);
         rolJefeServicioCheckBox.setDisable(!enabled);
@@ -505,10 +508,17 @@ public class AbmUsuarioController implements Initializable {
         domSinNumeroCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> onFormModified());
         domSinNumeroCheckBox.setOnAction(event -> {
             if (domSinNumeroCheckBox.isSelected()) {
-                domNumeracionField.setText("0");
-                domNumeracionField.setDisable(true);
+                try {
+                    storedNumeracion = domNumeracionField.getText();
+                } catch (NumberFormatException e) {
+                    domNumeracionField.setText("0");
+                    throw new RuntimeException(e);
+                } finally {
+                    domNumeracionField.setText("0");
+                    domNumeracionField.setDisable(true);
+                }
             } else {
-                domNumeracionField.setText("");
+                domNumeracionField.setText(storedNumeracion);
                 domNumeracionField.setDisable(false);
             }
             onFormModified();
@@ -1083,44 +1093,39 @@ public class AbmUsuarioController implements Initializable {
         ImageUtils.setProfileImage(imagenPerfilImageView, usuario.getProfileImage(), imagenPerfilOriginal);
 
         //Cargar roles en los CheckBoxes
-        Set<Rol> roles = usuario.getRoles();
-        for (Rol rol : roles) {
-            switch (rol.getTipoUsuario()) {
-                case EMPLEADO:
-                    rolAgenteCheckBox.setSelected(true);
-                    break;
-                case JEFATURA_DE_SERVICIO:
-                    rolJefeServicioCheckBox.setSelected(true);
-                    break;
-                case OFICINA_DE_PERSONAL:
-                    rolOficinaPersonalCheckBox.setSelected(true);
-                    break;
-                case DIRECCION:
-                    rolDireccionCheckBox.setSelected(true);
-                    break;
-                default:
-                    break;
-            }
-        }
+        rolAgenteCheckBox.setSelected(usuario.hasRole(TipoUsuario.EMPLEADO));
+        rolJefeServicioCheckBox.setSelected(usuario.hasRole(TipoUsuario.JEFATURA_DE_SERVICIO));
+        rolOficinaPersonalCheckBox.setSelected(usuario.hasRole(TipoUsuario.OFICINA_DE_PERSONAL));
+        rolDireccionCheckBox.setSelected(usuario.hasRole(TipoUsuario.DIRECCION));
+        // Deshabilitar checkBox del Rol correspondiente al Tipo de usuario
+        rolAgenteCheckBox.setDisable(usuario.isDefaultRole(TipoUsuario.EMPLEADO));
+        rolJefeServicioCheckBox.setDisable(usuario.isDefaultRole(TipoUsuario.JEFATURA_DE_SERVICIO));
+        rolOficinaPersonalCheckBox.setDisable(usuario.isDefaultRole(TipoUsuario.OFICINA_DE_PERSONAL));
+        rolDireccionCheckBox.setDisable(usuario.isDefaultRole(TipoUsuario.DIRECCION));
 
         // Datos del domicilio
         Domicilio domicilio = usuario.getDomicilio();
         if (domicilio != null) {
-            domCalleComboBox.getEditor().setText(domicilio.getCalle());
-            String numeracion = domicilio.getNumeracion();
-            boolean sinNumero = "0".equals(numeracion) || numeracion == null || numeracion.isEmpty();
+            domCalleComboBox.getEditor().setText(
+                    (domicilio.getCalle() != null && !domicilio.getCalle().isEmpty()) ? domicilio.getCalle() : "");
+            int numeracion = domicilio.getNumeracion();
+            boolean sinNumero = numeracion == 0;
             domSinNumeroCheckBox.setSelected(sinNumero);
             if (sinNumero) {
                 domNumeracionField.setText("0");
                 domNumeracionField.setDisable(true);
             } else {
-                domNumeracionField.setText(numeracion);
+                domNumeracionField.setText(String.valueOf(numeracion));
                 domNumeracionField.setDisable(false);
             }
-            domBarrioComboBox.getEditor().setText(domicilio.getBarrio());
-            domCiudadComboBox.getEditor().setText(domicilio.getCiudad());
-            domLocalidadComboBox.getEditor().setText(domicilio.getLocalidad());
-            domProvinciaComboBox.getEditor().setText(domicilio.getProvincia());
+            domBarrioComboBox.getEditor().setText(
+                    (domicilio.getBarrio() != null && !domicilio.getBarrio().isEmpty()) ? domicilio.getBarrio() : "");
+            domCiudadComboBox.getEditor().setText(
+                    (domicilio.getCiudad() != null && !domicilio.getCiudad().isEmpty()) ? domicilio.getCiudad() : "");
+            domLocalidadComboBox.getEditor().setText(
+                    (domicilio.getLocalidad() != null && !domicilio.getLocalidad().isEmpty()) ? domicilio.getLocalidad() : "");
+            domProvinciaComboBox.getEditor().setText(
+                    (domicilio.getProvincia() != null && !domicilio.getProvincia().isEmpty()) ? domicilio.getProvincia() : "");
         } else {
             // Limpiar campos de domicilio si no hay datos
             domCalleComboBox.getEditor().clear();
@@ -1249,27 +1254,71 @@ public class AbmUsuarioController implements Initializable {
         usuario.setRoles(rolesSeleccionados);
 
         // Asignar domicilio
-        String numeracion = domSinNumeroCheckBox.isSelected() ? "0" : domNumeracionField.getText();
-        Domicilio domicilio = new Domicilio.Builder()
-                .setId(UUID.randomUUID()) // Deberíamos verificar antes, que no hay un UUID ya generado
-                .setCalle(domCalleComboBox.getEditor().getText())
+        String numeracionInput = domNumeracionField.getText().trim();
+        int numeracion;
+        if (domSinNumeroCheckBox.isSelected()) {
+            numeracion = 0;
+            domNumeracionField.setText("0");
+            domNumeracionField.setDisable(true);
+        } else {
+            try {
+                numeracion = Integer.parseInt(numeracionInput);
+                domNumeracionField.setDisable(false);
+            } catch (NumberFormatException e) {
+                mostrarError("La numeración debe ser un número válido.");
+                return null;
+            }
+        }
+        String calle = domCalleComboBox.getEditor().getText().trim();
+        String barrio = domBarrioComboBox.getEditor().getText().trim();
+        String ciudad = domCiudadComboBox.getEditor().getText().trim();
+        String localidad = domLocalidadComboBox.getEditor().getText().trim();
+        String provincia = domProvinciaComboBox.getEditor().getText().trim();
+        if (!barrio.isEmpty()) {
+            if(ciudad.isEmpty()) {
+                mostrarError("Si indica un barrio, debe indicar la ciudad.");
+                return null;
+            }
+        }
+
+        // Crear una instancia de Domicilio sin establecer el ID
+        Domicilio domicilioNuevo = new Domicilio.Builder()
+                .setCalle(calle)
                 .setNumeracion(numeracion)
-                .setBarrio(domBarrioComboBox.getEditor().getText())
-                .setCiudad(domCiudadComboBox.getEditor().getText())
-                .setLocalidad(domLocalidadComboBox.getEditor().getText())
-                .setProvincia(domProvinciaComboBox.getEditor().getText())
+                .setBarrio(barrio)
+                .setCiudad(ciudad)
+                .setLocalidad(localidad)
+                .setProvincia(provincia)
                 .build();
 
         try {
             if (usuario.getDomicilio() == null || usuario.getDomicilio().getId() == null) {
-                // Crear nuevo domicilio
-                domicilioService.create(domicilio);
-                usuario.setDomicilio(domicilio);
+                // Crear nuevo domicilio con un nuevo UUID
+                Domicilio domicilioCreado = new Domicilio.Builder()
+                        .setId(UUID.randomUUID())
+                        .setCalle(domicilioNuevo.getCalle())
+                        .setNumeracion(domicilioNuevo.getNumeracion())
+                        .setBarrio(domicilioNuevo.getBarrio())
+                        .setCiudad(domicilioNuevo.getCiudad())
+                        .setLocalidad(domicilioNuevo.getLocalidad())
+                        .setProvincia(domicilioNuevo.getProvincia())
+                        .build();
+
+                domicilioService.create(domicilioCreado);
+                usuario.setDomicilio(domicilioCreado);
             } else {
-                // Actualizar domicilio existente
-                domicilio.setId(usuario.getDomicilio().getId());
-                domicilioService.update(domicilio);
-                usuario.setDomicilio(domicilio);
+                // Actualizar domicilio existente usando toBuilder
+                Domicilio domicilioActualizado = usuario.getDomicilio().toBuilder()
+                        .setCalle(calle)
+                        .setNumeracion(numeracion)
+                        .setBarrio(barrio)
+                        .setCiudad(ciudad)
+                        .setLocalidad(localidad)
+                        .setProvincia(provincia)
+                        .build();
+
+                domicilioService.update(domicilioActualizado);
+                usuario.setDomicilio(domicilioActualizado);
             }
         } catch (ServiceException e) {
             mostrarError("Error al asignar el domicilio: " + e.getMessage());

@@ -152,7 +152,6 @@ public class LoginController {
      * verificaciones necesarias para el estado del servidor.
      */
     public void postInitialize() {
-
         // Actualizar el estado del servidor y comenzar el chequeo periódico
         if (databaseConnector == null) {
             throw new IllegalStateException("MainMenuMosaicoController: DatabaseConnector no está configurado. No se puede verificar el estado del servidor.");
@@ -160,15 +159,6 @@ public class LoginController {
         serverStatusUtils = new ServerStatusUtils(databaseConnector, serverStatusLabel, serverStatusIcon);
         serverStatusUtils.updateServerStatusUI();
         serverStatusUtils.startPeriodicServerCheck();
-
-        // Inicialización de repositorios
-        // Remove re-initialization of repositories and services: Use the services passed via setters instead
-        //ServicioRepository servicioRepository = new ServicioRepository(databaseConnector);
-        //CargoRepository cargoRepository = new CargoRepository(databaseConnector);
-        //DomicilioRepository domicilioRepository = new DomicilioRepository(databaseConnector);
-        //UsuarioRepository usuarioRepository = new UsuarioRepository(databaseConnector);
-        // Inicialización de UsuarioService
-        //this.usuarioService = new UsuarioService(usuarioRepository, servicioRepository, cargoRepository, domicilioRepository, rolService);
 
     }
 
@@ -222,8 +212,6 @@ public class LoginController {
      * sus credenciales manualmente.
      */
     private void loadUserCuil() {
-        // Mejor inicializar preferences en initialize() una vez para evitar posibles inconsistencias.
-        //preferences = Preferences.userNodeForPackage(LoginController.class);
         String lastUserCuil = preferencesManager.get(LAST_USER_CUIL_KEY, "");
 
         if (!lastUserCuil.isEmpty()) {
@@ -329,9 +317,6 @@ public class LoginController {
                 if (usuario == null) {
                     throw new IllegalStateException("No se pudo recuperar el usuario después de la autenticación.");
                 }
-
-                // Ya hay una instancia de UsuarioService inicializada en postInitialize... no sería necesario crear una nueva
-                //UsuarioService usuarioService = new UsuarioService(new UsuarioRepository(databaseConnector, rolRepository));
 
                 // Verificar si el usuario tiene la contraseña predeterminada
                 if (usuario.isDefaultPassword()) {

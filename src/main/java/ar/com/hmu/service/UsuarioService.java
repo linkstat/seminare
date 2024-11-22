@@ -110,7 +110,12 @@ public class UsuarioService {
             List<Usuario> usuarios = usuarioRepository.readAll();
             for (Usuario usuario : usuarios) {
                 // Load Domicilio
-                Domicilio domicilio = domicilioRepository.findByUsuarioId(usuario.getId());
+                Domicilio domicilio = domicilioRepository.findByIdAndUserId(usuario.getDomicilioId(), usuario.getId());
+                if (domicilio == null) {
+                    System.out.println("Domicilio es null para Usuario ID: " + usuario.getId());
+                    //TODO: Decidir cómo manejar este caso: lanzar una excepción o continuar.
+                    continue; // Por ejemplo, continuar con el siguiente usuario
+                }
                 usuario.setDomicilio(domicilio);
 
                 // Load Roles
@@ -128,6 +133,17 @@ public class UsuarioService {
             return usuarios;
         } catch (Exception e) {
             throw new ServiceException("Error al leer todos los usuarios", e);
+        }
+    }
+
+    public List<Usuario> readAllPrimarios() throws ServiceException {
+        try {
+            List<Usuario> usuarios = usuarioRepository.readAll();
+            for (Usuario usuario : usuarios) {
+            }
+            return usuarios;
+        } catch (Exception e) {
+            throw new ServiceException("Error al leer todos los usuarios (solo datos primarios)", e);
         }
     }
 

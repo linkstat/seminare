@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import ar.com.hmu.exceptions.ServiceException;
 import ar.com.hmu.factory.DomicilioFactory;
 import ar.com.hmu.model.Agrupacion;
 import ar.com.hmu.model.Domicilio;
@@ -31,17 +32,18 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
     @Override
     public void create(Domicilio domicilio) throws SQLException {
         String query = "INSERT INTO Domicilio (id, calle, numeracion, barrio, ciudad, localidad, provincia) " +
-                "VALUES (UUID_TO_BIN(UUID()), ?, ?, ?, ?, ?, ?)";
+                "VALUES (UUID_TO_BIN(?), ?, ?, ?, ?, ?, ?)";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
-            stmt.setString(1, domicilio.getCalle());
-            stmt.setString(2, domicilio.getNumeracion());
-            stmt.setString(3, domicilio.getBarrio());
-            stmt.setString(4, domicilio.getCiudad());
-            stmt.setString(5, domicilio.getLocalidad());
-            stmt.setString(6, domicilio.getProvincia());
+            stmt.setString(1, domicilio.getId().toString());
+            stmt.setString(2, domicilio.getCalle());
+            stmt.setInt(3, domicilio.getNumeracion());
+            stmt.setString(4, domicilio.getBarrio());
+            stmt.setString(5, domicilio.getCiudad());
+            stmt.setString(6, domicilio.getLocalidad());
+            stmt.setString(7, domicilio.getProvincia());
 
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -85,7 +87,7 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
                 domicilios.add(new Domicilio.Builder()
                         .setId(UUID.fromString(rs.getString("id")))
                         .setCalle(rs.getString("calle"))
-                        .setNumeracion(rs.getString("numeracion"))
+                        .setNumeracion(rs.getInt("numeracion"))
                         .setBarrio(rs.getString("barrio"))
                         .setCiudad(rs.getString("ciudad"))
                         .setLocalidad(rs.getString("localidad"))
@@ -108,7 +110,7 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
             stmt.setString(1, domicilio.getCalle());
-            stmt.setString(2, domicilio.getNumeracion());
+            stmt.setInt(2, domicilio.getNumeracion());
             stmt.setString(3, domicilio.getBarrio());
             stmt.setString(4, domicilio.getCiudad());
             stmt.setString(5, domicilio.getLocalidad());
@@ -144,7 +146,7 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
         }
     }
 
-    public Domicilio findByUsuarioId(UUID id) throws SQLException {
+    public Domicilio findById(UUID id) throws SQLException {
         String query = "SELECT BIN_TO_UUID(d.id) AS id, d.calle, d.numeracion, d.barrio, d.ciudad, d.localidad, d.provincia " +
                 "FROM Domicilio d JOIN Usuario u ON d.id = u.domicilioID " +
                 "WHERE u.domicilioID = UUID_TO_BIN(?)";
@@ -159,7 +161,7 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
                     Domicilio domicilio = new Domicilio.Builder()
                             .setId(UUID.fromString(rs.getString("id")))
                             .setCalle(rs.getString("calle"))
-                            .setNumeracion(rs.getString("numeracion"))
+                            .setNumeracion(rs.getInt("numeracion"))
                             .setBarrio(rs.getString("barrio"))
                             .setCiudad(rs.getString("ciudad"))
                             .setLocalidad(rs.getString("localidad"))
@@ -171,6 +173,39 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
         } catch (SQLException e) {
             e.printStackTrace();
             throw new SQLException("Error al buscar la descripción por número", e);
+        }
+        return null;
+    }
+
+    public Domicilio findByIdAndUserId(UUID domicilioId, UUID usuarioId) throws SQLException, ServiceException {
+        String query = "SELECT BIN_TO_UUID(d.id) AS id, d.calle, d.numeracion, d.barrio, d.ciudad, d.localidad, d.provincia " +
+                "FROM Domicilio d JOIN Usuario u ON d.id = u.domicilioID " +
+                "WHERE d.id = UUID_TO_BIN(?) AND u.id = UUID_TO_BIN(?)";
+
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+
+            stmt.setString(1, domicilioId.toString());
+            stmt.setString(2, usuarioId.toString());
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Domicilio domicilio = new Domicilio.Builder()
+                            .setId(UUID.fromString(rs.getString("id")))
+                            .setCalle(rs.getString("calle"))
+                            .setNumeracion(rs.getInt("numeracion"))
+                            .setBarrio(rs.getString("barrio"))
+                            .setCiudad(rs.getString("ciudad"))
+                            .setLocalidad(rs.getString("localidad"))
+                            .setProvincia(rs.getString("provincia"))
+                            .build();
+                    return domicilio;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new ServiceException("Domicilio no encontrado para el usuario con ID: " + usuarioId.toString());
+
         }
         return null;
     }

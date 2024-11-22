@@ -9,7 +9,7 @@ import java.util.UUID;
 public class Domicilio {
 	private final UUID id;
 	private final String calle;
-	private final String numeracion;
+	private final int numeracion;
 	private final String barrio;
 	private final String ciudad;
 	private final String localidad;
@@ -38,7 +38,7 @@ public class Domicilio {
 	public static class Builder {
 		private UUID id;
 		private String calle;
-		private String numeracion;
+		private int numeracion;
 		private String barrio;
 		private String ciudad;
 		private String localidad;
@@ -72,7 +72,7 @@ public class Domicilio {
 		 * @param numeracion el número del domicilio.
 		 * @return la instancia del Builder para permitir la concatenación de métodos.
 		 */
-		public Builder setNumeracion(String numeracion) {
+		public Builder setNumeracion(int numeracion) {
 			this.numeracion = numeracion;
 			return this;
 		}
@@ -131,16 +131,6 @@ public class Domicilio {
 			if (id == null) {
 				throw new IllegalStateException("El ID no puede ser null");
 			}
-			if(barrio != null) {
-				if(ciudad != null) {
-					throw new IllegalStateException("Si define barrio, debe indicar de qué ciudad");
-				}
-			}
-			if(localidad != null) {
-				if(provincia != null) {
-					throw new IllegalStateException("Si define localidad, debe indicar de qué provincia");
-				}
-			}
 
 			return new Domicilio(this);
 		}
@@ -167,7 +157,7 @@ public class Domicilio {
 		return calle;
 	}
 
-	public String getNumeracion() {
+	public int getNumeracion() {
 		return numeracion;
 	}
 
@@ -186,4 +176,20 @@ public class Domicilio {
 	public String getProvincia() {
 		return provincia;
 	}
+
+	/** Método para obtener un Builder preconfigurado con los valores actuales
+	 * <p>
+	 * @return un objeto Builder con los datos del domicilio actual
+	 */
+	public Builder toBuilder() {
+		return new Builder()
+				.setId(this.id)
+				.setCalle(this.calle)
+				.setNumeracion(this.numeracion)
+				.setBarrio(this.barrio)
+				.setCiudad(this.ciudad)
+				.setLocalidad(this.localidad)
+				.setProvincia(this.provincia);
+	}
+
 }

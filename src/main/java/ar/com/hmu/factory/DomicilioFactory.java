@@ -12,7 +12,7 @@ public class DomicilioFactory {
         return new Domicilio.Builder()
                 .setId(UUID.fromString(rs.getString("id")))
                 .setCalle(rs.getString("calle"))
-                .setNumeracion(rs.getString("numeracion"))
+                .setNumeracion(rs.getInt("numeracion"))
                 .setBarrio(rs.getString("barrio"))
                 .setCiudad(rs.getString("ciudad"))
                 .setLocalidad(rs.getString("localidad"))

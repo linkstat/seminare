@@ -493,16 +493,40 @@ public class MainMenuMosaicoController {
     @FXML
     private void handleListadoDeAgentes(Event event) {
         try {
+            // Usa los servicios ya inicializados
+            UsuarioService usuarioService = this.usuarioService;
+            CargoService cargoService = this.cargoService;
+            ServicioService servicioService = this.servicioService;
+            DomicilioService domicilioService = this.domicilioService;
+            RolService rolService = this.rolService;
+
+            // Configurar la fábrica de controladores
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/listaUsuarios.fxml"));
+            loader.setControllerFactory(controllerClass -> {
+                if (controllerClass == ListaUsuariosController.class) {
+                    ListaUsuariosController controller = new ListaUsuariosController();
+                    controller.setServices(usuarioService, cargoService, servicioService, domicilioService, rolService);
+                    return controller;
+                } else {
+                    // Manejo predeterminado
+                    try {
+                        return controllerClass.getDeclaredConstructor().newInstance();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+            // Carga del FXML después de configurada la Fábrica
             Parent root = loader.load();
 
             ListaUsuariosController controller = loader.getController();
-            controller.setUsuarioService(usuarioService);
+            controller.setServices(usuarioService, cargoService, servicioService, domicilioService, rolService);
 
             Stage stage = new Stage();
-            stage.setTitle("Listado de Agentes");
+            stage.setTitle("Listado de Agentes" + " :: " + AppInfo.PRG_LONG_TITLE);
             stage.setScene(new Scene(root));
             stage.initModality(Modality.WINDOW_MODAL);
+            stage.setWidth(590.0);
             stage.initOwner(((Node) event.getSource()).getScene().getWindow());
             stage.showAndWait();
         } catch (IOException e) {
@@ -514,7 +538,30 @@ public class MainMenuMosaicoController {
     @FXML
     private void handleListadoDeServicios(Event event) {
         try {
+            // Usa los servicios ya inicializados
+            UsuarioService usuarioService = this.usuarioService;
+            CargoService cargoService = this.cargoService;
+            ServicioService servicioService = this.servicioService;
+            DomicilioService domicilioService = this.domicilioService;
+            RolService rolService = this.rolService;
+
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/listaServicios.fxml"));
+            loader.setControllerFactory(controllerClass -> {
+                if (controllerClass == ListaServiciosController.class) {
+                    ListaServiciosController controller = new ListaServiciosController();
+                    controller.setServices(usuarioService, cargoService, servicioService, domicilioService, rolService);
+                    return controller;
+                } else {
+                    // Manejo predeterminado
+                    try {
+                        return controllerClass.getDeclaredConstructor().newInstance();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+
+            // Carga del FXML después de configurada la Fábrica
             Parent root = loader.load();
 
             ListaServiciosController controller = loader.getController();
@@ -524,6 +571,7 @@ public class MainMenuMosaicoController {
             stage.setTitle("Lista de Servicios");
             stage.setScene(new Scene(root));
             stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setWidth(470.0);
             stage.initOwner(((Node) event.getSource()).getScene().getWindow());
             stage.showAndWait();
         } catch (IOException e) {

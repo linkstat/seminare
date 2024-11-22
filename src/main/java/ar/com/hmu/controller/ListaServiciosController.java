@@ -1,5 +1,6 @@
 package ar.com.hmu.controller;
 
+import ar.com.hmu.service.*;
 import javafx.fxml.FXML;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -7,7 +8,6 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 
 import ar.com.hmu.model.Servicio;
-import ar.com.hmu.service.ServicioService;
 import ar.com.hmu.exceptions.ServiceException;
 
 import java.util.List;
@@ -23,7 +23,12 @@ public class ListaServiciosController {
     @FXML
     private TableColumn<Servicio, String> apellidoJefeColumn;
 
+    // Servicios
+    private UsuarioService usuarioService;
+    private CargoService cargoService;
     private ServicioService servicioService;
+    private DomicilioService domicilioService;
+    private RolService rolService;
 
     public void setServicioService(ServicioService servicioService) {
         this.servicioService = servicioService;
@@ -43,6 +48,21 @@ public class ListaServiciosController {
 
         cargarServicios();
     }
+
+    /**
+     * Método para Inyectar los Servicios
+     * @param usuarioService para la gestión de Usuarios
+     * @param cargoService para la gestión de Cargos
+     * @param servicioService para la gestión de Servicios
+     */
+    public void setServices(UsuarioService usuarioService, CargoService cargoService, ServicioService servicioService, DomicilioService domicilioService, RolService rolService) {
+        this.usuarioService = usuarioService;
+        this.cargoService = cargoService;
+        this.servicioService = servicioService;
+        this.domicilioService = domicilioService;
+        this.rolService = rolService;
+    }
+
 
     private void cargarServicios() {
         try {

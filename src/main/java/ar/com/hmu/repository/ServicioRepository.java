@@ -108,7 +108,7 @@ public class ServicioRepository implements GenericDAO<Servicio> {
     }
 
     public Servicio findById(UUID id) throws SQLException {
-        String query = "SELECT BIN_TO_UUID(id) AS id, nombre, agrupacion, direccionID,  FROM Servicio WHERE id = UUID_TO_BIN(?)";
+        String query = "SELECT BIN_TO_UUID(id) AS id, nombre, agrupacion, BIN_TO_UUID(direccionID) AS direccionID FROM Servicio WHERE id = UUID_TO_BIN(?)";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {

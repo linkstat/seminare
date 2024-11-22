@@ -356,6 +356,16 @@ public abstract class Usuario {
 				.anyMatch(rol -> rol.getNombre().equalsIgnoreCase(tipoUsuario.getInternalName()));
 	}
 
+	public boolean isDefaultRole(TipoUsuario tipoUsuario) {
+		if (this.tipoUsuario == null) {
+			return false;
+		}
+		if (this.tipoUsuario == tipoUsuario) {
+			return true;
+		}
+		return false;
+	}
+
 	/**
 	 * Método que indica si el usuario posé al menos un rol de entre varios dados.
 	 * @param tiposUsuario uno o más Enum de tipo TipoUsuario, que contiene los valores posibles.
