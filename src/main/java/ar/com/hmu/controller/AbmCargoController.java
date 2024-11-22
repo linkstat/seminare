@@ -1,7 +1,11 @@
 package ar.com.hmu.controller;
 
+import ar.com.hmu.model.Agrupacion;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -11,28 +15,44 @@ import ar.com.hmu.service.CargoService;
 import ar.com.hmu.exceptions.ServiceException;
 import ar.com.hmu.util.AlertUtils;
 
+import java.util.UUID;
+
 public class AbmCargoController {
 
     @FXML
     private TableView<Cargo> cargosTableView;
     @FXML
+    private TableColumn<Cargo, String> numeroColumn;
+    @FXML
     private TableColumn<Cargo, String> descripcionColumn;
     @FXML
+    private TableColumn<Cargo, String> agrupacionColumn;
+    @FXML
+    private TextField numeroTextField;
+    @FXML
     private TextField descripcionTextField;
+    @FXML
+    private ComboBox<Agrupacion> agrupacionComboBox;
+    private ObservableList<Agrupacion> agrupacionList = FXCollections.observableArrayList(Agrupacion.values());
 
     private CargoService cargoService;
 
-    public void setCargoService(CargoService cargoService) {
+    public void setServices(CargoService cargoService) {
         this.cargoService = cargoService;
     }
 
     @FXML
     public void initialize() {
+        // Configurar la columna de número de cargo
+        numeroColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getNumero().toString()));
         // Configurar la columna de descripción
         descripcionColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getDescripcion()));
-
+        // Configurar la columna de agrupación
+        agrupacionColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getAgrupacion().toString()));
         // Manejar la selección en la tabla
         cargosTableView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> mostrarDetalleCargo(newValue));
+        // Inicializar ComboBox
+        agrupacionComboBox.setItems(agrupacionList);
 
         cargarCargos();
     }
@@ -47,27 +67,37 @@ public class AbmCargoController {
 
     private void mostrarDetalleCargo(Cargo cargo) {
         if (cargo != null) {
+            numeroTextField.setText(cargo.getNumero().toString());
             descripcionTextField.setText(cargo.getDescripcion());
+            agrupacionComboBox.getSelectionModel().select(cargo.getAgrupacion());
         } else {
+            numeroTextField.clear();
             descripcionTextField.clear();
+            agrupacionComboBox.getSelectionModel().clearSelection();
         }
     }
 
     @FXML
     private void onAgregarCargo() {
+        String numero = numeroTextField.getText().trim();
         String descripcion = descripcionTextField.getText().trim();
-        if (descripcion.isEmpty()) {
-            AlertUtils.showWarn("La descripción no puede estar vacía.");
+        Agrupacion agrupacion = (Agrupacion) agrupacionComboBox.getSelectionModel().getSelectedItem();
+        if (numero.isEmpty() || descripcion.isEmpty() || agrupacion == null) {
+            AlertUtils.showWarn("Debe introducir un numero de cargo, una descripción y seleccionar una agrupación.");
             return;
         }
 
         Cargo cargo = new Cargo();
+        cargo.setId(UUID.randomUUID());
+        cargo.setNumero(Integer.parseInt(numero));
         cargo.setDescripcion(descripcion);
+        cargo.setAgrupacion(agrupacion);
 
         try {
             cargoService.create(cargo);
             cargarCargos();
             descripcionTextField.clear();
+            agrupacionComboBox.getSelectionModel().clearSelection();
         } catch (ServiceException e) {
             AlertUtils.showErr("Error al agregar el cargo: " + e.getMessage());
         }
@@ -81,13 +111,17 @@ public class AbmCargoController {
             return;
         }
 
+        String numero = numeroTextField.getText().trim();
         String descripcion = descripcionTextField.getText().trim();
-        if (descripcion.isEmpty()) {
-            AlertUtils.showWarn("La descripción no puede estar vacía.");
+        Agrupacion agrupacion = (Agrupacion) agrupacionComboBox.getSelectionModel().getSelectedItem();
+        if (numero.isEmpty() || descripcion.isEmpty() || agrupacion == null) {
+            AlertUtils.showWarn("Se debe especificar un número de cargo, una descripción y seleccionar una agrupación.");
             return;
         }
 
+        seleccionado.setNumero(Integer.parseInt(numero));
         seleccionado.setDescripcion(descripcion);
+        seleccionado.setAgrupacion(agrupacion);
 
         try {
             cargoService.update(seleccionado);

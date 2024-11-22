@@ -1,5 +1,6 @@
 package ar.com.hmu.model;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -50,7 +51,8 @@ public class Domicilio {
 		 * @param id el UUID del domicilio.
 		 * @return la instancia del Builder para permitir la concatenación de métodos.
 		 */
-		public Builder setId(UUID id) {
+		public Builder id(UUID id) {
+			Objects.requireNonNull(id, "El ID de domicilio no puede ser nulo.");
 			this.id = id;
 			return this;
 		}
@@ -61,7 +63,7 @@ public class Domicilio {
 		 * @param calle el nombre de la calle.
 		 * @return la instancia del Builder para permitir la concatenación de métodos.
 		 */
-		public Builder setCalle(String calle) {
+		public Builder calle(String calle) {
 			this.calle = calle;
 			return this;
 		}
@@ -72,7 +74,7 @@ public class Domicilio {
 		 * @param numeracion el número del domicilio.
 		 * @return la instancia del Builder para permitir la concatenación de métodos.
 		 */
-		public Builder setNumeracion(int numeracion) {
+		public Builder numeracion(int numeracion) {
 			this.numeracion = numeracion;
 			return this;
 		}
@@ -83,7 +85,7 @@ public class Domicilio {
 		 * @param barrio el nombre del barrio.
 		 * @return la instancia del Builder para permitir la concatenación de métodos.
 		 */
-		public Builder setBarrio(String barrio) {
+		public Builder barrio(String barrio) {
 			this.barrio = barrio;
 			return this;
 		}
@@ -94,7 +96,7 @@ public class Domicilio {
 		 * @param ciudad el nombre de la ciudad.
 		 * @return la instancia del Builder para permitir la concatenación de métodos.
 		 */
-		public Builder setCiudad(String ciudad) {
+		public Builder ciudad(String ciudad) {
 			this.ciudad = ciudad;
 			return this;
 		}
@@ -105,7 +107,7 @@ public class Domicilio {
 		 * @param localidad el nombre de la localidad.
 		 * @return la instancia del Builder para permitir la concatenación de métodos.
 		 */
-		public Builder setLocalidad(String localidad) {
+		public Builder localidad(String localidad) {
 			this.localidad = localidad;
 			return this;
 		}
@@ -116,7 +118,7 @@ public class Domicilio {
 		 * @param provincia el nombre de la provincia.
 		 * @return la instancia del Builder para permitir la concatenación de métodos.
 		 */
-		public Builder setProvincia(String provincia) {
+		public Builder provincia(String provincia) {
 			this.provincia = provincia;
 			return this;
 		}
@@ -183,13 +185,13 @@ public class Domicilio {
 	 */
 	public Builder toBuilder() {
 		return new Builder()
-				.setId(this.id)
-				.setCalle(this.calle)
-				.setNumeracion(this.numeracion)
-				.setBarrio(this.barrio)
-				.setCiudad(this.ciudad)
-				.setLocalidad(this.localidad)
-				.setProvincia(this.provincia);
+				.id(this.id)
+				.calle(this.calle)
+				.numeracion(this.numeracion)
+				.barrio(this.barrio)
+				.ciudad(this.ciudad)
+				.localidad(this.localidad)
+				.provincia(this.provincia);
 	}
 
 }

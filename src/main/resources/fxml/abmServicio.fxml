@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
@@ -9,16 +10,22 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/23.0.1" fx:controller="ar.com.hmu.controller.AbmServicioController">
+<BorderPane prefHeight="540.0" prefWidth="390.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ar.com.hmu.controller.AbmServicioController">
     <center>
-        <VBox spacing="10">
-            <TableView fx:id="serviciosTableView">
+        <VBox prefHeight="540.0" prefWidth="373.0" spacing="10">
+            <TableView fx:id="serviciosTableView" VBox.vgrow="ALWAYS">
                 <columns>
-                    <TableColumn fx:id="nombreColumn" text="Nombre" />
+                    <TableColumn fx:id="nombreColumn" minWidth="20.0" prefWidth="200.0" text="NOMBRE DE SERVICIO" />
+               <TableColumn fx:id="agrupacionColumn" minWidth="15.0" prefWidth="150.0" text="AGRUPACIÓN" />
                 </columns>
             </TableView>
-            <HBox spacing="10">
-                <TextField fx:id="nombreTextField" promptText="Nombre del Servicio" />
+         <HBox alignment="TOP_CENTER" spacing="10">
+            <children>
+                   <TextField fx:id="nombreTextField" minWidth="20.0" prefWidth="192.0" promptText="Nombre del Servicio" />
+               <ComboBox fx:id="agrupacionComboBox" minWidth="15.0" prefWidth="143.0" />
+            </children>
+         </HBox>
+            <HBox alignment="BOTTOM_RIGHT" spacing="10">
                 <Button onAction="#onAgregarServicio" text="Agregar" />
                 <Button onAction="#onModificarServicio" text="Modificar" />
                 <Button onAction="#onEliminarServicio" text="Eliminar" />

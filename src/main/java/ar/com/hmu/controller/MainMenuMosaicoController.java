@@ -4,17 +4,14 @@ import java.io.IOException;
 
 import ar.com.hmu.service.*;
 import ar.com.hmu.util.*;
-import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -26,7 +23,6 @@ import ar.com.hmu.model.Usuario;
 import ar.com.hmu.repository.*;
 
 import static ar.com.hmu.util.SessionUtils.handleLogout;
-import static ar.com.hmu.util.ServerStatusUtils.*;
 
 /**
  * Controlador para gestionar el comportamiento del menú principal en forma de mosaico.
@@ -154,16 +150,18 @@ public class MainMenuMosaicoController {
     private RolService rolService;
 
     private Usuario usuarioActual;
-    private Stage stage;  // Necesario para guardar las propiedades de ventana (asi lo llamo desde LoginController)
+
+    // Referencia a la ventana principal
+    private static Stage primaryStage;  // Necesario para guardar las propiedades de ventana (asi lo llamo desde LoginController)
 
     // Nueva instancia para manejar preferencias
     private PreferencesManager preferencesManager;
+
     // Almacenamiento de las propiedades de la ventana (tamaño y posición)
     private static final String WINDOW_WIDTH_KEY = "window.width";
     private static final String WINDOW_HEIGHT_KEY = "window.height";
     private static final String WINDOW_X_KEY = "window.x";
     private static final String WINDOW_Y_KEY = "window.y";
-
 
 
     public void setDatabaseConnector(DatabaseConnector databaseConnector) {
@@ -177,6 +175,11 @@ public class MainMenuMosaicoController {
         this.domicilioService = domicilioService;
         this.rolService = rolService;
     }
+
+    public static Stage getPrimaryStage() {
+        return primaryStage;
+    }
+
 
     /**
      * Inicializa los componentes después de que el archivo FXML ha sido cargado.
@@ -194,7 +197,7 @@ public class MainMenuMosaicoController {
      */
     public void postInitialize(Usuario usuario, Stage stage) {
         this.usuarioActual = usuario;
-        this.stage = stage;  // Guardo la referencia al Stage
+        this.primaryStage = stage;  // Guardo la referencia al Stage
 
         this.mainMenuMosaicoService = new MainMenuMosaicoService(usuario);
 
@@ -209,7 +212,7 @@ public class MainMenuMosaicoController {
         this.preferencesManager = new PreferencesManager(userId);
 
         // Configurar el evento de cierre de la ventana
-        this.stage.setOnCloseRequest(event -> saveWindowPreferences());
+        this.primaryStage.setOnCloseRequest(event -> saveWindowPreferences());
 
         // Actualizar la información del agente
         agentFullNameText.setText(mainMenuMosaicoService.getAgenteFullName());
@@ -234,7 +237,7 @@ public class MainMenuMosaicoController {
         serverStatusUtils.startPeriodicServerCheck();
 
         // Configurar el evento de cierre de la ventana
-        this.stage.setOnCloseRequest(event -> saveWindowPreferences());
+        this.primaryStage.setOnCloseRequest(event -> saveWindowPreferences());
 
         // Cargar preferencias de la ventana en este punto
         loadWindowPreferences();
@@ -255,10 +258,10 @@ public class MainMenuMosaicoController {
      * Método que configura el tamaño de la ventana al momento de cerrarse.
      */
     public void saveWindowPreferences() {
-        preferencesManager.put(WINDOW_WIDTH_KEY, String.valueOf(stage.getWidth()));
-        preferencesManager.put(WINDOW_HEIGHT_KEY, String.valueOf(stage.getHeight()));
-        preferencesManager.put(WINDOW_X_KEY, String.valueOf(stage.getX()));
-        preferencesManager.put(WINDOW_Y_KEY, String.valueOf(stage.getY()));
+        preferencesManager.put(WINDOW_WIDTH_KEY, String.valueOf(primaryStage.getWidth()));
+        preferencesManager.put(WINDOW_HEIGHT_KEY, String.valueOf(primaryStage.getHeight()));
+        preferencesManager.put(WINDOW_X_KEY, String.valueOf(primaryStage.getX()));
+        preferencesManager.put(WINDOW_Y_KEY, String.valueOf(primaryStage.getY()));
     }
 
 
@@ -272,10 +275,10 @@ public class MainMenuMosaicoController {
             double x = Double.parseDouble(preferencesManager.get(WINDOW_X_KEY, "100"));
             double y = Double.parseDouble(preferencesManager.get(WINDOW_Y_KEY, "100"));
 
-            stage.setWidth(width);
-            stage.setHeight(height);
-            stage.setX(x);
-            stage.setY(y);
+            primaryStage.setWidth(width);
+            primaryStage.setHeight(height);
+            primaryStage.setX(x);
+            primaryStage.setY(y);
         } catch (NumberFormatException e) {
             e.printStackTrace(); // Error en la carga de preferencias, se usan valores predeterminados
             // Valores predeterminados ya están establecidos en el método get de PreferencesManager
@@ -339,10 +342,10 @@ public class MainMenuMosaicoController {
         exitMenuItem.setOnAction(event -> System.exit(0));
 
         // Configura la funcionalidad del menú: Oficina de Personal -> Listado de Agentes
-        listadoAgentesMenuItem.setOnAction(this::handleAbmAgentes);
+        listadoAgentesMenuItem.setOnAction(this::handleListadoDeAgentes);
 
         // Configura la funcionalidad del menú: Oficina de Personal -> Listado de Servicios
-        listadoServiciosMenuItem.setOnAction(this::handleAbmAgentes);
+        listadoServiciosMenuItem.setOnAction(this::handleListadoDeServicios);
 
         // Configura la funcionalidad del menú: Oficina de Personal -> ABM de Agentes
         abmAgentesMenuItem.setOnAction(this::handleAbmAgentes);
@@ -458,7 +461,9 @@ public class MainMenuMosaicoController {
             stage.setScene(scene);
             stage.setTitle("Alta, Baja y Modificación de Agentes" + " :: " + AppInfo.PRG_LONG_TITLE);
             stage.initModality(Modality.WINDOW_MODAL);
-            stage.initOwner(((Node) event.getSource()).getScene().getWindow()); // Con esto, establecemos la ventana actual como propietaria, evitando múltiples instancias. Supuestamente, es mejor que lo que hacía antes:  stage.initOwner(abmAgentesVBox.getScene().getWindow());
+            //stage.initOwner(((Node) event.getSource()).getScene().getWindow()); // Con esto, establecemos la ventana actual como propietaria, evitando múltiples instancias. Supuestamente, es mejor que lo que hacía antes:  stage.initOwner(abmAgentesVBox.getScene().getWindow());
+            //stage.initOwner(abmAgentesVBox.getScene().getWindow());
+            stage.initOwner(MainMenuMosaicoController.getPrimaryStage());
             // Mostrar la nueva ventana
             stage.show();  // También se sugiere el uso de:  stage.showAndWait(), lo que tal vez por ahí estaría bueno en conjunto con:  stage.initModality(Modality.WINDOW_MODAL)
         } catch (IOException e) {
@@ -471,19 +476,35 @@ public class MainMenuMosaicoController {
 
     @FXML
     private void handleAbmCargos(Event event) {
-        // El código es similar al anterior
+        // Usa los servicios ya inicializados
+        CargoService cargoService = this.cargoService;
+
         try {
+            // Configurar la fábrica de controladores
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/abmCargo.fxml"));
+            loader.setControllerFactory(controllerClass -> {
+                if (controllerClass == AbmCargoController.class) {
+                    AbmCargoController controller = new AbmCargoController();
+                    controller.setServices(cargoService);
+                    return controller;
+                } else {
+                    // Manejo predeterminado
+                    try {
+                        return controllerClass.getDeclaredConstructor().newInstance();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+            // Carga del FXML después de configurada la Fábrica
             Parent root = loader.load();
 
-            AbmCargoController controller = loader.getController();
-            controller.setCargoService(cargoService);
-
             Stage stage = new Stage();
-            stage.setTitle("Gestión de Cargos");
+            stage.setTitle("Gestión de Cargos" + " :: " + AppInfo.PRG_LONG_TITLE);
             stage.setScene(new Scene(root));
             stage.initModality(Modality.APPLICATION_MODAL);
-            stage.initOwner(stage);
+            //stage.initOwner(((Node) event.getSource()).getScene().getWindow());
+            stage.initOwner(MainMenuMosaicoController.getPrimaryStage());
             stage.showAndWait();
         } catch (IOException e) {
             AlertUtils.showErr("Error al cargar la ventana de gestión de cargos: " + e.getMessage());
@@ -527,7 +548,8 @@ public class MainMenuMosaicoController {
             stage.setScene(new Scene(root));
             stage.initModality(Modality.WINDOW_MODAL);
             stage.setWidth(590.0);
-            stage.initOwner(((Node) event.getSource()).getScene().getWindow());
+            stage.initOwner(MainMenuMosaicoController.getPrimaryStage());
+            //stage.initOwner(((Node) event.getSource()).getScene().getWindow());
             stage.showAndWait();
         } catch (IOException e) {
             e.printStackTrace();
@@ -568,11 +590,12 @@ public class MainMenuMosaicoController {
             controller.setServicioService(servicioService);
 
             Stage stage = new Stage();
-            stage.setTitle("Lista de Servicios");
+            stage.setTitle("Lista de Servicios" + " :: " + AppInfo.PRG_LONG_TITLE);
             stage.setScene(new Scene(root));
             stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setWidth(470.0);
-            stage.initOwner(((Node) event.getSource()).getScene().getWindow());
+            stage.setWidth(500.0);
+            //stage.initOwner(((Node) event.getSource()).getScene().getWindow());
+            stage.initOwner(MainMenuMosaicoController.getPrimaryStage());
             stage.showAndWait();
         } catch (IOException e) {
             e.printStackTrace();
@@ -581,19 +604,37 @@ public class MainMenuMosaicoController {
 
     @FXML
     private void handleAbmServicios(Event event) {
-        // El código es similar al anterior
+        // Usa los servicios ya inicializados
+        UsuarioService usuarioService = this.usuarioService;
+        ServicioService servicioService = this.servicioService;
+
         try {
+            // Configurar la fábrica de controladores
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/abmServicio.fxml"));
+            loader.setControllerFactory(controllerClass -> {
+                if (controllerClass == AbmServicioController.class) {
+                    AbmServicioController controller = new AbmServicioController();
+                    controller.setServices(usuarioService, servicioService);
+                    return controller;
+                } else {
+                    // Manejo predeterminado
+                    try {
+                        return controllerClass.getDeclaredConstructor().newInstance();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+
+            // Carga del FXML después de configurada la Fábrica
             Parent root = loader.load();
 
-            AbmServicioController controller = loader.getController();
-            controller.setServicioService(servicioService);
-
             Stage stage = new Stage();
-            stage.setTitle("Gestión de Servicios");
+            stage.setTitle("Gestión de Servicios" + " :: " + AppInfo.PRG_LONG_TITLE);
             stage.setScene(new Scene(root));
             stage.initModality(Modality.APPLICATION_MODAL);
-            stage.initOwner(stage);
+            //stage.initOwner(((Node) event.getSource()).getScene().getWindow());
+            stage.initOwner(MainMenuMosaicoController.getPrimaryStage());
             stage.showAndWait();
         } catch (IOException e) {
             AlertUtils.showErr("Error al cargar la ventana de gestión de servicios: " + e.getMessage());

@@ -76,7 +76,7 @@ public class ServicioService {
         }
     }
 
-    public int obtenerCantidadUsuariosPorServicio(UUID servicioId) throws ServiceException {
+    public int countUsuariosByServicio(UUID servicioId) throws ServiceException {
         try {
             return usuarioRepository.countUsuariosByServicio(servicioId);
         } catch (SQLException e) {
@@ -84,11 +84,11 @@ public class ServicioService {
         }
     }
 
-    public String obtenerApellidoJefePorServicio(UUID servicioId) throws ServiceException {
+    public String findJefeByServicio(UUID servicioId) throws ServiceException {
         try {
-            return usuarioRepository.findApellidoJefeByServicio(servicioId);
+            return usuarioRepository.findJefeByServicio(servicioId);
         } catch (SQLException e) {
-            throw new ServiceException("Error al obtener el apellido del jefe del servicio", e);
+            throw new ServiceException("Error al obtener el jefe a cargo del servicio", e);
         }
     }
 

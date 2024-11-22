@@ -22,8 +22,8 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
     @Override
     public void create(Usuario usuario) throws SQLException {
         try (Connection connection = databaseConnector.getConnection()) {
-            String query = "INSERT INTO Usuario (id, fechaAlta, estado, cuil, apellidos, nombres, sexo, mail, passwd, tipoUsuario) " +
-                    "VALUES (UUID_TO_BIN(?), ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            String query = "INSERT INTO Usuario (id, fechaAlta, estado, cuil, apellidos, nombres, sexo, mail, passwd, tipoUsuario, domicilioID, cargoID, servicioID) " +
+                    "VALUES (UUID_TO_BIN(?), ?, ?, ?, ?, ?, ?, ?, ?, ?, UUID_TO_BIN(?), UUID_TO_BIN(?), UUID_TO_BIN(?))";
             try (PreparedStatement stmt = connection.prepareStatement(query)) {
 
                 // Almacenar datos comunes de usuario
@@ -37,6 +37,9 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
                 stmt.setString(8, usuario.getMail());
                 stmt.setString(9, usuario.getEncryptedPassword());
                 stmt.setString(10, usuario.getTipoUsuario().getInternalName());
+                stmt.setString(11, usuario.getDomicilioId().toString());
+                stmt.setString(12, usuario.getCargoId().toString());
+                stmt.setString(13, usuario.getServicioId().toString());
                 stmt.executeUpdate();
 
             }
@@ -336,15 +339,15 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
         return 0;
     }
 
-    public String findApellidoJefeByServicio(UUID servicioId) throws SQLException {
-        String query = "SELECT apellidos FROM Usuario WHERE servicioID = UUID_TO_BIN(?) AND tipoUsuario = ? AND estado = 1 LIMIT 1";
+    public String findJefeByServicio(UUID servicioId) throws SQLException {
+        String query = "SELECT CONCAT(apellidos, ', ', nombres) AS Jefe FROM Usuario WHERE servicioID = UUID_TO_BIN(?) AND tipoUsuario = ? AND estado = 1 LIMIT 1";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, servicioId.toString());
-            stmt.setString(2, TipoUsuario.JEFATURA_DE_SERVICIO.name());
+            stmt.setString(2, TipoUsuario.JEFATURA_DE_SERVICIO.getInternalName());
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getString("apellidos");
+                    return rs.getString("Jefe");
                 }
             }
         }

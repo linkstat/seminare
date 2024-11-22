@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
@@ -9,16 +10,24 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/23.0.1" fx:controller="ar.com.hmu.controller.AbmCargoController">
+<BorderPane xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ar.com.hmu.controller.AbmCargoController">
     <center>
         <VBox spacing="10">
-            <TableView fx:id="cargosTableView">
+            <TableView fx:id="cargosTableView" VBox.vgrow="ALWAYS">
                 <columns>
-                    <TableColumn fx:id="descripcionColumn" text="Descripción" />
+                    <TableColumn fx:id="numeroColumn" prefWidth="83.0" text="CARGO" />
+               <TableColumn fx:id="descripcionColumn" minWidth="20.0" prefWidth="275.0" text="DESCRIPCIÓN" />
+               <TableColumn fx:id="agrupacionColumn" minWidth="20.0" prefWidth="150.0" text="AGRUPACIÓN" />
                 </columns>
             </TableView>
-            <HBox spacing="10">
-                <TextField fx:id="descripcionTextField" promptText="Descripción del Cargo" />
+         <HBox alignment="TOP_CENTER" spacing="10.0">
+            <children>
+               <TextField fx:id="numeroTextField" minWidth="10.0" prefWidth="70.0" promptText="CARGO N°" HBox.hgrow="NEVER" />
+                   <TextField fx:id="descripcionTextField" minWidth="20.0" prefWidth="275.0" promptText="DESCRIPCIÓN" HBox.hgrow="ALWAYS" />
+               <ComboBox fx:id="agrupacionComboBox" prefWidth="150.0" />
+            </children>
+         </HBox>
+            <HBox alignment="CENTER_RIGHT" spacing="10">
                 <Button onAction="#onAgregarCargo" text="Agregar" />
                 <Button onAction="#onModificarCargo" text="Modificar" />
                 <Button onAction="#onEliminarCargo" text="Eliminar" />

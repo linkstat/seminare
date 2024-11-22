@@ -5,12 +5,12 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox spacing="10" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/23.0.1" fx:controller="ar.com.hmu.controller.ListaUsuariosController">
-    <TableView fx:id="usuariosTableView">
+<VBox spacing="10" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ar.com.hmu.controller.ListaUsuariosController">
+    <TableView fx:id="usuariosTableView" VBox.vgrow="ALWAYS">
         <columns>
             <TableColumn fx:id="cuilColumn" text="CUIL" />
-            <TableColumn fx:id="apellidosNombresColumn" text="Apellidos, Nombres" />
-            <TableColumn fx:id="cargoNumeroColumn" text="Nro. de Cargo" />
+            <TableColumn fx:id="apellidosNombresColumn" text="Agente" />
+            <TableColumn fx:id="cargoNumeroColumn" text="Cargo" />
             <TableColumn fx:id="servicioNombreColumn" text="Servicio" />
         </columns>
     </TableView>

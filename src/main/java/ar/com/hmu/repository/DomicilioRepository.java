@@ -7,9 +7,7 @@ import java.util.UUID;
 
 import ar.com.hmu.exceptions.ServiceException;
 import ar.com.hmu.factory.DomicilioFactory;
-import ar.com.hmu.model.Agrupacion;
 import ar.com.hmu.model.Domicilio;
-import ar.com.hmu.model.Servicio;
 import ar.com.hmu.repository.dao.GenericDAO;
 
 
@@ -85,13 +83,13 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
 
             while (rs.next()) {
                 domicilios.add(new Domicilio.Builder()
-                        .setId(UUID.fromString(rs.getString("id")))
-                        .setCalle(rs.getString("calle"))
-                        .setNumeracion(rs.getInt("numeracion"))
-                        .setBarrio(rs.getString("barrio"))
-                        .setCiudad(rs.getString("ciudad"))
-                        .setLocalidad(rs.getString("localidad"))
-                        .setProvincia(rs.getString("provincia"))
+                        .id(UUID.fromString(rs.getString("id")))
+                        .calle(rs.getString("calle"))
+                        .numeracion(rs.getInt("numeracion"))
+                        .barrio(rs.getString("barrio"))
+                        .ciudad(rs.getString("ciudad"))
+                        .localidad(rs.getString("localidad"))
+                        .provincia(rs.getString("provincia"))
                         .build());
             }
         } catch (SQLException e) {
@@ -159,13 +157,13 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     Domicilio domicilio = new Domicilio.Builder()
-                            .setId(UUID.fromString(rs.getString("id")))
-                            .setCalle(rs.getString("calle"))
-                            .setNumeracion(rs.getInt("numeracion"))
-                            .setBarrio(rs.getString("barrio"))
-                            .setCiudad(rs.getString("ciudad"))
-                            .setLocalidad(rs.getString("localidad"))
-                            .setProvincia(rs.getString("provincia"))
+                            .id(UUID.fromString(rs.getString("id")))
+                            .calle(rs.getString("calle"))
+                            .numeracion(rs.getInt("numeracion"))
+                            .barrio(rs.getString("barrio"))
+                            .ciudad(rs.getString("ciudad"))
+                            .localidad(rs.getString("localidad"))
+                            .provincia(rs.getString("provincia"))
                             .build();
                     return domicilio;
                 }
@@ -191,13 +189,13 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     Domicilio domicilio = new Domicilio.Builder()
-                            .setId(UUID.fromString(rs.getString("id")))
-                            .setCalle(rs.getString("calle"))
-                            .setNumeracion(rs.getInt("numeracion"))
-                            .setBarrio(rs.getString("barrio"))
-                            .setCiudad(rs.getString("ciudad"))
-                            .setLocalidad(rs.getString("localidad"))
-                            .setProvincia(rs.getString("provincia"))
+                            .id(UUID.fromString(rs.getString("id")))
+                            .calle(rs.getString("calle"))
+                            .numeracion(rs.getInt("numeracion"))
+                            .barrio(rs.getString("barrio"))
+                            .ciudad(rs.getString("ciudad"))
+                            .localidad(rs.getString("localidad"))
+                            .provincia(rs.getString("provincia"))
                             .build();
                     return domicilio;
                 }

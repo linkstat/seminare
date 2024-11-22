@@ -3,13 +3,14 @@ package ar.com.hmu.controller;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDate;
 import java.util.*;
 
 import ar.com.hmu.constants.UsuarioCreationResult;
 import ar.com.hmu.exceptions.ServiceException;
-import ar.com.hmu.repository.RolRepository;
 import ar.com.hmu.service.*;
 import ar.com.hmu.util.AlertUtils;
+import ar.com.hmu.util.AppInfo;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -406,13 +407,66 @@ public class AbmUsuarioController implements Initializable {
         domLocalidadComboBox.setDisable(!enabled);
         domProvinciaComboBox.setDisable(!enabled);
 
-        // Tipo de Usuario y Roles
-        //TODO: Verificar, que se habilite solo si es nuevo usuario. Sino, tomar los valores desde la carga del usuario
+        // Tipo de Usuario
         tipoUsuarioComboBox.setDisable(!enabled);
-        rolAgenteCheckBox.setDisable(!enabled);
-        rolJefeServicioCheckBox.setDisable(!enabled);
-        rolOficinaPersonalCheckBox.setDisable(!enabled);
-        rolDireccionCheckBox.setDisable(!enabled);
+
+        // Cargos
+        cargoComboBox.setDisable(!enabled);
+        gestionarCargosButton.setDisable(!enabled);
+
+        // Servicios
+        servicioComboBox.setDisable(!enabled);
+        gestionarServiciosButton.setDisable(!enabled);
+
+        // Imagen de Perfil
+        //imagenPerfilImageView.setDisable(!enabled); //en vez de deshabilitar, establecemos imagen por defecto:
+        imagenPerfilImageView.setImage(imagenPerfilOriginal);
+        cargarImagenButton.setDisable(!enabled);
+        revertirImagenButton.setDisable(!enabled);
+        eliminarImagenButton.setDisable(!enabled);
+
+        // Acciones
+        resetPasswdButton.setDisable(!enabled);
+
+        // Botones de acción
+        altaModButton.setDisable(!enabled);
+        cancelarButton.setDisable(!enabled);
+        eliminarButton.setDisable(!enabled);
+
+    }
+
+
+    /**
+     * Método para habilitar o deshabilitar los controles
+     * @param enabled bandera de habilitación
+     */
+    private void setControlsEnabled(boolean enabled, boolean includeRoles) {
+        // Datos Personales
+        cuilTextField.setDisable(!enabled);
+        apellidosTextField.setDisable(!enabled);
+        nombresTextField.setDisable(!enabled);
+        mailTextField.setDisable(!enabled);
+        telTextField.setDisable(!enabled);
+        sexoComboBox.setDisable(!enabled);
+
+        // Domicilio
+        domCalleComboBox.setDisable(!enabled);
+        domNumeracionField.setDisable(!enabled);
+        domSinNumeroCheckBox.setDisable(!enabled);
+        domBarrioComboBox.setDisable(!enabled);
+        domCiudadComboBox.setDisable(!enabled);
+        domLocalidadComboBox.setDisable(!enabled);
+        domProvinciaComboBox.setDisable(!enabled);
+
+        // Tipo de Usuario y Roles
+        if(includeRoles) {
+            //TODO: Verificar, que se habilite solo si es nuevo usuario. Sino, tomar los valores desde la carga del usuario
+            tipoUsuarioComboBox.setDisable(!enabled);
+            rolAgenteCheckBox.setDisable(!enabled);
+            rolJefeServicioCheckBox.setDisable(!enabled);
+            rolOficinaPersonalCheckBox.setDisable(!enabled);
+            rolDireccionCheckBox.setDisable(!enabled);
+        }
 
         // Cargos
         cargoComboBox.setDisable(!enabled);
@@ -577,23 +631,16 @@ public class AbmUsuarioController implements Initializable {
     @FXML
     private void onTipoUsuarioSelected(ActionEvent event) {
         TipoUsuario tipoUsuario = tipoUsuarioComboBox.getSelectionModel().getSelectedItem();
-
-        // Resetear los checkBox de Roles
-        rolAgenteCheckBox.setSelected(false);
-        rolAgenteCheckBox.setDisable(false);
-        rolJefeServicioCheckBox.setSelected(false);
-        rolJefeServicioCheckBox.setDisable(false);
-        rolOficinaPersonalCheckBox.setSelected(false);
-        rolOficinaPersonalCheckBox.setDisable(false);
-        rolDireccionCheckBox.setSelected(false);
-        rolDireccionCheckBox.setDisable(false);
-
         if (tipoUsuario != null) {
             switch (tipoUsuario) {
                 case DIRECCION:
                     // Establecer checkbox de rol automáticamente
                     rolDireccionCheckBox.setSelected(true);
+                    // Deshabilitar rol seleccionado y habilitar otros
                     rolDireccionCheckBox.setDisable(true);
+                    rolOficinaPersonalCheckBox.setDisable(false);
+                    rolJefeServicioCheckBox.setDisable(false);
+                    rolAgenteCheckBox.setDisable(false);
 
                     // Asignar servicio automáticamente
                     Servicio servicioDireccion = buscarServicioPorNombre(NombreServicio.DIRECCION);
@@ -610,7 +657,11 @@ public class AbmUsuarioController implements Initializable {
                 case OFICINA_DE_PERSONAL:
                     // Establecer checkbox de rol automáticamente
                     rolOficinaPersonalCheckBox.setSelected(true);
+                    // Deshabilitar rol seleccionado y habilitar otros
+                    rolDireccionCheckBox.setSelected(false);
                     rolOficinaPersonalCheckBox.setDisable(true);
+                    rolJefeServicioCheckBox.setDisable(false);
+                    rolAgenteCheckBox.setDisable(false);
 
                     // Asignar servicio automáticamente
                     Servicio servicioPersonal = buscarServicioPorNombre(NombreServicio.OFICINA_DE_PERSONAL);
@@ -625,7 +676,11 @@ public class AbmUsuarioController implements Initializable {
                 case JEFATURA_DE_SERVICIO:
                     // Establecer checkbox de rol automáticamente
                     rolJefeServicioCheckBox.setSelected(true);
+                    // Deshabilitar rol seleccionado y habilitar otros
+                    rolDireccionCheckBox.setDisable(false);
+                    rolOficinaPersonalCheckBox.setDisable(false);
                     rolJefeServicioCheckBox.setDisable(true);
+                    rolAgenteCheckBox.setDisable(false);
 
                     // Habilitar todos los servicios para selección normal
                     servicioComboBox.setDisable(false);
@@ -641,6 +696,10 @@ public class AbmUsuarioController implements Initializable {
                 case EMPLEADO:
                     // Establecer checkbox de rol automáticamente
                     rolAgenteCheckBox.setSelected(true);
+                    // Deshabilitar rol seleccionado y habilitar otros
+                    rolDireccionCheckBox.setDisable(false);
+                    rolOficinaPersonalCheckBox.setDisable(false);
+                    rolJefeServicioCheckBox.setDisable(false);
                     rolAgenteCheckBox.setDisable(true);
 
                     // Habilitar todos los servicios para selección normal
@@ -652,6 +711,12 @@ public class AbmUsuarioController implements Initializable {
                     gestionarCargosButton.setDisable(false);
                     break;
                 default:
+                    // Habilitar selección de roles
+                    rolDireccionCheckBox.setDisable(false);
+                    rolOficinaPersonalCheckBox.setDisable(false);
+                    rolJefeServicioCheckBox.setDisable(false);
+                    rolAgenteCheckBox.setDisable(false);
+                    // Habilitar selección de otros controles
                     cargoComboBox.setDisable(false);
                     servicioComboBox.setDisable(false);
                     break;
@@ -969,7 +1034,7 @@ public class AbmUsuarioController implements Initializable {
         nuevoAgenteButton.setDisable(true);
 
         // Habilitar los controles del formulario
-        setControlsEnabled(true);
+        setControlsEnabled(true, true);
 
         // Limpiar el formulario
         limpiarFormulario();
@@ -1000,7 +1065,7 @@ public class AbmUsuarioController implements Initializable {
      */
     private void resetInterface() {
         // Restablece todos los controles como antes
-        setControlsEnabled(false);
+        setControlsEnabled(false, true);
 
         // Limpiar el formulario
         limpiarFormulario();
@@ -1194,14 +1259,15 @@ public class AbmUsuarioController implements Initializable {
                 default:
                     throw new IllegalArgumentException("Tipo de usuario desconocido: " + tipoUsuarioSeleccionado);
             }
-            usuario.setEstado(true); // Nuevo usuario, estado activo por defecto
-            //aquí setear la fecha de creación
+            usuario.setEstado(true);  // Nuevo usuario, estado activo por defecto
+            usuario.setFechaAlta(LocalDate.now());  // Por defecto, fecha de alta = fecha de creación
         } else {
             // Actualizar el usuario existente
             usuario = usuarioExistente;
         }
 
         // Asignar atributos comunes
+        usuario.setId(UUID.randomUUID());
         try {
             String cuilText = cuilTextField.getText().replaceAll("-", "");
             usuario.setCuil(Long.parseLong(cuilText));
@@ -1209,7 +1275,6 @@ public class AbmUsuarioController implements Initializable {
             mostrarError("El CUIL debe ser un número válido.");
             return null;
         }
-
         usuario.setApellidos(apellidosTextField.getText());
         usuario.setNombres(nombresTextField.getText());
         usuario.setMail(mailTextField.getText());
@@ -1233,7 +1298,6 @@ public class AbmUsuarioController implements Initializable {
 
         // Agregar roles basados en los CheckBoxes
         Set<Rol> rolesSeleccionados = new HashSet<>();
-
         if (rolAgenteCheckBox.isSelected()) {
             Rol rolAgente = rolService.findByTipoUsuario(TipoUsuario.EMPLEADO);
             rolesSeleccionados.add(rolAgente);
@@ -1250,7 +1314,6 @@ public class AbmUsuarioController implements Initializable {
             Rol rolAgente = rolService.findByTipoUsuario(TipoUsuario.DIRECCION);
             rolesSeleccionados.add(rolAgente);
         }
-
         usuario.setRoles(rolesSeleccionados);
 
         // Asignar domicilio
@@ -1280,28 +1343,17 @@ public class AbmUsuarioController implements Initializable {
                 return null;
             }
         }
-
-        // Crear una instancia de Domicilio sin establecer el ID
-        Domicilio domicilioNuevo = new Domicilio.Builder()
-                .setCalle(calle)
-                .setNumeracion(numeracion)
-                .setBarrio(barrio)
-                .setCiudad(ciudad)
-                .setLocalidad(localidad)
-                .setProvincia(provincia)
-                .build();
-
         try {
             if (usuario.getDomicilio() == null || usuario.getDomicilio().getId() == null) {
                 // Crear nuevo domicilio con un nuevo UUID
                 Domicilio domicilioCreado = new Domicilio.Builder()
-                        .setId(UUID.randomUUID())
-                        .setCalle(domicilioNuevo.getCalle())
-                        .setNumeracion(domicilioNuevo.getNumeracion())
-                        .setBarrio(domicilioNuevo.getBarrio())
-                        .setCiudad(domicilioNuevo.getCiudad())
-                        .setLocalidad(domicilioNuevo.getLocalidad())
-                        .setProvincia(domicilioNuevo.getProvincia())
+                        .id(UUID.randomUUID())
+                        .calle(calle)
+                        .numeracion(numeracion)
+                        .barrio(barrio)
+                        .ciudad(ciudad)
+                        .localidad(localidad)
+                        .provincia(provincia)
                         .build();
 
                 domicilioService.create(domicilioCreado);
@@ -1309,12 +1361,12 @@ public class AbmUsuarioController implements Initializable {
             } else {
                 // Actualizar domicilio existente usando toBuilder
                 Domicilio domicilioActualizado = usuario.getDomicilio().toBuilder()
-                        .setCalle(calle)
-                        .setNumeracion(numeracion)
-                        .setBarrio(barrio)
-                        .setCiudad(ciudad)
-                        .setLocalidad(localidad)
-                        .setProvincia(provincia)
+                        .calle(calle)
+                        .numeracion(numeracion)
+                        .barrio(barrio)
+                        .ciudad(ciudad)
+                        .localidad(localidad)
+                        .provincia(provincia)
                         .build();
 
                 domicilioService.update(domicilioActualizado);
@@ -1324,6 +1376,13 @@ public class AbmUsuarioController implements Initializable {
             mostrarError("Error al asignar el domicilio: " + e.getMessage());
             return null;
         }
+
+        // Asignar IDs de otros datos
+        usuario.setDomicilioId(usuario.getDomicilio().getId());
+        usuario.setCargoId(usuario.getCargo().getId());
+        usuario.setServicioId(usuario.getServicio().getId());
+        //Asignar la contraseña por defecto
+        usuario.setDefaultPassword();
 
         return usuario;
     }
@@ -1374,6 +1433,8 @@ public class AbmUsuarioController implements Initializable {
         domSinNumeroCheckBox.setSelected(false);
         domBarrioComboBox.getEditor().clear();
         domCiudadComboBox.getEditor().clear();
+        domBarrioComboBox.getEditor().setText("");
+        domLocalidadComboBox.getEditor().setText("");
         domLocalidadComboBox.getEditor().clear();
         domProvinciaComboBox.getEditor().clear();
     }
@@ -1460,22 +1521,36 @@ public class AbmUsuarioController implements Initializable {
      */
     @FXML
     private void onAbmCargo(ActionEvent event) {
+        // Usa los servicios ya inicializados
+        CargoService cargoService = this.cargoService;
+
         try {
+            // Configurar la fábrica de controladores
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/abmCargo.fxml"));
+            loader.setControllerFactory(controllerClass -> {
+                if (controllerClass == AbmCargoController.class) {
+                    AbmCargoController controller = new AbmCargoController();
+                    controller.setServices(cargoService);
+                    return controller;
+                } else {
+                    // Manejo predeterminado
+                    try {
+                        return controllerClass.getDeclaredConstructor().newInstance();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+            // Carga del FXML después de configurada la Fábrica
             Parent root = loader.load();
 
-            AbmCargoController controller = loader.getController();
-            controller.setCargoService(cargoService);
-
             Stage stage = new Stage();
-            stage.setTitle("Gestión de Cargos");
+            stage.setTitle("Gestión de Cargos" + " :: " + AppInfo.PRG_LONG_TITLE);
             stage.setScene(new Scene(root));
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(((Node) event.getSource()).getScene().getWindow());
+            //stage.initOwner(MainMenuMosaicoController.getPrimaryStage());
             stage.showAndWait();
-
-            // Recargar la lista de cargos después de cerrar la ventana
-            cargarCargos();
         } catch (IOException e) {
             AlertUtils.showErr("Error al cargar la ventana de gestión de cargos: " + e.getMessage());
         }
@@ -1484,22 +1559,38 @@ public class AbmUsuarioController implements Initializable {
 
     @FXML
     private void onAbmServicio(ActionEvent event) {
+        // Usa los servicios ya inicializados
+        UsuarioService usuarioService = this.usuarioService;
+        ServicioService servicioService = this.servicioService;
+
         try {
+            // Configurar la fábrica de controladores
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/abmServicio.fxml"));
+            loader.setControllerFactory(controllerClass -> {
+                if (controllerClass == AbmServicioController.class) {
+                    AbmServicioController controller = new AbmServicioController();
+                    controller.setServices(usuarioService, servicioService);
+                    return controller;
+                } else {
+                    // Manejo predeterminado
+                    try {
+                        return controllerClass.getDeclaredConstructor().newInstance();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+
+            // Carga del FXML después de configurada la Fábrica
             Parent root = loader.load();
 
-            AbmServicioController controller = loader.getController();
-            controller.setServicioService(servicioService);
-
             Stage stage = new Stage();
-            stage.setTitle("Gestión de Servicios");
+            stage.setTitle("Gestión de Servicios" + " :: " + AppInfo.PRG_LONG_TITLE);
             stage.setScene(new Scene(root));
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(((Node) event.getSource()).getScene().getWindow());
+            //stage.initOwner(MainMenuMosaicoController.getPrimaryStage());
             stage.showAndWait();
-
-            // Recargar la lista de servicios después de cerrar la ventana
-            cargarServicios();
         } catch (IOException e) {
             AlertUtils.showErr("Error al cargar la ventana de gestión de servicios: " + e.getMessage());
         }

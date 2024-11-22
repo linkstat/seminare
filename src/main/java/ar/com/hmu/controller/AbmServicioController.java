@@ -1,6 +1,11 @@
 package ar.com.hmu.controller;
 
+import ar.com.hmu.model.Agrupacion;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -8,7 +13,10 @@ import javafx.scene.control.TextField;
 import ar.com.hmu.model.Servicio;
 import ar.com.hmu.service.ServicioService;
 import ar.com.hmu.exceptions.ServiceException;
+import ar.com.hmu.service.UsuarioService;
 import ar.com.hmu.util.AlertUtils;
+
+import java.util.UUID;
 
 public class AbmServicioController {
 
@@ -17,17 +25,30 @@ public class AbmServicioController {
     @FXML
     private TableColumn<Servicio, String> nombreColumn;
     @FXML
+    private TableColumn<Servicio, String> agrupacionColumn;
+    @FXML
     private TextField nombreTextField;
+    @FXML
+    private ComboBox<Agrupacion> agrupacionComboBox;
+    private ObservableList<Agrupacion> agrupacionList = FXCollections.observableArrayList(Agrupacion.values());
 
+    private UsuarioService usuarioService;
     private ServicioService servicioService;
 
-    public void setServicioService(ServicioService servicioService) {
+    public void setServices(UsuarioService usuarioService, ServicioService servicioService) {
         this.servicioService = servicioService;
     }
 
     @FXML
     public void initialize() {
-        //nombreColumn.setCellValueFactory(cellData -> cellData.getValue().nombreProperty());
+        // Configurar la columna de nombre de servicio
+        nombreColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getNombre()));
+        // Configurar la columna de agrupación
+        agrupacionColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getAgrupacion().toString()));
+        // Manejar la selección en la tabla
+        serviciosTableView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> mostrarDetalleServicio(newValue));
+        // Inicializar ComboBox
+        agrupacionComboBox.setItems(agrupacionList);
         cargarServicios();
     }
 
@@ -39,21 +60,35 @@ public class AbmServicioController {
         }
     }
 
+    private void mostrarDetalleServicio(Servicio servicio) {
+        if (servicio != null) {
+            nombreTextField.setText(servicio.getNombre());
+            agrupacionComboBox.getSelectionModel().select(servicio.getAgrupacion());
+        } else {
+            nombreTextField.clear();
+            agrupacionComboBox.getSelectionModel().clearSelection();
+        }
+    }
+
     @FXML
     private void onAgregarServicio() {
         String nombre = nombreTextField.getText().trim();
-        if (nombre.isEmpty()) {
-            AlertUtils.showWarn("El nombre no puede estar vacío.");
+        Agrupacion agrupacion = (Agrupacion) agrupacionComboBox.getSelectionModel().getSelectedItem();
+        if (nombre.isEmpty() || agrupacion == null) {
+            AlertUtils.showWarn("Se deben especificar nombre de servicio y agrupación.");
             return;
         }
 
         Servicio servicio = new Servicio();
+        servicio.setId(UUID.randomUUID());
         servicio.setNombre(nombre);
+        servicio.setAgrupacion(agrupacion);
 
         try {
             servicioService.create(servicio);
             cargarServicios();
             nombreTextField.clear();
+            agrupacionComboBox.getSelectionModel().clearSelection();
         } catch (ServiceException e) {
             AlertUtils.showErr("Error al agregar el servicio: " + e.getMessage());
         }
@@ -68,17 +103,20 @@ public class AbmServicioController {
         }
 
         String nombre = nombreTextField.getText().trim();
-        if (nombre.isEmpty()) {
-            AlertUtils.showWarn("El nombre no puede estar vacío.");
+        Agrupacion agrupacion = (Agrupacion) agrupacionComboBox.getSelectionModel().getSelectedItem();
+        if (nombre.isEmpty() || agrupacion == null) {
+            AlertUtils.showWarn("El nombre de servicio no puede estar vacío. Además, debe seleccionar una agrupación");
             return;
         }
 
         seleccionado.setNombre(nombre);
+        seleccionado.setAgrupacion(agrupacion);
 
         try {
             servicioService.update(seleccionado);
             cargarServicios();
             nombreTextField.clear();
+            agrupacionComboBox.getSelectionModel().clearSelection();
         } catch (ServiceException e) {
             AlertUtils.showErr("Error al modificar el servicio: " + e.getMessage());
         }

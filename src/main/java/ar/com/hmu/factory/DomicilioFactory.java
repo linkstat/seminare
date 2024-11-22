@@ -10,13 +10,13 @@ public class DomicilioFactory {
 
     public static Domicilio createDomicilio(ResultSet rs) throws SQLException {
         return new Domicilio.Builder()
-                .setId(UUID.fromString(rs.getString("id")))
-                .setCalle(rs.getString("calle"))
-                .setNumeracion(rs.getInt("numeracion"))
-                .setBarrio(rs.getString("barrio"))
-                .setCiudad(rs.getString("ciudad"))
-                .setLocalidad(rs.getString("localidad"))
-                .setProvincia(rs.getString("provincia"))
+                .id(UUID.fromString(rs.getString("id")))
+                .calle(rs.getString("calle"))
+                .numeracion(rs.getInt("numeracion"))
+                .barrio(rs.getString("barrio"))
+                .ciudad(rs.getString("ciudad"))
+                .localidad(rs.getString("localidad"))
+                .provincia(rs.getString("provincia"))
                 .build();
     }
 
