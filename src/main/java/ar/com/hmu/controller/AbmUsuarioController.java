@@ -1560,7 +1560,6 @@ public class AbmUsuarioController implements Initializable {
     @FXML
     private void onAbmServicio(ActionEvent event) {
         // Usa los servicios ya inicializados
-        UsuarioService usuarioService = this.usuarioService;
         ServicioService servicioService = this.servicioService;
 
         try {
@@ -1569,7 +1568,7 @@ public class AbmUsuarioController implements Initializable {
             loader.setControllerFactory(controllerClass -> {
                 if (controllerClass == AbmServicioController.class) {
                     AbmServicioController controller = new AbmServicioController();
-                    controller.setServices(usuarioService, servicioService);
+                    controller.setServices(servicioService);
                     return controller;
                 } else {
                     // Manejo predeterminado
@@ -1580,7 +1579,6 @@ public class AbmUsuarioController implements Initializable {
                     }
                 }
             });
-
             // Carga del FXML después de configurada la Fábrica
             Parent root = loader.load();
 

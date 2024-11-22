@@ -32,10 +32,9 @@ public class AbmServicioController {
     private ComboBox<Agrupacion> agrupacionComboBox;
     private ObservableList<Agrupacion> agrupacionList = FXCollections.observableArrayList(Agrupacion.values());
 
-    private UsuarioService usuarioService;
     private ServicioService servicioService;
 
-    public void setServices(UsuarioService usuarioService, ServicioService servicioService) {
+    public void setServices(ServicioService servicioService) {
         this.servicioService = servicioService;
     }
 

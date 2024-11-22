@@ -462,8 +462,8 @@ public class MainMenuMosaicoController {
             stage.setTitle("Alta, Baja y Modificación de Agentes" + " :: " + AppInfo.PRG_LONG_TITLE);
             stage.initModality(Modality.WINDOW_MODAL);
             //stage.initOwner(((Node) event.getSource()).getScene().getWindow()); // Con esto, establecemos la ventana actual como propietaria, evitando múltiples instancias. Supuestamente, es mejor que lo que hacía antes:  stage.initOwner(abmAgentesVBox.getScene().getWindow());
-            //stage.initOwner(abmAgentesVBox.getScene().getWindow());
-            stage.initOwner(MainMenuMosaicoController.getPrimaryStage());
+            //stage.initOwner(MainMenuMosaicoController.getPrimaryStage());
+            stage.initOwner(abmAgentesVBox.getScene().getWindow());
             // Mostrar la nueva ventana
             stage.show();  // También se sugiere el uso de:  stage.showAndWait(), lo que tal vez por ahí estaría bueno en conjunto con:  stage.initModality(Modality.WINDOW_MODAL)
         } catch (IOException e) {
@@ -548,8 +548,8 @@ public class MainMenuMosaicoController {
             stage.setScene(new Scene(root));
             stage.initModality(Modality.WINDOW_MODAL);
             stage.setWidth(590.0);
-            stage.initOwner(MainMenuMosaicoController.getPrimaryStage());
             //stage.initOwner(((Node) event.getSource()).getScene().getWindow());
+            stage.initOwner(MainMenuMosaicoController.getPrimaryStage());
             stage.showAndWait();
         } catch (IOException e) {
             e.printStackTrace();
@@ -605,7 +605,6 @@ public class MainMenuMosaicoController {
     @FXML
     private void handleAbmServicios(Event event) {
         // Usa los servicios ya inicializados
-        UsuarioService usuarioService = this.usuarioService;
         ServicioService servicioService = this.servicioService;
 
         try {
@@ -614,7 +613,7 @@ public class MainMenuMosaicoController {
             loader.setControllerFactory(controllerClass -> {
                 if (controllerClass == AbmServicioController.class) {
                     AbmServicioController controller = new AbmServicioController();
-                    controller.setServices(usuarioService, servicioService);
+                    controller.setServices(servicioService);
                     return controller;
                 } else {
                     // Manejo predeterminado
