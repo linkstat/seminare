@@ -78,7 +78,7 @@ public class AbmCargoController {
     }
 
     @FXML
-    private void onAgregarCargo() {
+    private void onAgregarCargo() throws ServiceException {
         String numero = numeroTextField.getText().trim();
         String descripcion = descripcionTextField.getText().trim();
         Agrupacion agrupacion = (Agrupacion) agrupacionComboBox.getSelectionModel().getSelectedItem();
@@ -87,20 +87,26 @@ public class AbmCargoController {
             return;
         }
 
-        Cargo cargo = new Cargo();
-        cargo.setId(UUID.randomUUID());
-        cargo.setNumero(Integer.parseInt(numero));
-        cargo.setDescripcion(descripcion);
-        cargo.setAgrupacion(agrupacion);
+        String descripcionByNumero = cargoService.findDescripcionByNumero(Integer.parseInt(numero));
+        if (descripcionByNumero == null) {
+            Cargo cargo = new Cargo();
+            cargo.setId(UUID.randomUUID());
+            cargo.setNumero(Integer.parseInt(numero));
+            cargo.setDescripcion(descripcion);
+            cargo.setAgrupacion(agrupacion);
 
-        try {
-            cargoService.create(cargo);
-            cargarCargos();
-            descripcionTextField.clear();
-            agrupacionComboBox.getSelectionModel().clearSelection();
-        } catch (ServiceException e) {
-            AlertUtils.showErr("Error al agregar el cargo: " + e.getMessage());
+            try {
+                cargoService.create(cargo);
+                cargarCargos();
+                descripcionTextField.clear();
+                agrupacionComboBox.getSelectionModel().clearSelection();
+            } catch (ServiceException e) {
+                AlertUtils.showErr("Error al agregar el cargo: " + e.getMessage());
+            }
+        } else {
+            AlertUtils.showWarn("El número de cargo introducido ya existe: " + descripcionByNumero);
         }
+        
     }
 
     @FXML

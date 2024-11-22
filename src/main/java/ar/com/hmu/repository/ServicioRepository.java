@@ -21,7 +21,7 @@ public class ServicioRepository implements GenericDAO<Servicio> {
 
     @Override
     public void create(Servicio servicio) throws SQLException {
-        String query = "INSERT INTO Servicio (id, nombre, agrupacion, direccionID) VALUES (UUID_TO_BIN(?), ?, ?, ?)";
+        String query = "INSERT INTO Servicio (id, nombre, agrupacion, direccionID) VALUES (UUID_TO_BIN(?), ?, ?, UUID_TO_BIN(?)";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
@@ -34,6 +34,22 @@ public class ServicioRepository implements GenericDAO<Servicio> {
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Error al crear el servicio", e);
+        }
+    }
+
+    public void createWithoutDireccionId(Servicio servicio) throws SQLException {
+        String query = "INSERT INTO Servicio (id, nombre, agrupacion) VALUES (UUID_TO_BIN(?), ?, ?)";
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+
+            stmt.setString(1, servicio.getId().toString());
+            stmt.setString(2, servicio.getNombre());
+            stmt.setString(3, servicio.getAgrupacion().name());
+
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error al crear el servicio (usando el método sin direccionID)", e);
         }
     }
 
@@ -85,6 +101,22 @@ public class ServicioRepository implements GenericDAO<Servicio> {
             stmt.setString(2, servicio.getNombre());                  // Nombre del servicio
             stmt.setString(3, servicio.getAgrupacion().name());       // Agrupación como String
             stmt.setString(4, servicio.getDireccionId().toString());  // UUID de la dirección
+
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error al actualizar el servicio", e);
+        }
+    }
+
+    public void updateWithoutDireccionId(Servicio servicio) throws SQLException {
+        String query = "INSERT INTO Servicio (id, nombre, agrupacion, direccionID) VALUES (UUID_TO_BIN(?), ?, ?)";
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+
+            stmt.setString(1, servicio.getId().toString());           // UUID del servicio
+            stmt.setString(2, servicio.getNombre());                  // Nombre del servicio
+            stmt.setString(3, servicio.getAgrupacion().name());       // Agrupación como String
 
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -165,7 +197,14 @@ public class ServicioRepository implements GenericDAO<Servicio> {
         UUID id = UUID.fromString(rs.getString("id"));
         String nombre = rs.getString("nombre");
         Agrupacion agrupacion = Agrupacion.valueOf(rs.getString("agrupacion"));
-        UUID direccionId = UUID.fromString(rs.getString("direccionID"));
+        UUID direccionId;
+        if(rs.getString("direccionID") == null) {
+            //TODO: Decidir cómo manejar este caso: lanzar una excepción o establecer como null.
+            direccionId = null;
+            System.out.println("direccionID es null para ServicioID: " + nombre);
+        } else {
+            direccionId = UUID.fromString(rs.getString("direccionID"));
+        }
 
         return new Servicio(id, nombre, agrupacion, direccionId);
     }

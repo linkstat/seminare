@@ -36,6 +36,7 @@ public class Servicio {
 		this.nombre = nombre;
 		this.agrupacion = agrupacion;
 		this.direccionId = direccionId;
+
 	}
 
 	public Servicio(UUID id, String nombre, Agrupacion agrupacion, List<Empleado> empleados, List<DiagramaDeServicio> diagramas) {

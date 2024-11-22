@@ -21,7 +21,11 @@ public class ServicioService {
 
     public void create(Servicio servicio) throws ServiceException {
         try {
-            servicioRepository.create(servicio);
+            if(servicio.getDireccionId() != null) {
+                servicioRepository.create(servicio);
+            } else {
+                servicioRepository.createWithoutDireccionId(servicio);
+            }
         } catch (SQLException e) {
             throw new ServiceException("Error al crear el servicio", e);
         }
@@ -45,7 +49,11 @@ public class ServicioService {
 
     public void update(Servicio servicio) throws ServiceException {
         try {
-            servicioRepository.update(servicio);
+            if (servicio.getDireccionId() != null) {
+                servicioRepository.update(servicio);
+            } else {
+                servicioRepository.updateWithoutDireccionId(servicio);
+            }
         } catch (SQLException e) {
             throw new ServiceException("Error al actualizar el servicio", e);
         }

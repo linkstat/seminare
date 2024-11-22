@@ -13,7 +13,6 @@ import javafx.scene.control.TextField;
 import ar.com.hmu.model.Servicio;
 import ar.com.hmu.service.ServicioService;
 import ar.com.hmu.exceptions.ServiceException;
-import ar.com.hmu.service.UsuarioService;
 import ar.com.hmu.util.AlertUtils;
 
 import java.util.UUID;

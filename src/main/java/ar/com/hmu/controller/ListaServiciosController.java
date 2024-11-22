@@ -1,7 +1,15 @@
 package ar.com.hmu.controller;
 
 import ar.com.hmu.service.*;
+import ar.com.hmu.util.AlertUtils;
+import ar.com.hmu.util.AppInfo;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.beans.property.SimpleStringProperty;
@@ -9,7 +17,10 @@ import javafx.beans.property.SimpleIntegerProperty;
 
 import ar.com.hmu.model.Servicio;
 import ar.com.hmu.exceptions.ServiceException;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.util.List;
 
 public class ListaServiciosController {
@@ -22,6 +33,8 @@ public class ListaServiciosController {
     private TableColumn<Servicio, Integer> cantidadUsuariosColumn;
     @FXML
     private TableColumn<Servicio, String> apellidoJefeColumn;
+    @FXML
+    private Button abmServicioButton;
 
     // Servicios
     private UsuarioService usuarioService;
@@ -91,4 +104,42 @@ public class ListaServiciosController {
             return "";
         }
     }
+
+    @FXML
+    private void onAbmServicio(ActionEvent event) {
+        // Usa los servicios ya inicializados
+        ServicioService servicioService = this.servicioService;
+
+        try {
+            // Configurar la fábrica de controladores
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/abmServicio.fxml"));
+            loader.setControllerFactory(controllerClass -> {
+                if (controllerClass == AbmServicioController.class) {
+                    AbmServicioController controller = new AbmServicioController();
+                    controller.setServices(servicioService);
+                    return controller;
+                } else {
+                    // Manejo predeterminado
+                    try {
+                        return controllerClass.getDeclaredConstructor().newInstance();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+            // Carga del FXML después de configurada la Fábrica
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setTitle("Gestión de Servicios" + " :: " + AppInfo.PRG_LONG_TITLE);
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(((Node) event.getSource()).getScene().getWindow());
+            //stage.initOwner(MainMenuMosaicoController.getPrimaryStage());
+            stage.showAndWait();
+        } catch (IOException e) {
+            AlertUtils.showErr("Error al cargar la ventana de gestión de servicios: " + e.getMessage());
+        }
+    }
+
 }
