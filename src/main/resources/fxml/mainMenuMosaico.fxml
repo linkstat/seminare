@@ -281,7 +281,7 @@
          <content>
             <TilePane hgap="24.0" prefColumns="1" prefHeight="480.0" prefRows="1" prefWidth="720.0" styleClass="panel" stylesheets="@../css/MainMenuMosaicoStd.css" vgap="16.0">
                <children>
-                  <VBox fx:id="aprobacionSolicitudesVBox" alignment="TOP_CENTER" layoutX="586.0" layoutY="354.0" styleClass="mosaic">
+                  <VBox fx:id="aprobacionSolicitudesVBox" alignment="TOP_CENTER" styleClass="mosaic">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>
@@ -301,7 +301,7 @@
                         </Text>
                      </children>
                   </VBox>
-                  <VBox fx:id="notasMemosVBox" alignment="TOP_CENTER" layoutX="298.0" layoutY="354.0" styleClass="mosaic">
+                  <VBox fx:id="notasMemosVBox" alignment="TOP_CENTER" styleClass="mosaic">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>
@@ -512,7 +512,7 @@
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                      </TilePane.margin>
                   </VBox>
-                  <VBox fx:id="faltasRazonFuerzaMayorVBox" alignment="TOP_CENTER" layoutX="14.0" layoutY="358.0" styleClass="mosaic">
+                  <VBox fx:id="faltasRazonFuerzaMayorVBox" alignment="TOP_CENTER" styleClass="mosaic">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>
@@ -532,7 +532,7 @@
                         </Text>
                      </children>
                   </VBox>
-                  <VBox fx:id="solicitudHorasExtraFCVBox" alignment="TOP_CENTER" layoutX="158.0" layoutY="358.0" styleClass="mosaic">
+                  <VBox fx:id="solicitudHorasExtraFCVBox" alignment="TOP_CENTER" styleClass="mosaic">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>
@@ -572,7 +572,7 @@
                         </Text>
                      </children>
                   </VBox>
-                  <VBox fx:id="reportesVBox" alignment="TOP_CENTER" layoutX="586.0" layoutY="354.0" styleClass="mosaic">
+                  <VBox fx:id="reportesVBox" alignment="TOP_CENTER" styleClass="mosaic">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>
@@ -661,7 +661,7 @@
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                      </TilePane.margin>
                   </VBox>
-                  <VBox fx:id="abmServiciosVBox" alignment="TOP_CENTER" layoutX="158.0" layoutY="526.0" styleClass="mosaic">
+                  <VBox fx:id="abmServiciosVBox" alignment="TOP_CENTER" styleClass="mosaic">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
                            <image>

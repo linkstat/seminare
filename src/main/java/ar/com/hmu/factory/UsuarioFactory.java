@@ -17,7 +17,8 @@ import java.util.UUID;
  * Es utilizada principalmente para convertir los datos almacenados en la base de datos en objetos del
  * modelo que puedan ser manipulados por la aplicación.
  * </p>
- */public class UsuarioFactory {
+ */
+public class UsuarioFactory {
 
     /**
      * Crea una instancia de {@link Usuario} basada en la información proporcionada en un {@link ResultSet}.
