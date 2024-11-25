@@ -7,7 +7,7 @@ import java.util.List;
  * @author Pablo Alejandro Hamann
  * @version 1.0
   */
-public class Empleado extends Usuario {
+public class Agente extends Usuario {
 
 	private List<FrancoCompensatorio> francosCompensatoriosUtilizados;
 	private HorarioBase horarioActual;
@@ -15,10 +15,10 @@ public class Empleado extends Usuario {
 	private List<Novedad> novedad;
 	private HorarioBase horarioBase;
 	private FrancoCompensatorio francoCompensatorio;
-	private JefaturaDeServicio jefaturaDeServicio;
+	private JefeDeServicio jefeDeServicio;
 	private OficinaDePersonal oficinaDePersonal;
 
-	public Empleado(){
+	public Agente(){
 
 	}
 

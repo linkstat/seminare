@@ -98,7 +98,7 @@
                         </Menu>
                      </items>
                   </Menu>
-                  <Menu fx:id="jefaturaDeServicioMenu" mnemonicParsing="false" text="Jefatura de Servicio">
+                  <Menu fx:id="jefeDeServicioMenu" mnemonicParsing="false" text="Jefatura de Servicio">
                      <items>
                         <MenuItem mnemonicParsing="false" text="Aprobación de Solicitudes" />
                         <MenuItem mnemonicParsing="false" text="Diagramación de mi Servicio" />

@@ -2,7 +2,6 @@ package ar.com.hmu.model;
 
 
 import java.util.List;
-import java.util.UUID;
 
 /**
  * @author Pablo Alejandro Hamann
@@ -10,7 +9,7 @@ import java.util.UUID;
   */
 public class Direccion extends Usuario {
 
-	private List<JefaturaDeServicio> listaJefaturasDeServicio;
+	private List<JefeDeServicio> listaJefesDeServicio;
 	private Novedad novedad;
 
 	// Constructor vacío o con atributos propios, ya no accede a la base de datos.
@@ -93,4 +92,4 @@ public class Direccion extends Usuario {
 	public void trasladarUsuarioDeServicio(Usuario usuario, Servicio servicioOrigen, Servicio servicioDestino){
 
 	}
-}//end Direccion
+}

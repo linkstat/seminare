@@ -12,15 +12,14 @@ public class Novedad {
 
 	private int cod;
 	private String desc;
-	private EstadoTramite estado;
+	private EstadoTramite estadoTramite;
 	private LocalDateTime estadoFechaModif;
 	private LocalDateTime fechaFin;
 	private LocalDateTime fechaInicio;
 	private LocalDateTime fechaSolicitud;
 	private UUID id;
 	private boolean reqAprobDireccion;
-	public EstadoTramite m_EstadoTramite;
-	public Empleado m_Empleado;
+	private Agente agente;
 
 	public Novedad(){
 

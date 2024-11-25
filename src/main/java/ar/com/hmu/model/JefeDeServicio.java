@@ -7,12 +7,12 @@ import java.util.List;
  * @author Pablo Alejandro Hamann
  * @version 1.0
   */
-public class JefaturaDeServicio extends Usuario {
+public class JefeDeServicio extends Usuario {
 
-	private List<Empleado> listaEmpleados;
+	private List<Agente> listaAgentes;
 	private Direccion direccion;
 
-	public JefaturaDeServicio(){
+	public JefeDeServicio(){
 
 	}
 
@@ -47,4 +47,4 @@ public class JefaturaDeServicio extends Usuario {
 	public void generarReporte(int reporte){
 
 	}
-}//end JefaturaDeServicio
+}

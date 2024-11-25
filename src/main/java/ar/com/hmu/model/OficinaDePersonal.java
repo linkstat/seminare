@@ -2,7 +2,6 @@ package ar.com.hmu.model;
 
 
 import java.util.List;
-import java.util.UUID;
 
 /**
  * @author Pablo Alejandro Hamann
@@ -10,7 +9,7 @@ import java.util.UUID;
   */
 public class OficinaDePersonal extends Usuario {
 
-	private List<Empleado> listaEmpleados;
+	private List<Agente> listaAgentes;
 	private int reportesGenerados;
 	private Novedad novedad;
 
@@ -29,9 +28,9 @@ public class OficinaDePersonal extends Usuario {
 
 	/**
 	 * 
-	 * @param empleado
+	 * @param agente
 	 */
-	public void gestionarABMEmpleado(Empleado empleado){
+	public void gestionarABMAgente(Agente agente){
 
 	}
 

@@ -9,17 +9,16 @@ import java.time.LocalDateTime;
   */
 public class HoraExtra {
 
-	private JefaturaDeServicio autorizadaPor;
-	private String desc;
-	private Empleado empleado;
+	private JefeDeServicio autorizadaPor;
+	private JefeDeServicio jefeDeServicio;
 	private EstadoTramite estadoAutorizacion;
+	private EstadoTramite estadoTramite;
+	private String desc;
+	private Agente agente;
 	private LocalDateTime fechaAutorizacion;
 	private int fechaEgreso;
 	private int fechaIngreso;
 	private int ponderacion;
-	public Empleado m_Empleado;
-	public JefaturaDeServicio m_JefaturaDeServicio;
-	public EstadoTramite m_EstadoTramite;
 
 	public HoraExtra(){
 

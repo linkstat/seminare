@@ -18,7 +18,7 @@ public class Servicio {
 
 	private UUID direccionId;
 
-	private List<Empleado> empleados;
+	private List<Agente> agentes;
 	private List<DiagramaDeServicio> diagramas;
 
 	public Servicio() {
@@ -39,12 +39,12 @@ public class Servicio {
 
 	}
 
-	public Servicio(UUID id, String nombre, Agrupacion agrupacion, List<Empleado> empleados, List<DiagramaDeServicio> diagramas) {
+	public Servicio(UUID id, String nombre, Agrupacion agrupacion, List<Agente> agentes, List<DiagramaDeServicio> diagramas) {
 		this.id = id;
 		this.nombre = nombre;
 		this.agrupacion = agrupacion;
 		this.direccionId = null;
-		this.empleados = empleados;
+		this.agentes = agentes;
 		this.diagramas = diagramas;
 	}
 
@@ -75,8 +75,8 @@ public class Servicio {
 		this.direccionId = direccionId;
 	}
 
-	public void setEmpleados(List<Empleado> empleados) {
-		this.empleados = empleados;
+	public void setAgentes(List<Agente> agentes) {
+		this.agentes = agentes;
 	}
 
 	public void setDiagramas(List<DiagramaDeServicio> diagramas) {
@@ -112,17 +112,17 @@ public class Servicio {
 
 	/**
 	 * 
-	 * Método para agregar empleado a un servicio
+	 * Método para agregar agentes a un servicio
 	 */
-	public void addEmpleado(Empleado empleado){
+	public void addAgente(Agente agente){
 
 	}
 
 	/**
 	 * 
-	 * @param empleado
+	 * @param agente
 	 */
-	public void delEmpleado(Empleado empleado){
+	public void delAgente(Agente agente){
 
 	}
 
@@ -142,7 +142,7 @@ public class Servicio {
 		return null;
 	}
 
-	public List<Empleado> getEmpleados(){
+	public List<Agente> getAgentes(){
 		return null;
 	}
 

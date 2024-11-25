@@ -105,9 +105,6 @@ public class LoginController {
         // Inicializar PreferencesManager
         preferencesManager = new PreferencesManager();
 
-        //Mueve la llamada a updateServerStatus() desde initialize() a postInitialize(), donde databaseConnector ya está configurado.
-        //updateServerStatus(databaseConnector, serverStatusLabel, serverStatusIcon); // Esto llamaba al método de utilería para verificar el estado del servidor al iniciar la ventana.
-
         // Configurar el campo de texto para el CUIL
         CuilUtils.configureCuilField(usernameField);
 
@@ -232,9 +229,6 @@ public class LoginController {
      * @param cuil el CUIL del usuario que se debe almacenar para recordar en futuros inicios de sesión.
      */
     private void saveUserCuil(String cuil) {
-        // Mejor inicializar preferences en initialize() una vez para evitar posibles inconsistencias.
-        //preferences = Preferences.userNodeForPackage(LoginController.class);
-
         if (rememberMeCheckBox.isSelected()) {
             preferencesManager.put(LAST_USER_CUIL_KEY, cuil);
         } else {

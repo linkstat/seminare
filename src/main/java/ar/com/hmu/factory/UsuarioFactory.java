@@ -23,7 +23,7 @@ import java.util.UUID;
      * Crea una instancia de {@link Usuario} basada en la información proporcionada en un {@link ResultSet}.
      * <p>
      * Este método lee la columna {@code tipoUsuario} del {@code ResultSet} para determinar el tipo específico
-     * de usuario que se debe instanciar (como {@code Empleado}, {@code JefaturaDeServicio}, etc.).
+     * de usuario que se debe instanciar (como {@code Agente}, {@code JefeDeServicio}, etc.).
      * A continuación, asigna los valores comunes de {@code Usuario} desde el {@code ResultSet} a la instancia creada.
      *
      * @param resultSet el {@link ResultSet} que contiene la información del usuario desde la base de datos.
@@ -37,16 +37,16 @@ import java.util.UUID;
         Usuario usuario;
 
         switch (tipoUsuario) {
-            case "Empleado":
-                usuario = new Empleado();
+            case "AGENTE":
+                usuario = new Agente();
                 break;
-            case "JefaturaDeServicio":
-                usuario = new JefaturaDeServicio();
+            case "JEFEDESERVICIO":
+                usuario = new JefeDeServicio();
                 break;
-            case "OficinaDePersonal":
+            case "OFICINADEPERSONAL":
                 usuario = new OficinaDePersonal();
                 break;
-            case "Direccion":
+            case "DIRECCION":
                 usuario = new Direccion();
                 break;
             default:
@@ -69,7 +69,7 @@ import java.util.UUID;
         try {
             usuario.setTipoUsuario(TipoUsuario.fromInternalName(resultSet.getString("tipoUsuario")));
         } catch (IllegalArgumentException | NullPointerException e) {
-            usuario.setTipoUsuario(TipoUsuario.EMPLEADO);
+            usuario.setTipoUsuario(TipoUsuario.AGENTE);
             throw new SQLException("TipoUsuario inválido: " + resultSet.getString("tipoUsuario"), e);
         }
 

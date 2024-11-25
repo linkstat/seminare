@@ -71,7 +71,7 @@
 			</index>
 			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
 		</table>
-		<table name="empleado" row_count="0" spec="" >
+		<table name="agente" row_count="0" spec="" >
 			<column name="id" type="BINARY" length="16" jt="-2" mandatory="y" />
 			<column name="francosCompensatoriosUtilizados" type="INT" length="11" jt="4" />
 			<column name="horarioActualID" type="BINARY" length="16" jt="-2" />
@@ -113,7 +113,7 @@
 			<index name="novedadID" unique="NORMAL" >
 				<column name="novedadID" />
 			</index>
-			<fk name="empleado_novedad_ibfk_1" to_schema="aromito" to_table="empleado" options="" >
+			<fk name="empleado_novedad_ibfk_1" to_schema="aromito" to_table="agente" options="" >
 				<fk_column name="empleadoID" pk="id" />
 			</fk>
 			<fk name="empleado_novedad_ibfk_2" to_schema="aromito" to_table="novedad" options="" >
@@ -160,7 +160,7 @@
 			<fk name="francocompensatorio_ibfk_2" to_schema="aromito" to_table="usuario" options="" >
 				<fk_column name="autorizadaPorID" pk="id" />
 			</fk>
-			<fk name="francocompensatorio_ibfk_3" to_schema="aromito" to_table="empleado" options="" >
+			<fk name="francocompensatorio_ibfk_3" to_schema="aromito" to_table="agente" options="" >
 				<fk_column name="empleadoID" pk="id" />
 			</fk>
 			<fk name="francocompensatorio_ibfk_4" to_schema="aromito" to_table="jefaturadeservicio" options="" >
@@ -200,7 +200,7 @@
 			<fk name="horaextra_ibfk_2" to_schema="aromito" to_table="usuario" options="" >
 				<fk_column name="autorizadaPorID" pk="id" />
 			</fk>
-			<fk name="horaextra_ibfk_3" to_schema="aromito" to_table="empleado" options="" >
+			<fk name="horaextra_ibfk_3" to_schema="aromito" to_table="agente" options="" >
 				<fk_column name="empleadoID" pk="id" />
 			</fk>
 			<fk name="horaextra_ibfk_4" to_schema="aromito" to_table="jefaturadeservicio" options="" >
@@ -412,7 +412,7 @@
 			<index name="empleadoID" unique="NORMAL" >
 				<column name="empleadoID" />
 			</index>
-			<fk name="marcacionempleado_ibfk_1" to_schema="aromito" to_table="empleado" options="" >
+			<fk name="marcacionempleado_ibfk_1" to_schema="aromito" to_table="agente" options="" >
 				<fk_column name="empleadoID" pk="id" />
 			</fk>
 			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
@@ -577,7 +577,7 @@
 			<fk name="partediario_empleado_ibfk_1" to_schema="aromito" to_table="partediario" options="" >
 				<fk_column name="parteDiarioID" pk="id" />
 			</fk>
-			<fk name="partediario_empleado_ibfk_2" to_schema="aromito" to_table="empleado" options="" >
+			<fk name="partediario_empleado_ibfk_2" to_schema="aromito" to_table="agente" options="" >
 				<fk_column name="empleadoID" pk="id" />
 			</fk>
 			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci]]></options>
@@ -600,7 +600,7 @@
 			<fk name="planificacion_ibfk_1" to_schema="aromito" to_table="diagramadeservicio" options="" >
 				<fk_column name="diagramaID" pk="id" />
 			</fk>
-			<fk name="planificacion_ibfk_2" to_schema="aromito" to_table="empleado" options="" >
+			<fk name="planificacion_ibfk_2" to_schema="aromito" to_table="agente" options="" >
 				<fk_column name="empleadoID" pk="id" />
 			</fk>
 			<fk name="planificacion_ibfk_3" to_schema="aromito" to_table="jornadalaboral" options="" >
@@ -627,7 +627,7 @@
 			<index name="marcacionEgresoID" unique="NORMAL" >
 				<column name="marcacionEgresoID" />
 			</index>
-			<fk name="registrojornadalaboral_ibfk_1" to_schema="aromito" to_table="empleado" options="" >
+			<fk name="registrojornadalaboral_ibfk_1" to_schema="aromito" to_table="agente" options="" >
 				<fk_column name="empleadoID" pk="id" />
 			</fk>
 			<fk name="registrojornadalaboral_ibfk_2" to_schema="aromito" to_table="marcacionempleado" options="" >
@@ -720,8 +720,8 @@ END]]></string>
 			<input_param jt="-2" type="binary" inOut="4" />
 			<input_param name="uuid" jt="1" type="char" inOut="1" />
 		</function>
-		<trigger name="trg_check_servicio_consistente_before_insert" table="empleado" id="Trigger-be8" isSystem="false" >
-			<string><![CDATA[CREATE TRIGGER ${nameWithSchemaName} BEFORE INSERT ON empleado FOR EACH ROW BEGIN
+		<trigger name="trg_check_servicio_consistente_before_insert" table="agente" id="Trigger-be8" isSystem="false" >
+			<string><![CDATA[CREATE TRIGGER ${nameWithSchemaName} BEFORE INSERT ON agente FOR EACH ROW BEGIN
     DECLARE jefaturaServicioID BINARY(16);
     -- Verificar si NEW.jefaturaID no es NULL
     IF NEW.jefaturaID IS NOT NULL THEN
@@ -743,8 +743,8 @@ END]]></string>
     -- Si NEW.jefaturaID es NULL, no se realiza la validación
 END]]></string>
 		</trigger>
-		<trigger name="trg_check_servicio_consistente_before_update" table="empleado" id="Trigger-231a" isSystem="false" >
-			<string><![CDATA[CREATE TRIGGER ${nameWithSchemaName} BEFORE UPDATE ON empleado FOR EACH ROW BEGIN
+		<trigger name="trg_check_servicio_consistente_before_update" table="agente" id="Trigger-231a" isSystem="false" >
+			<string><![CDATA[CREATE TRIGGER ${nameWithSchemaName} BEFORE UPDATE ON agente FOR EACH ROW BEGIN
     DECLARE jefaturaServicioID BINARY(16);
     -- Verificar si NEW.jefaturaID no es NULL
     IF NEW.jefaturaID IS NOT NULL THEN
@@ -773,7 +773,7 @@ END]]></string>
 		<entity schema="aromito" name="diagramadeservicio" color="F4DDBE" x="1904" y="800" />
 		<entity schema="aromito" name="direccion" color="BED3F4" x="1568" y="400" />
 		<entity schema="aromito" name="domicilio" color="BED3F4" x="272" y="112" />
-		<entity schema="aromito" name="empleado" color="BED3F4" x="928" y="544" />
+		<entity schema="aromito" name="agente" color="BED3F4" x="928" y="544" />
 		<entity schema="aromito" name="empleado_novedad" color="BED3F4" x="1184" y="928" />
 		<entity schema="aromito" name="estadotramite" color="BED3F4" x="1456" y="1040" />
 		<entity schema="aromito" name="francocompensatorio" color="BED3F4" x="1360" y="144" />
@@ -815,7 +815,7 @@ END]]></string>
 		<entity schema="aromito" name="diagramadeservicio" color="F4DDBE" x="1072" y="1216" />
 		<entity schema="aromito" name="direccion" color="F4DDBE" x="736" y="1216" />
 		<entity schema="aromito" name="domicilio" color="C7F4BE" x="2000" y="704" />
-		<entity schema="aromito" name="empleado" color="BED3F4" x="2304" y="48" />
+		<entity schema="aromito" name="agente" color="BED3F4" x="2304" y="48" />
 		<entity schema="aromito" name="empleado_novedad" color="BED3F4" x="2304" y="304" />
 		<entity schema="aromito" name="estadotramite" color="BED3F4" x="1712" y="656" />
 		<entity schema="aromito" name="francocompensatorio" color="BED3F4" x="1376" y="656" />

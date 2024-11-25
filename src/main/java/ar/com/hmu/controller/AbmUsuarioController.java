@@ -654,7 +654,7 @@ public class AbmUsuarioController implements Initializable {
                     cargoComboBox.setDisable(true);
                     gestionarCargosButton.setDisable(true);
                     break;
-                case OFICINA_DE_PERSONAL:
+                case OFICINADEPERSONAL:
                     // Establecer checkbox de rol automáticamente
                     rolOficinaPersonalCheckBox.setSelected(true);
                     // Deshabilitar rol seleccionado y habilitar otros
@@ -673,7 +673,7 @@ public class AbmUsuarioController implements Initializable {
                     cargoComboBox.setDisable(false);
                     gestionarCargosButton.setDisable(false);
                     break;
-                case JEFATURA_DE_SERVICIO:
+                case JEFEDESERVICIO:
                     // Establecer checkbox de rol automáticamente
                     rolJefeServicioCheckBox.setSelected(true);
                     // Deshabilitar rol seleccionado y habilitar otros
@@ -693,7 +693,7 @@ public class AbmUsuarioController implements Initializable {
                     // Validar si el servicio ya tiene jefes asignados
                     validarJefesDeServicio();
                     break;
-                case EMPLEADO:
+                case AGENTE:
                     // Establecer checkbox de rol automáticamente
                     rolAgenteCheckBox.setSelected(true);
                     // Deshabilitar rol seleccionado y habilitar otros
@@ -1158,14 +1158,14 @@ public class AbmUsuarioController implements Initializable {
         ImageUtils.setProfileImage(imagenPerfilImageView, usuario.getProfileImage(), imagenPerfilOriginal);
 
         //Cargar roles en los CheckBoxes
-        rolAgenteCheckBox.setSelected(usuario.hasRole(TipoUsuario.EMPLEADO));
-        rolJefeServicioCheckBox.setSelected(usuario.hasRole(TipoUsuario.JEFATURA_DE_SERVICIO));
-        rolOficinaPersonalCheckBox.setSelected(usuario.hasRole(TipoUsuario.OFICINA_DE_PERSONAL));
+        rolAgenteCheckBox.setSelected(usuario.hasRole(TipoUsuario.AGENTE));
+        rolJefeServicioCheckBox.setSelected(usuario.hasRole(TipoUsuario.JEFEDESERVICIO));
+        rolOficinaPersonalCheckBox.setSelected(usuario.hasRole(TipoUsuario.OFICINADEPERSONAL));
         rolDireccionCheckBox.setSelected(usuario.hasRole(TipoUsuario.DIRECCION));
         // Deshabilitar checkBox del Rol correspondiente al Tipo de usuario
-        rolAgenteCheckBox.setDisable(usuario.isDefaultRole(TipoUsuario.EMPLEADO));
-        rolJefeServicioCheckBox.setDisable(usuario.isDefaultRole(TipoUsuario.JEFATURA_DE_SERVICIO));
-        rolOficinaPersonalCheckBox.setDisable(usuario.isDefaultRole(TipoUsuario.OFICINA_DE_PERSONAL));
+        rolAgenteCheckBox.setDisable(usuario.isDefaultRole(TipoUsuario.AGENTE));
+        rolJefeServicioCheckBox.setDisable(usuario.isDefaultRole(TipoUsuario.JEFEDESERVICIO));
+        rolOficinaPersonalCheckBox.setDisable(usuario.isDefaultRole(TipoUsuario.OFICINADEPERSONAL));
         rolDireccionCheckBox.setDisable(usuario.isDefaultRole(TipoUsuario.DIRECCION));
 
         // Datos del domicilio
@@ -1218,12 +1218,12 @@ public class AbmUsuarioController implements Initializable {
      * @return cadena de texto que indicado el tipo de usuario
      */
     private TipoUsuario obtenerTipoUsuario(Usuario usuario) {
-        if (usuario instanceof Empleado) {
-            return TipoUsuario.EMPLEADO;
-        } else if (usuario instanceof JefaturaDeServicio) {
-            return TipoUsuario.JEFATURA_DE_SERVICIO;
+        if (usuario instanceof Agente) {
+            return TipoUsuario.AGENTE;
+        } else if (usuario instanceof JefeDeServicio) {
+            return TipoUsuario.JEFEDESERVICIO;
         } else if (usuario instanceof OficinaDePersonal) {
-            return TipoUsuario.OFICINA_DE_PERSONAL;
+            return TipoUsuario.OFICINADEPERSONAL;
         } else if (usuario instanceof Direccion) {
             return TipoUsuario.DIRECCION;
         } else {
@@ -1244,13 +1244,13 @@ public class AbmUsuarioController implements Initializable {
         if (usuarioExistente == null) {
             // Crear una nueva instancia según el tipo de usuario
             switch (tipoUsuarioSeleccionado) {
-                case EMPLEADO:
-                    usuario = new Empleado();
+                case AGENTE:
+                    usuario = new Agente();
                     break;
-                case JEFATURA_DE_SERVICIO:
-                    usuario = new JefaturaDeServicio();
+                case JEFEDESERVICIO:
+                    usuario = new JefeDeServicio();
                     break;
-                case OFICINA_DE_PERSONAL:
+                case OFICINADEPERSONAL:
                     usuario = new OficinaDePersonal();
                     break;
                 case DIRECCION:
@@ -1299,15 +1299,15 @@ public class AbmUsuarioController implements Initializable {
         // Agregar roles basados en los CheckBoxes
         Set<Rol> rolesSeleccionados = new HashSet<>();
         if (rolAgenteCheckBox.isSelected()) {
-            Rol rolAgente = rolService.findByTipoUsuario(TipoUsuario.EMPLEADO);
+            Rol rolAgente = rolService.findByTipoUsuario(TipoUsuario.AGENTE);
             rolesSeleccionados.add(rolAgente);
         }
         if (rolJefeServicioCheckBox.isSelected()) {
-            Rol rolAgente = rolService.findByTipoUsuario(TipoUsuario.JEFATURA_DE_SERVICIO);
+            Rol rolAgente = rolService.findByTipoUsuario(TipoUsuario.JEFEDESERVICIO);
             rolesSeleccionados.add(rolAgente);
         }
         if (rolOficinaPersonalCheckBox.isSelected()) {
-            Rol rolAgente = rolService.findByTipoUsuario(TipoUsuario.OFICINA_DE_PERSONAL);
+            Rol rolAgente = rolService.findByTipoUsuario(TipoUsuario.OFICINADEPERSONAL);
             rolesSeleccionados.add(rolAgente);
         }
         if (rolDireccionCheckBox.isSelected()) {

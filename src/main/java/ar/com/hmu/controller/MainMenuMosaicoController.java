@@ -38,7 +38,7 @@ public class MainMenuMosaicoController {
     @FXML
     private Menu agenteMenu;
     @FXML
-    private Menu jefaturaDeServicioMenu;
+    private Menu jefeDeServicioMenu;
     @FXML
     private Menu oficinaDePersonalMenu;
     @FXML
@@ -292,35 +292,35 @@ public class MainMenuMosaicoController {
     private void configurarVisibilidadMenus() {
         // Inicializar todos los menús como no visibles
         agenteMenu.setVisible(false);
-        jefaturaDeServicioMenu.setVisible(false);
+        jefeDeServicioMenu.setVisible(false);
         oficinaDePersonalMenu.setVisible(false);
         direccionMenu.setVisible(false);
 
         // Configurar visibilidad de menús según roles
-        agenteMenu.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
-        jefaturaDeServicioMenu.setVisible(usuarioActual.hasRole(TipoUsuario.JEFATURA_DE_SERVICIO));
-        oficinaDePersonalMenu.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINA_DE_PERSONAL));
+        agenteMenu.setVisible(usuarioActual.hasRole(TipoUsuario.AGENTE));
+        jefeDeServicioMenu.setVisible(usuarioActual.hasRole(TipoUsuario.JEFEDESERVICIO));
+        oficinaDePersonalMenu.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL));
         direccionMenu.setVisible(usuarioActual.hasRole(TipoUsuario.DIRECCION));
 
         // Configurar visibilidad de mosaicos (VBox) según roles
-        aprobacionSolicitudesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.JEFATURA_DE_SERVICIO, TipoUsuario.OFICINA_DE_PERSONAL, TipoUsuario.DIRECCION));
+        aprobacionSolicitudesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.JEFEDESERVICIO, TipoUsuario.OFICINADEPERSONAL, TipoUsuario.DIRECCION));
         notasMemosVBox.setVisible(usuarioActual.hasAnyRole());
-        partesDiariosVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINA_DE_PERSONAL));
-        consultaDiagramasDeServicioVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINA_DE_PERSONAL, TipoUsuario.DIRECCION));
-        diagramacionDeServicioVBox.setVisible(usuarioActual.hasRole(TipoUsuario.JEFATURA_DE_SERVICIO));
-        controlMarcacionesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
-        pasesDeSalidaVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
-        omisionesIngresEgresoVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
-        faltasJustificadasVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
-        faltasInjustificadasVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
-        faltasRazonFuerzaMayorVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
-        solicitudHorasExtraFCVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
-        francosCompensatoriosVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
-        reportesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
-        listadoDeAgentesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINA_DE_PERSONAL, TipoUsuario.DIRECCION));
-        listadoDeServiciosVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINA_DE_PERSONAL, TipoUsuario.DIRECCION));
-        abmAgentesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINA_DE_PERSONAL));
-        abmServiciosVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINA_DE_PERSONAL));
+        partesDiariosVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL));
+        consultaDiagramasDeServicioVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL, TipoUsuario.DIRECCION));
+        diagramacionDeServicioVBox.setVisible(usuarioActual.hasRole(TipoUsuario.JEFEDESERVICIO));
+        controlMarcacionesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.AGENTE));
+        pasesDeSalidaVBox.setVisible(usuarioActual.hasRole(TipoUsuario.AGENTE));
+        omisionesIngresEgresoVBox.setVisible(usuarioActual.hasRole(TipoUsuario.AGENTE));
+        faltasJustificadasVBox.setVisible(usuarioActual.hasRole(TipoUsuario.AGENTE));
+        faltasInjustificadasVBox.setVisible(usuarioActual.hasRole(TipoUsuario.AGENTE));
+        faltasRazonFuerzaMayorVBox.setVisible(usuarioActual.hasRole(TipoUsuario.AGENTE));
+        solicitudHorasExtraFCVBox.setVisible(usuarioActual.hasRole(TipoUsuario.AGENTE));
+        francosCompensatoriosVBox.setVisible(usuarioActual.hasRole(TipoUsuario.AGENTE));
+        reportesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.AGENTE));
+        listadoDeAgentesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL, TipoUsuario.DIRECCION));
+        listadoDeServiciosVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL, TipoUsuario.DIRECCION));
+        abmAgentesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL));
+        abmServiciosVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL));
 
     }
 

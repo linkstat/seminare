@@ -11,11 +11,11 @@ import java.time.LocalDateTime;
   */
 public class ParteDiario extends Reporte {
 
-	private List<Empleado> empleados;
+	private List<Agente> agentes;
 	private LocalDateTime fechaDeCierre;
 	private Map<OficinaDePersonal, LocalDateTime> modificadoPor;
-	public OficinaDePersonal m_OficinaDePersonal;
-	public Empleado m_Empleado;
+	private OficinaDePersonal oficinaDePersonal;
+	private Agente agente;
 
 	public ParteDiario(){
 
@@ -24,9 +24,9 @@ public class ParteDiario extends Reporte {
 	
 	/**
 	 * 
-	 * @param empleado
+	 * @param agente
 	 */
-	public void agregarEmpleado(Empleado empleado){
+	public void agregarAgente(Agente agente){
 
 	}
 

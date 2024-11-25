@@ -9,16 +9,14 @@ import java.time.LocalDateTime;
   */
 public class FrancoCompensatorio {
 
-	private JefaturaDeServicio autorizadaPor;
+	private Usuario autorizadaPor;
+	private JefeDeServicio jefeDeServicio;
 	private double cantHoras;
 	private String desc;
-	private Empleado empleado;
-	private EstadoTramite estado;
+	private Agente agente;
+	private EstadoTramite estadoTramite;
 	private LocalDateTime fechaAutorizacion;
 	private LocalDateTime fechaDeAplicacion;
-	public EstadoTramite m_EstadoTramite;
-	public JefaturaDeServicio m_JefaturaDeServicio;
-	public Empleado m_Empleado;
 
 	public FrancoCompensatorio(){
 

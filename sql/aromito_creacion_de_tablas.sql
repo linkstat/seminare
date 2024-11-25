@@ -188,16 +188,25 @@ SET FOREIGN_KEY_CHECKS = 0; -- Deshabilitar las Restricciones de Claves Foránea
 CREATE TABLE Servicio (
     id BINARY(16) PRIMARY KEY,
     nombre VARCHAR(255) NOT NULL,
-    agrupacion ENUM('ADMINISTRATIVO', 'SERVICIO', 'MEDICO', 'ENFERMERIA', 'TECNICO', 'PLANTA POLITICA') NOT NULL,
+    agrupacion ENUM('ADMINISTRATIVO', 'SERVICIO', 'MEDICO', 'ENFERMERIA', 'TECNICO', 'PLANTAPOLITICA') NOT NULL,
     direccionID BINARY(16) NOT NULL,
     FOREIGN KEY (direccionID) REFERENCES Direccion(id)
 );
+
+-- Tabla Intermedia Servicio_JefeDeServicio
+CREATE TABLE Servicio_JefeDeServicio (
+    servicioID BINARY(16) NOT NULL,
+    jefedeservicioID BINARY(16) NOT NULL,
+    PRIMARY KEY (servicioID, jefedeservicioID),
+    FOREIGN KEY (servicioID) REFERENCES Servicio(id) ON DELETE CASCADE,
+    FOREIGN KEY (jefedeservicioID) REFERENCES jefedeservicio(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 SET FOREIGN_KEY_CHECKS = 1; -- Habilitar las Restricciones de Claves Foráneas
 
 
  -- Tabla Usuario
 /*
- * Representa a la clase Usuario (y es base para sus herederas): JefaturaDeServicio, OficinaDePersonal y Direccion
+ * Representa a la clase Usuario (y es base para sus herederas): JefeDeServicio, OficinaDePersonal y Direccion
  * La herencia puede manejarse de varias formas en SQL.
  * Usaremos la estrategia de Tabla por Subclase (Class Table Inheritance)
  * donde cada subclase tiene su propia tabla que extiende la tabla de la superclase
@@ -216,7 +225,7 @@ CREATE TABLE Usuario (
     domicilioID BINARY(16),
     cargoID BINARY(16),
     servicioID BINARY(16),
-    tipoUsuario VARCHAR(50) NOT NULL, -- Indica si: 'Direccion', 'Empleado', 'JefaturaDeServicio', 'OficinaDePersonal'
+    tipoUsuario ENUM('AGENTE', 'JEFEDESERVICIO', 'OFICINADEPERSONAL', 'DIRECCION') NOT NULL,
     passwd VARCHAR(255) NOT NULL,
     profile_image BLOB,
     FOREIGN KEY (domicilioID) REFERENCES Domicilio(id),
@@ -231,8 +240,8 @@ CREATE TABLE Direccion (
     -- No tiene atributos adicionales directos
 );
 
--- Tabla JefaturaDeServicio
-CREATE TABLE JefaturaDeServicio (
+-- Tabla JefeDeServicio
+CREATE TABLE JefeDeServicio (
     id BINARY(16) PRIMARY KEY,
     FOREIGN KEY (id) REFERENCES Usuario(id) ON DELETE CASCADE
 );
@@ -244,110 +253,14 @@ CREATE TABLE OficinaDePersonal (
     reportesGenerados INT
 );
 
--- Tabla Empleado
-CREATE TABLE Empleado (
+-- Tabla Agente
+CREATE TABLE Agente (
     id BINARY(16) PRIMARY KEY,
     FOREIGN KEY (id) REFERENCES Usuario(id) ON DELETE CASCADE,
     francosCompensatoriosUtilizados INT,
     horarioActualID BINARY(16),
-    jefaturaID BINARY(16) NOT NULL,
-    FOREIGN KEY (horarioActualID) REFERENCES HorarioBase(id),
-    FOREIGN KEY (jefaturaID) REFERENCES JefaturaDeServicio(id)
+    FOREIGN KEY (horarioActualID) REFERENCES HorarioBase(id)
 );
-
-
-/* Notas:
- * Integridad Referencial: Cada Empleado está asociado a una JefaturaDeServicio y a un Servicio.
- * Coherencia: Dado que la JefaturaDeServicio está asociada al Servicio, podemos validar que el Empleado y la JefaturaDeServicio pertenecen al mismo Servicio.
- * Restricciones Adicionales: Agregamos una restricción para asegurar que el servicioID del Empleado coincida con el servicioID de la JefaturaDeServicio a la que está asignado.
- */
-/* Lo siguiente no funciona (MySQL/MariaDB no permite SELECT dentro de CHECK), asi que probamos otra cosa
-ALTER TABLE Empleado
-ADD CONSTRAINT chk_servicio_consistente CHECK (
-    servicioID = (
-        SELECT servicioID
-        FROM JefaturaDeServicio
-        WHERE id = Empleado.jefaturaID
-    )
-);
- */
--- Trigger BEFORE INSERT
--- cambiamos el delimitador por defecto para no tener problemas
-DELIMITER $$
-CREATE TRIGGER trg_check_servicio_consistente_before_insert
-BEFORE INSERT ON Empleado
-FOR EACH ROW
-BEGIN
-    DECLARE empleadoServicioID BINARY(16);
-    DECLARE jefaturaServicioID BINARY(16);
-
-    -- Obtener el servicioID del Empleado desde la tabla Usuario
-    SELECT servicioID INTO empleadoServicioID
-    FROM Usuario
-    WHERE id = NEW.id;
-
-    -- Verificar si NEW.jefaturaID no es NULL
-    IF NEW.jefaturaID IS NOT NULL THEN
-        -- Obtener el servicioID de la JefaturaDeServicio desde la tabla Usuario
-        SELECT servicioID INTO jefaturaServicioID
-        FROM Usuario
-        WHERE id = NEW.jefaturaID;
-
-        -- Si no se encuentra el servicioID de la JefaturaDeServicio, generar un error
-        IF jefaturaServicioID IS NULL THEN
-            SIGNAL SQLSTATE '45000' 
-            SET MESSAGE_TEXT = 'La JefaturaDeServicio especificada no tiene un servicio asignado.';
-        END IF;
-
-        -- Verificar si los servicioID coinciden
-        IF empleadoServicioID != jefaturaServicioID THEN
-            SIGNAL SQLSTATE '45000' 
-            SET MESSAGE_TEXT = 'El servicioID del Empleado debe coincidir con el servicioID de la JefaturaDeServicio.';
-        END IF;
-    END IF;
-    -- Si NEW.jefaturaID es NULL, no se realiza la validación
-END$$
--- restablecemos el delimitador por defecto
-DELIMITER ;
-
--- Trigger BEFORE UPDATE
--- cambiamos el delimitador por defecto para no tener problemas
-DELIMITER $$
-CREATE TRIGGER trg_check_servicio_consistente_before_update
-BEFORE UPDATE ON Empleado
-FOR EACH ROW
-BEGIN
-    DECLARE empleadoServicioID BINARY(16);
-    DECLARE jefaturaServicioID BINARY(16);
-
-    -- Obtener el servicioID del Empleado desde la tabla Usuario
-    SELECT servicioID INTO empleadoServicioID
-    FROM Usuario
-    WHERE id = NEW.id;
-
-    -- Verificar si NEW.jefaturaID no es NULL
-    IF NEW.jefaturaID IS NOT NULL THEN
-        -- Obtener el servicioID de la JefaturaDeServicio desde la tabla Usuario
-        SELECT servicioID INTO jefaturaServicioID
-        FROM Usuario
-        WHERE id = NEW.jefaturaID;
-
-        -- Si no se encuentra el servicioID de la JefaturaDeServicio, generar un error
-        IF jefaturaServicioID IS NULL THEN
-            SIGNAL SQLSTATE '45000' 
-            SET MESSAGE_TEXT = 'La JefaturaDeServicio especificada no tiene un servicio asignado.';
-        END IF;
-
-        -- Verificar si los servicioID coinciden
-        IF empleadoServicioID != jefaturaServicioID THEN
-            SIGNAL SQLSTATE '45000' 
-            SET MESSAGE_TEXT = 'El servicioID del Empleado debe coincidir con el servicioID de la JefaturaDeServicio.';
-        END IF;
-    END IF;
-    -- Si NEW.jefaturaID es NULL, no se realiza la validación
-END$$
--- restablecemos el delimitador por defecto
-DELIMITER ;
 
 
 /* Roles como Entidades en la Base de Datos
@@ -356,7 +269,7 @@ DELIMITER ;
  * múltiples roles de manera sencilla, sin las limitaciones impuestas por
  * la herencia.
  * Gestión Dinámica de Roles: Dado que los cambios de roles son muy frecuentes
- * (por ejemplo, asignar un empleado como jefe temporalmente),
+ * (por ejemplo, asignar un Agente como jefe temporalmente),
  * manejar roles como entidades facilita estas asignaciones y revocaciones
  * sin necesidad de modificar la estructura de clases en el código.
  */
@@ -386,7 +299,7 @@ CREATE INDEX idx_rol ON Usuario_Rol(rol_id);
 CREATE TABLE Autorizacion (
     id BINARY(16) PRIMARY KEY,
     fechaAutorizacion DATETIME NOT NULL,
-    tipo ENUM('DIRECCION', 'JEFATURADESERVICIO', 'OFICINADEPERSONAL', 'USUARIO') NOT NULL,
+    tipo ENUM('AGENTE', 'JEFEDESERVICIO', 'OFICINADEPERSONAL', 'DIRECCION') NOT NULL,
     autorizadoPorID BINARY(16) NOT NULL,
     FOREIGN KEY (autorizadoPorID) REFERENCES Usuario(id)
 );
@@ -424,12 +337,12 @@ CREATE TABLE Novedad (
     FOREIGN KEY (estadoTramiteID) REFERENCES EstadoTramite(id)
 );
 
--- Tabla Intermedia Empleado_Novedad (Por la novedad 99, tenemos una relación mucho-a-muchos que salvaguardar)
-CREATE TABLE Empleado_Novedad (
-    empleadoID BINARY(16) NOT NULL,
+-- Tabla Intermedia Agente_Novedad (Por la novedad 99, tenemos una relación mucho-a-muchos que salvaguardar)
+CREATE TABLE Agente_Novedad (
+    agenteID BINARY(16) NOT NULL,
     novedadID BINARY(16) NOT NULL,
-    PRIMARY KEY (empleadoID, novedadID),
-    FOREIGN KEY (empleadoID) REFERENCES Empleado(id),
+    PRIMARY KEY (agenteID, novedadID),
+    FOREIGN KEY (agenteID) REFERENCES Agente(id),
     FOREIGN KEY (novedadID) REFERENCES Novedad(id)
 );
 
@@ -452,16 +365,16 @@ CREATE TABLE DiagramaDeServicio (
 
 -- Tabla Planificacion
 /* Para el atributo 'planificaciones' de la clase DiagramaDeServicio.
- * Relaciona DiagramaDeServicio, Empleado y JornadaLaboral.
- * Representa las planificaciones de cada empleado en un diagrama de servicio.
+ * Relaciona DiagramaDeServicio, Agente y JornadaLaboral.
+ * Representa las planificaciones de cada Agente en un diagrama de servicio.
  */
 CREATE TABLE Planificacion (
     diagramaID BINARY(16) NOT NULL,
-    empleadoID BINARY(16) NOT NULL,
+    agenteID BINARY(16) NOT NULL,
     jornadaID BINARY(16) NOT NULL,
-    PRIMARY KEY (diagramaID, empleadoID, jornadaID),
+    PRIMARY KEY (diagramaID, agenteID, jornadaID),
     FOREIGN KEY (diagramaID) REFERENCES DiagramaDeServicio(id),
-    FOREIGN KEY (empleadoID) REFERENCES Empleado(id),
+    FOREIGN KEY (agenteID) REFERENCES Agente(id),
     FOREIGN KEY (jornadaID) REFERENCES JornadaLaboral(id)
 );
 
@@ -520,12 +433,12 @@ CREATE TABLE FrancoCompensatorio (
     fechaDeAplicacion DATE,
     estadoTramiteID BINARY(16) NOT NULL,
     autorizadaPorID BINARY(16),
-    empleadoID BINARY(16) NOT NULL,
-    jefaturaID BINARY(16),
+    agenteID BINARY(16) NOT NULL,
+    jefeDeServicioID BINARY(16),
     FOREIGN KEY (estadoTramiteID) REFERENCES EstadoTramite(id),
     FOREIGN KEY (autorizadaPorID) REFERENCES Usuario(id),
-    FOREIGN KEY (empleadoID) REFERENCES Empleado(id),
-    FOREIGN KEY (jefaturaID) REFERENCES JefaturaDeServicio(id)
+    FOREIGN KEY (agenteID) REFERENCES Agente(id),
+    FOREIGN KEY (jefeDeServicioID) REFERENCES JefeDeServicio(id)
 );
 
 -- Tabla HoraExtra
@@ -538,12 +451,12 @@ CREATE TABLE HoraExtra (
     fechaAutorizacion DATETIME,
     estadoTramiteID BINARY(16) NOT NULL,
     autorizadaPorID BINARY(16),
-    empleadoID BINARY(16) NOT NULL,
-    jefaturaID BINARY(16),
+    agenteID BINARY(16) NOT NULL,
+    jefeDeServicioID BINARY(16),
     FOREIGN KEY (estadoTramiteID) REFERENCES EstadoTramite(id),
     FOREIGN KEY (autorizadaPorID) REFERENCES Usuario(id),
-    FOREIGN KEY (empleadoID) REFERENCES Empleado(id),
-    FOREIGN KEY (jefaturaID) REFERENCES JefaturaDeServicio(id)
+    FOREIGN KEY (agenteID) REFERENCES Agente(id),
+    FOREIGN KEY (jefeDeServicioID) REFERENCES JefeDeServicio(id)
 );
 
 
@@ -558,47 +471,47 @@ CREATE TABLE ParteDiario (
     FOREIGN KEY (oficinaID) REFERENCES OficinaDePersonal(id)
 );
 
--- Tabla Intermedia ParteDiario_Empleado (relaciona ParteDiario con Empleado)
-CREATE TABLE ParteDiario_Empleado (
+-- Tabla Intermedia ParteDiario_Agente (relaciona ParteDiario con Agente)
+CREATE TABLE ParteDiario_Agente (
     parteDiarioID BINARY(16) NOT NULL,
-    empleadoID BINARY(16) NOT NULL,
-    PRIMARY KEY (parteDiarioID, empleadoID),
+    agenteID BINARY(16) NOT NULL,
+    PRIMARY KEY (parteDiarioID, agenteID),
     FOREIGN KEY (parteDiarioID) REFERENCES ParteDiario(id),
-    FOREIGN KEY (empleadoID) REFERENCES Empleado(id)
+    FOREIGN KEY (agenteID) REFERENCES Agente(id)
 );
 
--- Tabla MarcacionEmpleado
-CREATE TABLE MarcacionEmpleado (
+-- Tabla MarcacionAgente
+CREATE TABLE MarcacionAgente (
     id BINARY(16) PRIMARY KEY,
     fechaMarcacion DATETIME NOT NULL,
     observaciones VARCHAR(255),
     tipoMarcacion ENUM('INGRESO', 'EGRESO') NOT NULL,
     validada BOOLEAN NOT NULL,
-    empleadoID BINARY(16) NOT NULL,
-    FOREIGN KEY (empleadoID) REFERENCES Empleado(id)
+    agenteID BINARY(16) NOT NULL,
+    FOREIGN KEY (agenteID) REFERENCES Agente(id)
 );
 
 
 -- Tabla RegistroJornadaLaboral
 /* Notas:
  * fecha: Representa la fecha de la jornada laboral.
- * empleadoID: Referencia al empleado al que pertenece la jornada.
+ * AgenteID: Referencia al Agente al que pertenece la jornada.
  * marcacionIngresoID y marcacionEgresoID: FK a las marcaciones específicas de ingreso y egreso.
  * Restricciones adicionales:
- * Las marcaciones referenciadas DEBEN pertenecer al mismo empleado.
+ * Las marcaciones referenciadas DEBEN pertenecer al mismo Agente.
  * La marcación de ingreso debe ser de tipo INGRESO.
  * La marcación de egreso debe ser de tipo EGRESO.
  */
 CREATE TABLE RegistroJornadaLaboral (
     id BINARY(16) PRIMARY KEY,
     fecha DATE NOT NULL,
-    empleadoID BINARY(16) NOT NULL,
+    agenteID BINARY(16) NOT NULL,
     marcacionIngresoID BINARY(16) NOT NULL,
     marcacionEgresoID BINARY(16) NOT NULL,
     duracionJornada INT, -- No es bueno guardar datos calculados, pero me puede facilitar la vida al momento de programar la lógica de negocios
-    FOREIGN KEY (empleadoID) REFERENCES Empleado(id),
-    FOREIGN KEY (marcacionIngresoID) REFERENCES MarcacionEmpleado(id),
-    FOREIGN KEY (marcacionEgresoID) REFERENCES MarcacionEmpleado(id)
+    FOREIGN KEY (agenteID) REFERENCES Agente(id),
+    FOREIGN KEY (marcacionIngresoID) REFERENCES MarcacionAgente(id),
+    FOREIGN KEY (marcacionEgresoID) REFERENCES MarcacionAgente(id)
 );
 
 
@@ -607,7 +520,6 @@ CREATE TABLE RegistroJornadaLaboral (
 /* Creación de índices en FK (Claves Foráneas)
  * Agregamos índices en las columnas que son claves foráneas y se utilizan en consultas frecuentes.
  */
-CREATE INDEX idx_empleado_jefatura ON Empleado (jefaturaID);
 CREATE INDEX idx_servicio_direccion ON Servicio (direccionID);
 
 
@@ -632,10 +544,3 @@ ALTER TABLE Servicio
     ADD UNIQUE INDEX `idx_nombre`(`nombre`);
 
 
-/* Creación de un usuario propietario para la BD (acceso localhost unicamente)
- * user: aromito
- * pass: aromitoSuperSecretDBPass
- */
-CREATE USER 'aromito'@'localhost' IDENTIFIED BY 'aromitoSuperSecretDBPass';
-GRANT ALL PRIVILEGES ON aromito.* TO 'aromito'@'localhost';
-FLUSH PRIVILEGES;

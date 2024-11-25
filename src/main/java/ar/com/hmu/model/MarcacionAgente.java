@@ -8,18 +8,16 @@ import java.util.UUID;
  * @author Pablo Alejandro Hamann
  * @version 1.0
   */
-public class MarcacionEmpleado {
+public class MarcacionAgente {
 
-	private Empleado empleado;
+	private Agente agente;
 	private LocalDateTime fechaMarcacion;
 	private UUID id;
 	private String observaciones;
 	private TipoMarcacion tipoMarcacion;
 	private boolean validada;
-	public Empleado m_Empleado;
-	public TipoMarcacion m_TipoMarcacion;
 
-	public MarcacionEmpleado(){
+	public MarcacionAgente(){
 
 	}
 
@@ -35,4 +33,4 @@ public class MarcacionEmpleado {
 	public void validarMarcacion(){
 
 	}
-}//end MarcacionEmpleado
+}

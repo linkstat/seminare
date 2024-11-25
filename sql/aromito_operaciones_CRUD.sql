@@ -7,8 +7,8 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 -- Eliminar datos de las tablas
 DELETE FROM RegistroJornadaLaboral;
-DELETE FROM MarcacionEmpleado;
-DELETE FROM ParteDiario_Empleado;
+DELETE FROM MarcacionAgente;
+DELETE FROM ParteDiario_Agente;
 DELETE FROM ParteDiario;
 DELETE FROM HoraExtra;
 DELETE FROM FrancoCompensatorio;
@@ -19,15 +19,16 @@ DELETE FROM Memorandum;
 DELETE FROM Planificacion;
 DELETE FROM DiagramaDeServicio;
 DELETE FROM JornadaLaboral;
-DELETE FROM Empleado_Novedad;
+DELETE FROM Agente_Novedad;
 DELETE FROM Novedad;
 DELETE FROM EstadoTramite;
 DELETE FROM Autorizacion;
 DELETE FROM Usuario_Rol;
 DELETE FROM Rol;
-DELETE FROM Empleado;
+DELETE FROM Agente;
 DELETE FROM OficinaDePersonal;
-DELETE FROM JefaturaDeServicio;
+DELETE FROM Servicio_JefeDeServicio;
+DELETE FROM JefeDeServicio;
 DELETE FROM Servicio;
 DELETE FROM Direccion;
 DELETE FROM Usuario;
@@ -127,7 +128,7 @@ SET @TecnoelectricaID = UUID_TO_BIN(UUID());
 SET @ToxicologiaID = UUID_TO_BIN(UUID());
 SET @TraumatologiaID = UUID_TO_BIN(UUID());
 
--- Generar UUIDs y almacenarlos en variables, para luego usar con JefaturaDeServicios
+-- Generar UUIDs y almacenarlos en variables, para luego usar con JefeDeServicios
 SET @JefeAdmisionID = UUID_TO_BIN(UUID());
 SET @JefeBiomedicaID = UUID_TO_BIN(UUID());
 SET @JefeCirugiaID = UUID_TO_BIN(UUID());
@@ -139,8 +140,8 @@ SET @JefeHabilitacionID = UUID_TO_BIN(UUID());
 SET @JefeInformaticaID = UUID_TO_BIN(UUID());
 SET @JefeNutricionID = UUID_TO_BIN(UUID());
 SET @JefePersonalID = UUID_TO_BIN(UUID());
-SET @JefeTraumatologiaID = UUID_TO_BIN(UUID());
 SET @JefeToxicologiaID = UUID_TO_BIN(UUID());
+SET @JefeTraumatologiaID = UUID_TO_BIN(UUID());
 
 
 -- Generar e inicializar cargos
@@ -200,45 +201,45 @@ VALUES
     (UUID_TO_BIN(UUID()), 'Fabricio', 'Vitali', 'subdireccion@hmu.com.ar', 20239997772, CURDATE(), 'MASCULINO', TRUE, @HMUdomID, @DireccionID, 'Direccion', @initPass),
 
     -- Jefaturas de Servicio
-    (@JefeAdmisionID, 'Andrea', 'Balconte', 'andrea@hmu.com.ar', 27295554447, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @AdmisionID, 'JefaturaDeServicio', @initPass),
-    (@JefeBiomedicaID, 'Silvina', 'Maestro', 'smaestro@hmu.com.ar', 27274422442, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @BiomedicaID, 'JefaturaDeServicio', @initPass),
-    (@JefeCirugiaID, 'Maximiliano', 'Titarelli', 'drtita@hmu.com.ar', 20268944448, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @CirugiaID, 'JefaturaDeServicio', @initPass),
-    (@JefeDiagPorImagenesID, 'Juan Ignacio', 'Morales', 'jimorales@hmu.com.ar', 20281324547, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @DiagPorImagenesID, 'JefaturaDeServicio', @initPass),
-    (@JefeEnfermeriaID, 'Tania', 'Plaza', 'tplaza@hmu.com.ar', 27224444445, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @EnfermeriaID, 'JefaturaDeServicio', @initPass),
-    (@JefeEsterilizacionID, 'Matías', 'Pérez Cabral', 'mcp@hmu.com.ar', 20289445441, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @EsterilizacionID, 'JefaturaDeServicio', @initPass),
-    (@JefeFarmaciaID, 'María Pía', 'Arancibia', 'piaarancibia@hmu.com.ar', 27254344447, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @FarmaciaID, 'JefaturaDeServicio', @initPass),
-    (@JefeHabilitacionID, 'Carlos Fernando', 'Roberts', 'ferroberts@hmu.com.ar', 20276444446, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @HabilitacionID, 'JefaturaDeServicio', @initPass),
-    (@JefeInformaticaID, 'Juan Manuel', 'Roqué', 'jmroque@hmu.com.ar', 20220361118, CURDATE(), 'OTRO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @InformaticaID, 'JefaturaDeServicio', @initPass),
-    (@JefeNutricionID, 'Alejandra', 'Boqué', 'aleboque@hmu.com.ar', 27174444446, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @NutricionID, 'JefaturaDeServicio', @initPass),
-    (@JefeTraumatologiaID, 'Omar Wenceslao', 'Sánchez', 'owsanchez@hmu.com.ar', 20124644445, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @TraumatologiaID, 'JefaturaDeServicio', @initPass),
-    (@JefeToxicologiaID, 'Andrea', 'Vilkelis', 'avilkelis@hmu.com.ar', 27214434447, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @ToxicologiaID, 'JefaturaDeServicio', @initPass),
+    (@JefeAdmisionID, 'Andrea', 'Balconte', 'andrea@hmu.com.ar', 27295554447, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @AdmisionID, 'JefeDeServicio', @initPass),
+    (@JefeBiomedicaID, 'Silvina', 'Maestro', 'smaestro@hmu.com.ar', 27274422442, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @BiomedicaID, 'JefeDeServicio', @initPass),
+    (@JefeCirugiaID, 'Maximiliano', 'Titarelli', 'drtita@hmu.com.ar', 20268944448, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @CirugiaID, 'JefeDeServicio', @initPass),
+    (@JefeDiagPorImagenesID, 'Juan Ignacio', 'Morales', 'jimorales@hmu.com.ar', 20281324547, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @DiagPorImagenesID, 'JefeDeServicio', @initPass),
+    (@JefeEnfermeriaID, 'Tania', 'Plaza', 'tplaza@hmu.com.ar', 27224444445, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @EnfermeriaID, 'JefeDeServicio', @initPass),
+    (@JefeEsterilizacionID, 'Matías', 'Pérez Cabral', 'mcp@hmu.com.ar', 20289445441, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @EsterilizacionID, 'JefeDeServicio', @initPass),
+    (@JefeFarmaciaID, 'María Pía', 'Arancibia', 'piaarancibia@hmu.com.ar', 27254344447, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @FarmaciaID, 'JefeDeServicio', @initPass),
+    (@JefeHabilitacionID, 'Carlos Fernando', 'Roberts', 'ferroberts@hmu.com.ar', 20276444446, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @HabilitacionID, 'JefeDeServicio', @initPass),
+    (@JefeInformaticaID, 'Juan Manuel', 'Roqué', 'jmroque@hmu.com.ar', 20220361118, CURDATE(), 'OTRO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @InformaticaID, 'JefeDeServicio', @initPass),
+    (@JefeNutricionID, 'Alejandra', 'Boqué', 'aleboque@hmu.com.ar', 27174444446, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @NutricionID, 'JefeDeServicio', @initPass),
+    (@JefeTraumatologiaID, 'Omar Wenceslao', 'Sánchez', 'owsanchez@hmu.com.ar', 20124644445, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @TraumatologiaID, 'JefeDeServicio', @initPass),
+    (@JefeToxicologiaID, 'Andrea', 'Vilkelis', 'avilkelis@hmu.com.ar', 27214434447, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @ToxicologiaID, 'JefeDeServicio', @initPass),
 
     -- Oficina de Personal
     (@JefePersonalID, 'Florencia', 'Maurino', 'flormaurino@hmu.com.ar', 27284644443, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @PersonalID, 'OficinaDePersonal', @userAPass),
 
-    -- Empleados
-    (UUID_TO_BIN(UUID()), 'Juan', 'Aniceto', 'janiceto@hmu.com.ar', 20124543421, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @DiagPorImagenesID, 'Empleado', @initPass),
-    (UUID_TO_BIN(UUID()), 'Baltazar', 'Garzón', 'baltig@hmu.com.ar', 20554644448, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @PersonalID, 'Empleado', @initPass),
-    (UUID_TO_BIN(UUID()), 'Pedro', 'Taborda', 'pltaborda@hmu.com.ar', 20154786445, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @PersonalID, 'Empleado', @initPass),
-    (UUID_TO_BIN(UUID()), 'María Laura', 'Vargas Ruíz', 'mlvargas@hmu.com.ar', 27554664563, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @EsterilizacionID, 'Empleado', @initPass),
-    (UUID_TO_BIN(UUID()), 'María Celeste', 'Vignetta', 'mcv@hmu.com.ar', 27554685443, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @CirugiaID, 'Empleado', @initPass),
-    (UUID_TO_BIN(UUID()), 'Alicia', 'Vivas', 'avivas@hmu.com.ar', 27554567443, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @HabilitacionID, 'Empleado', @initPass),
-    (UUID_TO_BIN(UUID()), 'Matías Quique', 'Canga Castellanos', 'lestat@hmu.com.ar', 20554649743, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @InformaticaID, 'Empleado', @initPass),
-    (UUID_TO_BIN(UUID()), 'Mauricio Elio', 'Garay', 'mgaray@hmu.com.ar', 24574741745, CURDATE(), 'OTRO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @InformaticaID, 'Empleado', @initPass),
-    (UUID_TO_BIN(UUID()), 'Eva Patricia', 'Usandivares', 'epu@hmu.com.ar', 27556786453, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @PersonalID, 'Empleado', @initPass),
-    (UUID_TO_BIN(UUID()), 'Edith', 'Tolay', 'etolay@hmu.com.ar', 20454676443, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @EnfermeriaID, 'Empleado', @initPass),
-    (UUID_TO_BIN(UUID()), 'José Luis', 'Terrieris', 'jterrieris@hmu.com.ar', 20554543453, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @EnfermeriaID, 'Empleado', @initPass),
-    (UUID_TO_BIN(UUID()), 'Claudia', 'Tarifa', 'clautarifa@hmu.com.ar', 27540678443, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @EnfermeriaID, 'Empleado', @initPass),
-    (UUID_TO_BIN(UUID()), 'Erica', 'Tapia', 'erikatapia@hmu.com.ar', 27554560863, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @ToxicologiaID, 'Empleado', @initPass),
-    (UUID_TO_BIN(UUID()), 'Demetrio', 'Tampares', 'demetam@hmu.com.ar', 24784044443, CURDATE(), 'OTRO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @ToxicologiaID, 'Empleado', @initPass),
-    (UUID_TO_BIN(UUID()), 'Alejandro', 'Suizer', 'amsuizer@hmu.com.ar', 20526456443, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @CirugiaID, 'Empleado', @initPass),
-    (UUID_TO_BIN(UUID()), 'David', 'Suárez', 'dsuarez@hmu.com.ar', 20554897343, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @BiomedicaID, 'Empleado', @initPass),
-    (UUID_TO_BIN(UUID()), 'Soledad', 'Romero', 'soleromero@hmu.com.ar', 27864567893, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @AdmisionID, 'Empleado', @initPass),
-    (UUID_TO_BIN(UUID()), 'Pedro', 'Rius', 'pedrorius@hmu.com.ar', 20554674843, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @DiagPorImagenesID, 'Empleado', @initPass),
-    (UUID_TO_BIN(UUID()), 'Damian', 'Rabbat', 'drabbat@hmu.com.ar', 20558244443, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @TraumatologiaID, 'Empleado', @initPass),
-    (UUID_TO_BIN(UUID()), 'Ismael', 'Puig', 'ipuig@hmu.com.ar', 20567974443, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @TraumatologiaID, 'Empleado', @initPass),
-    (UUID_TO_BIN(UUID()), 'Diego', 'Pascolo', 'dpascolo@hmu.com.ar', 20456645843, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @CirugiaID, 'Empleado', @initPass),
-    (UUID_TO_BIN(UUID()), 'Sebastián', 'Bustos', 'sebustos@hmu.com.ar', 24554978443, CURDATE(), 'OTRO', TRUE, (SELECT id FROM Domicilio WHERE calle = 'Av. Siempre Viva' LIMIT 1), @BiomedicaID, 'Empleado', @userBPass);
+    -- Agentes
+    (UUID_TO_BIN(UUID()), 'Juan', 'Aniceto', 'janiceto@hmu.com.ar', 20124543421, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @DiagPorImagenesID, 'Agente', @initPass),
+    (UUID_TO_BIN(UUID()), 'Baltazar', 'Garzón', 'baltig@hmu.com.ar', 20554644448, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @PersonalID, 'Agente', @initPass),
+    (UUID_TO_BIN(UUID()), 'Pedro', 'Taborda', 'pltaborda@hmu.com.ar', 20154786445, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @PersonalID, 'Agente', @initPass),
+    (UUID_TO_BIN(UUID()), 'María Laura', 'Vargas Ruíz', 'mlvargas@hmu.com.ar', 27554664563, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @EsterilizacionID, 'Agente', @initPass),
+    (UUID_TO_BIN(UUID()), 'María Celeste', 'Vignetta', 'mcv@hmu.com.ar', 27554685443, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @CirugiaID, 'Agente', @initPass),
+    (UUID_TO_BIN(UUID()), 'Alicia', 'Vivas', 'avivas@hmu.com.ar', 27554567443, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @HabilitacionID, 'Agente', @initPass),
+    (UUID_TO_BIN(UUID()), 'Matías Quique', 'Canga Castellanos', 'lestat@hmu.com.ar', 20554649743, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @InformaticaID, 'Agente', @initPass),
+    (UUID_TO_BIN(UUID()), 'Mauricio Elio', 'Garay', 'mgaray@hmu.com.ar', 24574741745, CURDATE(), 'OTRO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @InformaticaID, 'Agente', @initPass),
+    (UUID_TO_BIN(UUID()), 'Eva Patricia', 'Usandivares', 'epu@hmu.com.ar', 27556786453, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @PersonalID, 'Agente', @initPass),
+    (UUID_TO_BIN(UUID()), 'Edith', 'Tolay', 'etolay@hmu.com.ar', 20454676443, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @EnfermeriaID, 'Agente', @initPass),
+    (UUID_TO_BIN(UUID()), 'José Luis', 'Terrieris', 'jterrieris@hmu.com.ar', 20554543453, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @EnfermeriaID, 'Agente', @initPass),
+    (UUID_TO_BIN(UUID()), 'Claudia', 'Tarifa', 'clautarifa@hmu.com.ar', 27540678443, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @EnfermeriaID, 'Agente', @initPass),
+    (UUID_TO_BIN(UUID()), 'Erica', 'Tapia', 'erikatapia@hmu.com.ar', 27554560863, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @ToxicologiaID, 'Agente', @initPass),
+    (UUID_TO_BIN(UUID()), 'Demetrio', 'Tampares', 'demetam@hmu.com.ar', 24784044443, CURDATE(), 'OTRO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @ToxicologiaID, 'Agente', @initPass),
+    (UUID_TO_BIN(UUID()), 'Alejandro', 'Suizer', 'amsuizer@hmu.com.ar', 20526456443, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @CirugiaID, 'Agente', @initPass),
+    (UUID_TO_BIN(UUID()), 'David', 'Suárez', 'dsuarez@hmu.com.ar', 20554897343, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @BiomedicaID, 'Agente', @initPass),
+    (UUID_TO_BIN(UUID()), 'Soledad', 'Romero', 'soleromero@hmu.com.ar', 27864567893, CURDATE(), 'FEMENINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @AdmisionID, 'Agente', @initPass),
+    (UUID_TO_BIN(UUID()), 'Pedro', 'Rius', 'pedrorius@hmu.com.ar', 20554674843, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @DiagPorImagenesID, 'Agente', @initPass),
+    (UUID_TO_BIN(UUID()), 'Damian', 'Rabbat', 'drabbat@hmu.com.ar', 20558244443, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @TraumatologiaID, 'Agente', @initPass),
+    (UUID_TO_BIN(UUID()), 'Ismael', 'Puig', 'ipuig@hmu.com.ar', 20567974443, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @TraumatologiaID, 'Agente', @initPass),
+    (UUID_TO_BIN(UUID()), 'Diego', 'Pascolo', 'dpascolo@hmu.com.ar', 20456645843, CURDATE(), 'MASCULINO', TRUE, (SELECT id FROM Domicilio ORDER BY RAND() LIMIT 1), @CirugiaID, 'Agente', @initPass),
+    (UUID_TO_BIN(UUID()), 'Sebastián', 'Bustos', 'sebustos@hmu.com.ar', 24554978443, CURDATE(), 'OTRO', TRUE, (SELECT id FROM Domicilio WHERE calle = 'Av. Siempre Viva' LIMIT 1), @BiomedicaID, 'Agente', @userBPass);
 SET FOREIGN_KEY_CHECKS = 1; -- Habilitar restricciones de claves foráneas
 
 
@@ -310,26 +311,50 @@ VALUES
 INSERT INTO OficinaDePersonal (id, reportesGenerados)
 SELECT id, 0 FROM Usuario WHERE tipoUsuario = 'OficinaDePersonal';
 
--- Insertar en JefaturaDeServicio, todos los usuarios de tipo JefaturaDeServicio
-INSERT INTO JefaturaDeServicio (id)
-SELECT id FROM Usuario WHERE tipoUsuario = 'JefaturaDeServicio';
+-- Insertar en JefeDeServicio, todos los usuarios de tipo JefeDeServicio
+INSERT INTO JefeDeServicio (id)
+SELECT id FROM Usuario WHERE tipoUsuario = 'JefeDeServicio';
 
--- Insertar Empleados en la tabla Empleado
-/* Al insertar en Empleado, solo necesitamos especificar
- * id, francosCompensatoriosUtilizados, horarioActualID, y jefaturaID,
- * asegurándonos de que jefaturaID sea coherente con el servicioID asignado al Empleado.
+SET FOREIGN_KEY_CHECKS = 0; -- Deshabilitar restricciones de claves foráneas
+-- Vincular Jefes de Servicio con Servicios, mediante la tabla Servicio_JefeDeservicio
+INSERT INTO servicio_jefedeservicio (servicioID, jefedeservicioID)
+VALUES
+	(@AdmisionID, @JefeAdmisionID),
+	(@BiomedicaID, @JefeBiomedicaID),
+	(@CirugiaID, @JefeCirugiaID),
+	(@DiagPorImagenesID, @JefeDiagPorImagenesID),
+	(@EnfermeriaID, @JefeEnfermeriaID),
+	(@EsterilizacionID, @JefeEsterilizacionID),
+	(@FarmaciaID, @JefeFarmaciaID),
+	(@HabilitacionID, @JefeHabilitacionID),
+	(@InformaticaID, @JefeInformaticaID),
+	(@NutricionID, @JefeNutricionID),
+	(@PersonalID, @JefePersonalID),
+	(@ToxicologiaID, @JefeToxicologiaID),
+	(@TraumatologiaID, @JefeTraumatologiaID);
+SET FOREIGN_KEY_CHECKS = 1; -- Habilitar restricciones de claves foráneas
+
+-- Listar todas las asignaciones de jefes de servicio
+SELECT BIN_TO_UUID(s.id) AS servicio_ID, s.nombre AS servicio_Nombre, BIN_TO_UUID(jds.id) AS jefe_ID, CONCAT(u.apellidos, ", ", u.nombres) AS jefe_de_servicio
+FROM Servicio s
+JOIN Servicio_JefeDeServicio sjds ON s.id = sjds.servicioID
+JOIN JefeDeServicio jds ON sjds.jefedeservicioID = jds.id
+JOIN Usuario u ON jds.id = u.id;
+
+
+-- Insertar Agentes en la tabla Agente
+/* Al insertar en Agente, solo necesitamos especificar
+ * id, francosCompensatoriosUtilizados, y horarioActualID
  */
-INSERT INTO Empleado (id, francosCompensatoriosUtilizados, horarioActualID, jefaturaID)
-SELECT u.id, 0, NULL, jds.id
+INSERT INTO Agente (id, francosCompensatoriosUtilizados, horarioActualID)
+SELECT u.id, 0, NULL
 FROM Usuario u
-JOIN Usuario ujds ON ujds.servicioID = u.servicioID AND ujds.tipoUsuario = 'JefaturaDeServicio'
-JOIN JefaturaDeServicio jds ON jds.id = ujds.id
-WHERE u.tipoUsuario = 'Empleado';
+WHERE u.tipoUsuario = 'Agente';
 
 
--- Listar usuarios Empleados
+-- Listar usuarios Agentes
 SELECT
-    BIN_TO_UUID(U.id) AS empleado_id,
+    BIN_TO_UUID(U.id) AS agente_id,
     U.apellidos,
     U.nombres,
     U.cuil,
@@ -337,9 +362,9 @@ SELECT
     U.tel,
     S.nombre AS area_de_servicio
 FROM Usuario U
-JOIN Empleado E ON U.id = E.id
+JOIN Agente E ON U.id = E.id
 JOIN Servicio S ON U.servicioID = S.id
-WHERE U.tipoUsuario = 'Empleado';
+WHERE U.tipoUsuario = 'Agente';
 
 
 -- Listar usuarios de tipo Dirección cargados
@@ -394,34 +419,34 @@ SELECT
     CONCAT(jefe.apellidos, ', ', jefe.nombres) AS JefeFullName,
     BIN_TO_UUID(dir.id) AS DirectorID,
     CONCAT(director.apellidos, ', ', director.nombres) AS DirFullName
-FROM JefaturaDeServicio jds
+FROM JefeDeServicio jds
 JOIN Usuario jefe ON jds.id = jefe.id
 JOIN Servicio s ON jefe.servicioID = s.id
 JOIN Direccion dir ON s.direccionID = dir.id
 JOIN Usuario director ON dir.id = director.id;
 
 
--- Contar la cantidad de empleados de cada servicio (incluidos sus jefes)
+-- Contar la cantidad de agentes de cada servicio (incluidos sus jefes)
 SELECT
     S.nombre AS Servicio,
-    COUNT(U.id) AS Cant_empleados
+    COUNT(U.id) AS Cant_agentes
 FROM Servicio S
 LEFT JOIN Usuario U ON U.servicioID = S.id
-WHERE U.tipoUsuario IN ('Empleado', 'JefaturaDeServicio')
+WHERE U.tipoUsuario IN ('Agente', 'JefeDeServicio')
 GROUP BY S.id, S.nombre
-ORDER BY Cant_empleados DESC;
+ORDER BY Cant_agentes DESC;
 
 
 -- Generar Roles y almacenarlos en variables, para luego asignar a usuarios
-SET @RolEmpleado = UUID_TO_BIN(UUID());
+SET @RolAgente = UUID_TO_BIN(UUID());
 SET @RolJefeDeServicio = UUID_TO_BIN(UUID());
 SET @RolOficinaDePersonal = UUID_TO_BIN(UUID());
 SET @RolDireccion = UUID_TO_BIN(UUID());
 
 -- Inicializar tabla de Roles
 INSERT INTO Rol (id, nombre, descripcion) VALUES
-(@RolEmpleado, 'Empleado', 'Agente'),
-(@RolJefeDeServicio, 'JefaturaDeServicio', 'Jefe de Servicio'),
+(@RolAgente, 'Agente', 'Agente'),
+(@RolJefeDeServicio, 'JefeDeServicio', 'Jefe de Servicio'),
 (@RolOficinaDePersonal, 'OficinaDePersonal', 'Oficina de Personal'),
 (@RolDireccion, 'Direccion', 'Directivo');
 
@@ -432,28 +457,28 @@ SELECT BIN_TO_UUID(id) AS id, nombre, descripcion FROM Rol;
 INSERT INTO Usuario_Rol (usuario_id, rol_id)
 SELECT u.id, r.id
 FROM Usuario u
-JOIN Rol r ON r.nombre IN ('Empleado', 'JefaturaDeServicio', 'OficinaDePersonal')
+JOIN Rol r ON r.nombre IN ('Agente', 'JefeDeServicio', 'OficinaDePersonal')
 WHERE u.apellidos = 'Maurino';
 
 -- Asignar roles al usuario cuyo apellido es 'Roqué'
 INSERT INTO Usuario_Rol (usuario_id, rol_id)
 SELECT u.id, r.id
 FROM Usuario u
-JOIN Rol r ON r.nombre IN ('Empleado', 'JefaturaDeServicio')
+JOIN Rol r ON r.nombre IN ('Agente', 'JefeDeServicio')
 WHERE u.apellidos = 'Roqué';
 
 -- Asignar roles al usuario cuyo apellido es 'Marino'
 INSERT INTO Usuario_Rol (usuario_id, rol_id)
 SELECT u.id, r.id
 FROM Usuario u
-JOIN Rol r ON r.nombre IN ('JefaturaDeServicio', 'Direccion')
+JOIN Rol r ON r.nombre IN ('JefeDeServicio', 'Direccion')
 WHERE u.apellidos = 'Marino';
 
 -- Asignar roles al usuario cuyos apellidos son 'Canga' o 'Hamann'
 INSERT INTO Usuario_Rol (usuario_id, rol_id)
 SELECT u.id, r.id
 FROM Usuario u
-JOIN Rol r ON r.nombre = 'Empleado'
+JOIN Rol r ON r.nombre = 'Agente'
 WHERE u.apellidos IN ('Canga', 'Hamann');
 
 -- Listar todas las asignaciones de roles
@@ -492,11 +517,11 @@ FROM Usuario
 WHERE id = @usuarioIdEliminar;
 
 -- Eliminación de tablas específicas
--- Si es Empleado
-DELETE FROM Empleado WHERE id = @usuarioIdEliminar;
+-- Si es Agente
+DELETE FROM Agente WHERE id = @usuarioIdEliminar;
 
--- Si es JefaturaDeServicio
-DELETE FROM JefaturaDeServicio WHERE id = @usuarioIdEliminar;
+-- Si es JefeDeServicio
+DELETE FROM JefeDeServicio WHERE id = @usuarioIdEliminar;
 
 -- Si es Dirección
 DELETE FROM Direccion WHERE id = @usuarioIdEliminar;

@@ -2,7 +2,7 @@
  * Paquete Model: contiene las clases que representan las entidades y los datos del dominio de la aplicación.
  * <p>
  * Este paquete agrupa las clases encargadas de definir las entidades centrales del sistema, tales como {@code Usuario},
- * {@code Empleado}, y otras relacionadas. Cada una de estas clases actúa como un modelo para los datos
+ * {@code Agente}, y otras relacionadas. Cada una de estas clases actúa como un modelo para los datos
  * que maneja la aplicación, reflejando su estructura y estado.
  * <p>
  * Las entidades contenidas en el paquete model son representaciones directas del dominio de negocio y

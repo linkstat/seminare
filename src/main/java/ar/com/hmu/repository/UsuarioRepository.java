@@ -344,7 +344,7 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, servicioId.toString());
-            stmt.setString(2, TipoUsuario.JEFATURA_DE_SERVICIO.getInternalName());
+            stmt.setString(2, TipoUsuario.JEFEDESERVICIO.getInternalName());
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return rs.getString("Jefe");

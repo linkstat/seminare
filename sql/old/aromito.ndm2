@@ -1003,7 +1003,7 @@
           },
           {
             "objectType": "Table_MARIADB",
-            "name": "empleado",
+            "name": "agente",
             "comment": "",
             "engine": "InnoDB",
             "characterSet": "utf8mb4",
@@ -1029,7 +1029,7 @@
             "union": "",
             "pageChecksum": false,
             "transactional": false,
-            "oldName": "empleado",
+            "oldName": "agente",
             "encryption": false,
             "encryptionKeyID": 0,
             "IETFQuotes": false,
@@ -1042,7 +1042,7 @@
             "maxDataLength": 0,
             "rows": 0,
             "updateTime": "",
-            "DDL": "CREATE TABLE `empleado` (\n  `id` binary(16) NOT NULL,\n  `francosCompensatoriosUtilizados` int(11) DEFAULT NULL,\n  `horarioActualID` binary(16) DEFAULT NULL,\n  `jefaturaID` binary(16) NOT NULL,\n  `servicioID` binary(16) DEFAULT NULL,\n  PRIMARY KEY (`id`),\n  KEY `horarioActualID` (`horarioActualID`),\n  KEY `servicioID` (`servicioID`),\n  KEY `idx_empleado_jefatura` (`jefaturaID`),\n  CONSTRAINT `empleado_ibfk_1` FOREIGN KEY (`id`) REFERENCES `usuario` (`id`),\n  CONSTRAINT `empleado_ibfk_2` FOREIGN KEY (`horarioActualID`) REFERENCES `horariobase` (`id`),\n  CONSTRAINT `empleado_ibfk_3` FOREIGN KEY (`jefaturaID`) REFERENCES `jefaturadeservicio` (`id`),\n  CONSTRAINT `empleado_ibfk_4` FOREIGN KEY (`servicioID`) REFERENCES `servicio` (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+            "DDL": "CREATE TABLE `agente` (\n  `id` binary(16) NOT NULL,\n  `francosCompensatoriosUtilizados` int(11) DEFAULT NULL,\n  `horarioActualID` binary(16) DEFAULT NULL,\n  `jefaturaID` binary(16) NOT NULL,\n  `servicioID` binary(16) DEFAULT NULL,\n  PRIMARY KEY (`id`),\n  KEY `horarioActualID` (`horarioActualID`),\n  KEY `servicioID` (`servicioID`),\n  KEY `idx_empleado_jefatura` (`jefaturaID`),\n  CONSTRAINT `empleado_ibfk_1` FOREIGN KEY (`id`) REFERENCES `usuario` (`id`),\n  CONSTRAINT `empleado_ibfk_2` FOREIGN KEY (`horarioActualID`) REFERENCES `horariobase` (`id`),\n  CONSTRAINT `empleado_ibfk_3` FOREIGN KEY (`jefaturaID`) REFERENCES `jefaturadeservicio` (`id`),\n  CONSTRAINT `empleado_ibfk_4` FOREIGN KEY (`servicioID`) REFERENCES `servicio` (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
             "partitionBy": "",
             "partitionByExpr": "",
             "partitions": 0,
@@ -1345,7 +1345,7 @@
                 "triggerBody": "BEGIN\r\n    DECLARE jefaturaServicioID BINARY(16);\r\n\r\n    -- Verificar si NEW.jefaturaID no es NULL\r\n    IF NEW.jefaturaID IS NOT NULL THEN\r\n        -- Intentar obtener el servicioID de la JefaturaDeServicio asociada\r\n        SELECT servicioID INTO jefaturaServicioID\r\n        FROM JefaturaDeServicio\r\n        WHERE id = NEW.jefaturaID;\r\n\r\n        -- Si no se encuentra la JefaturaDeServicio, generar un error\r\n        IF jefaturaServicioID IS NULL THEN\r\n            SIGNAL SQLSTATE '45000' \r\n            SET MESSAGE_TEXT = 'La JefaturaDeServicio especificada no existe.';\r\n        END IF;\r\n\r\n        -- Verificar si los servicioID coinciden\r\n        IF NEW.servicioID != jefaturaServicioID THEN\r\n            SIGNAL SQLSTATE '45000' \r\n            SET MESSAGE_TEXT = 'El servicioID del Empleado debe coincidir con el servicioID de la JefaturaDeServicio.';\r\n        END IF;\r\n    END IF;\r\n    -- Si NEW.jefaturaID es NULL, no se realiza la validación\r\nEND",
                 "oldName": "trg_check_servicio_consistente_before_insert",
                 "definer": "`root`@`localhost`",
-                "tableName": "empleado",
+                "tableName": "agente",
                 "triggerForEach": "Default",
                 "triggerCondition": "",
                 "columns": []
@@ -1358,7 +1358,7 @@
                 "triggerBody": "BEGIN\r\n    DECLARE jefaturaServicioID BINARY(16);\r\n\r\n    -- Verificar si NEW.jefaturaID no es NULL\r\n    IF NEW.jefaturaID IS NOT NULL THEN\r\n        -- Intentar obtener el servicioID de la JefaturaDeServicio asociada\r\n        SELECT servicioID INTO jefaturaServicioID\r\n        FROM JefaturaDeServicio\r\n        WHERE id = NEW.jefaturaID;\r\n\r\n        -- Si no se encuentra la JefaturaDeServicio, generar un error\r\n        IF jefaturaServicioID IS NULL THEN\r\n            SIGNAL SQLSTATE '45000' \r\n            SET MESSAGE_TEXT = 'La JefaturaDeServicio especificada no existe.';\r\n        END IF;\r\n\r\n        -- Verificar si los servicioID coinciden\r\n        IF NEW.servicioID != jefaturaServicioID THEN\r\n            SIGNAL SQLSTATE '45000' \r\n            SET MESSAGE_TEXT = 'El servicioID del Empleado debe coincidir con el servicioID de la JefaturaDeServicio.';\r\n        END IF;\r\n    END IF;\r\n    -- Si NEW.jefaturaID es NULL, no se realiza la validación\r\nEND",
                 "oldName": "trg_check_servicio_consistente_before_update",
                 "definer": "`root`@`localhost`",
-                "tableName": "empleado",
+                "tableName": "agente",
                 "triggerForEach": "Default",
                 "triggerCondition": "",
                 "columns": []
@@ -1407,7 +1407,7 @@
             "maxDataLength": 0,
             "rows": 0,
             "updateTime": "",
-            "DDL": "CREATE TABLE `empleado_novedad` (\n  `empleadoID` binary(16) NOT NULL,\n  `novedadID` binary(16) NOT NULL,\n  PRIMARY KEY (`empleadoID`,`novedadID`),\n  KEY `novedadID` (`novedadID`),\n  CONSTRAINT `empleado_novedad_ibfk_1` FOREIGN KEY (`empleadoID`) REFERENCES `empleado` (`id`),\n  CONSTRAINT `empleado_novedad_ibfk_2` FOREIGN KEY (`novedadID`) REFERENCES `novedad` (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+            "DDL": "CREATE TABLE `empleado_novedad` (\n  `empleadoID` binary(16) NOT NULL,\n  `novedadID` binary(16) NOT NULL,\n  PRIMARY KEY (`empleadoID`,`novedadID`),\n  KEY `novedadID` (`novedadID`),\n  CONSTRAINT `empleado_novedad_ibfk_1` FOREIGN KEY (`empleadoID`) REFERENCES `agente` (`id`),\n  CONSTRAINT `empleado_novedad_ibfk_2` FOREIGN KEY (`novedadID`) REFERENCES `novedad` (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
             "partitionBy": "",
             "partitionByExpr": "",
             "partitions": 0,
@@ -1524,7 +1524,7 @@
                   "empleadoID"
                 ],
                 "referenceSchema": "aromito",
-                "referenceTable": "empleado",
+                "referenceTable": "agente",
                 "referenceFields": [
                   "id"
                 ],
@@ -1717,7 +1717,7 @@
             "maxDataLength": 0,
             "rows": 0,
             "updateTime": "",
-            "DDL": "CREATE TABLE `francocompensatorio` (\n  `id` binary(16) NOT NULL,\n  `cantHoras` double NOT NULL,\n  `descripcion` varchar(255) NOT NULL,\n  `fechaAutorizacion` datetime DEFAULT NULL,\n  `fechaDeAplicacion` date DEFAULT NULL,\n  `estadoTramiteID` binary(16) NOT NULL,\n  `autorizadaPorID` binary(16) DEFAULT NULL,\n  `empleadoID` binary(16) NOT NULL,\n  `jefaturaID` binary(16) DEFAULT NULL,\n  PRIMARY KEY (`id`),\n  KEY `estadoTramiteID` (`estadoTramiteID`),\n  KEY `autorizadaPorID` (`autorizadaPorID`),\n  KEY `empleadoID` (`empleadoID`),\n  KEY `jefaturaID` (`jefaturaID`),\n  CONSTRAINT `francocompensatorio_ibfk_1` FOREIGN KEY (`estadoTramiteID`) REFERENCES `estadotramite` (`id`),\n  CONSTRAINT `francocompensatorio_ibfk_2` FOREIGN KEY (`autorizadaPorID`) REFERENCES `usuario` (`id`),\n  CONSTRAINT `francocompensatorio_ibfk_3` FOREIGN KEY (`empleadoID`) REFERENCES `empleado` (`id`),\n  CONSTRAINT `francocompensatorio_ibfk_4` FOREIGN KEY (`jefaturaID`) REFERENCES `jefaturadeservicio` (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+            "DDL": "CREATE TABLE `francocompensatorio` (\n  `id` binary(16) NOT NULL,\n  `cantHoras` double NOT NULL,\n  `descripcion` varchar(255) NOT NULL,\n  `fechaAutorizacion` datetime DEFAULT NULL,\n  `fechaDeAplicacion` date DEFAULT NULL,\n  `estadoTramiteID` binary(16) NOT NULL,\n  `autorizadaPorID` binary(16) DEFAULT NULL,\n  `empleadoID` binary(16) NOT NULL,\n  `jefaturaID` binary(16) DEFAULT NULL,\n  PRIMARY KEY (`id`),\n  KEY `estadoTramiteID` (`estadoTramiteID`),\n  KEY `autorizadaPorID` (`autorizadaPorID`),\n  KEY `empleadoID` (`empleadoID`),\n  KEY `jefaturaID` (`jefaturaID`),\n  CONSTRAINT `francocompensatorio_ibfk_1` FOREIGN KEY (`estadoTramiteID`) REFERENCES `estadotramite` (`id`),\n  CONSTRAINT `francocompensatorio_ibfk_2` FOREIGN KEY (`autorizadaPorID`) REFERENCES `usuario` (`id`),\n  CONSTRAINT `francocompensatorio_ibfk_3` FOREIGN KEY (`empleadoID`) REFERENCES `agente` (`id`),\n  CONSTRAINT `francocompensatorio_ibfk_4` FOREIGN KEY (`jefaturaID`) REFERENCES `jefaturadeservicio` (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
             "partitionBy": "",
             "partitionByExpr": "",
             "partitions": 0,
@@ -2104,7 +2104,7 @@
                   "empleadoID"
                 ],
                 "referenceSchema": "aromito",
-                "referenceTable": "empleado",
+                "referenceTable": "agente",
                 "referenceFields": [
                   "id"
                 ],
@@ -2176,7 +2176,7 @@
             "maxDataLength": 0,
             "rows": 0,
             "updateTime": "",
-            "DDL": "CREATE TABLE `horaextra` (\n  `id` binary(16) NOT NULL,\n  `descripcion` varchar(255) NOT NULL,\n  `fechaIngreso` datetime NOT NULL,\n  `fechaEgreso` datetime NOT NULL,\n  `ponderacion` int(11) NOT NULL,\n  `fechaAutorizacion` datetime DEFAULT NULL,\n  `estadoTramiteID` binary(16) NOT NULL,\n  `autorizadaPorID` binary(16) DEFAULT NULL,\n  `empleadoID` binary(16) NOT NULL,\n  `jefaturaID` binary(16) DEFAULT NULL,\n  PRIMARY KEY (`id`),\n  KEY `estadoTramiteID` (`estadoTramiteID`),\n  KEY `autorizadaPorID` (`autorizadaPorID`),\n  KEY `empleadoID` (`empleadoID`),\n  KEY `jefaturaID` (`jefaturaID`),\n  CONSTRAINT `horaextra_ibfk_1` FOREIGN KEY (`estadoTramiteID`) REFERENCES `estadotramite` (`id`),\n  CONSTRAINT `horaextra_ibfk_2` FOREIGN KEY (`autorizadaPorID`) REFERENCES `usuario` (`id`),\n  CONSTRAINT `horaextra_ibfk_3` FOREIGN KEY (`empleadoID`) REFERENCES `empleado` (`id`),\n  CONSTRAINT `horaextra_ibfk_4` FOREIGN KEY (`jefaturaID`) REFERENCES `jefaturadeservicio` (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+            "DDL": "CREATE TABLE `horaextra` (\n  `id` binary(16) NOT NULL,\n  `descripcion` varchar(255) NOT NULL,\n  `fechaIngreso` datetime NOT NULL,\n  `fechaEgreso` datetime NOT NULL,\n  `ponderacion` int(11) NOT NULL,\n  `fechaAutorizacion` datetime DEFAULT NULL,\n  `estadoTramiteID` binary(16) NOT NULL,\n  `autorizadaPorID` binary(16) DEFAULT NULL,\n  `empleadoID` binary(16) NOT NULL,\n  `jefaturaID` binary(16) DEFAULT NULL,\n  PRIMARY KEY (`id`),\n  KEY `estadoTramiteID` (`estadoTramiteID`),\n  KEY `autorizadaPorID` (`autorizadaPorID`),\n  KEY `empleadoID` (`empleadoID`),\n  KEY `jefaturaID` (`jefaturaID`),\n  CONSTRAINT `horaextra_ibfk_1` FOREIGN KEY (`estadoTramiteID`) REFERENCES `estadotramite` (`id`),\n  CONSTRAINT `horaextra_ibfk_2` FOREIGN KEY (`autorizadaPorID`) REFERENCES `usuario` (`id`),\n  CONSTRAINT `horaextra_ibfk_3` FOREIGN KEY (`empleadoID`) REFERENCES `agente` (`id`),\n  CONSTRAINT `horaextra_ibfk_4` FOREIGN KEY (`jefaturaID`) REFERENCES `jefaturadeservicio` (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
             "partitionBy": "",
             "partitionByExpr": "",
             "partitions": 0,
@@ -2587,7 +2587,7 @@
                   "empleadoID"
                 ],
                 "referenceSchema": "aromito",
-                "referenceTable": "empleado",
+                "referenceTable": "agente",
                 "referenceFields": [
                   "id"
                 ],
@@ -5351,7 +5351,7 @@
             "maxDataLength": 0,
             "rows": 0,
             "updateTime": "",
-            "DDL": "CREATE TABLE `marcacionempleado` (\n  `id` binary(16) NOT NULL,\n  `fechaMarcacion` datetime NOT NULL,\n  `observaciones` varchar(255) DEFAULT NULL,\n  `tipoMarcacion` enum('INGRESO','EGRESO') NOT NULL,\n  `validada` tinyint(1) NOT NULL,\n  `empleadoID` binary(16) NOT NULL,\n  PRIMARY KEY (`id`),\n  KEY `empleadoID` (`empleadoID`),\n  CONSTRAINT `marcacionempleado_ibfk_1` FOREIGN KEY (`empleadoID`) REFERENCES `empleado` (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+            "DDL": "CREATE TABLE `marcacionempleado` (\n  `id` binary(16) NOT NULL,\n  `fechaMarcacion` datetime NOT NULL,\n  `observaciones` varchar(255) DEFAULT NULL,\n  `tipoMarcacion` enum('INGRESO','EGRESO') NOT NULL,\n  `validada` tinyint(1) NOT NULL,\n  `empleadoID` binary(16) NOT NULL,\n  PRIMARY KEY (`id`),\n  KEY `empleadoID` (`empleadoID`),\n  CONSTRAINT `marcacionempleado_ibfk_1` FOREIGN KEY (`empleadoID`) REFERENCES `agente` (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
             "partitionBy": "",
             "partitionByExpr": "",
             "partitions": 0,
@@ -5557,7 +5557,7 @@
                   "empleadoID"
                 ],
                 "referenceSchema": "aromito",
-                "referenceTable": "empleado",
+                "referenceTable": "agente",
                 "referenceFields": [
                   "id"
                 ],
@@ -7443,7 +7443,7 @@
             "maxDataLength": 0,
             "rows": 0,
             "updateTime": "",
-            "DDL": "CREATE TABLE `partediario_empleado` (\n  `parteDiarioID` binary(16) NOT NULL,\n  `empleadoID` binary(16) NOT NULL,\n  PRIMARY KEY (`parteDiarioID`,`empleadoID`),\n  KEY `empleadoID` (`empleadoID`),\n  CONSTRAINT `partediario_empleado_ibfk_1` FOREIGN KEY (`parteDiarioID`) REFERENCES `partediario` (`id`),\n  CONSTRAINT `partediario_empleado_ibfk_2` FOREIGN KEY (`empleadoID`) REFERENCES `empleado` (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+            "DDL": "CREATE TABLE `partediario_empleado` (\n  `parteDiarioID` binary(16) NOT NULL,\n  `empleadoID` binary(16) NOT NULL,\n  PRIMARY KEY (`parteDiarioID`,`empleadoID`),\n  KEY `empleadoID` (`empleadoID`),\n  CONSTRAINT `partediario_empleado_ibfk_1` FOREIGN KEY (`parteDiarioID`) REFERENCES `partediario` (`id`),\n  CONSTRAINT `partediario_empleado_ibfk_2` FOREIGN KEY (`empleadoID`) REFERENCES `agente` (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
             "partitionBy": "",
             "partitionByExpr": "",
             "partitions": 0,
@@ -7577,7 +7577,7 @@
                   "empleadoID"
                 ],
                 "referenceSchema": "aromito",
-                "referenceTable": "empleado",
+                "referenceTable": "agente",
                 "referenceFields": [
                   "id"
                 ],
@@ -7632,7 +7632,7 @@
             "maxDataLength": 0,
             "rows": 0,
             "updateTime": "",
-            "DDL": "CREATE TABLE `planificacion` (\n  `diagramaID` binary(16) NOT NULL,\n  `empleadoID` binary(16) NOT NULL,\n  `jornadaID` binary(16) NOT NULL,\n  PRIMARY KEY (`diagramaID`,`empleadoID`,`jornadaID`),\n  KEY `empleadoID` (`empleadoID`),\n  KEY `jornadaID` (`jornadaID`),\n  CONSTRAINT `planificacion_ibfk_1` FOREIGN KEY (`diagramaID`) REFERENCES `diagramadeservicio` (`id`),\n  CONSTRAINT `planificacion_ibfk_2` FOREIGN KEY (`empleadoID`) REFERENCES `empleado` (`id`),\n  CONSTRAINT `planificacion_ibfk_3` FOREIGN KEY (`jornadaID`) REFERENCES `jornadalaboral` (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+            "DDL": "CREATE TABLE `planificacion` (\n  `diagramaID` binary(16) NOT NULL,\n  `empleadoID` binary(16) NOT NULL,\n  `jornadaID` binary(16) NOT NULL,\n  PRIMARY KEY (`diagramaID`,`empleadoID`,`jornadaID`),\n  KEY `empleadoID` (`empleadoID`),\n  KEY `jornadaID` (`jornadaID`),\n  CONSTRAINT `planificacion_ibfk_1` FOREIGN KEY (`diagramaID`) REFERENCES `diagramadeservicio` (`id`),\n  CONSTRAINT `planificacion_ibfk_2` FOREIGN KEY (`empleadoID`) REFERENCES `agente` (`id`),\n  CONSTRAINT `planificacion_ibfk_3` FOREIGN KEY (`jornadaID`) REFERENCES `jornadalaboral` (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
             "partitionBy": "",
             "partitionByExpr": "",
             "partitions": 0,
@@ -7822,7 +7822,7 @@
                   "empleadoID"
                 ],
                 "referenceSchema": "aromito",
-                "referenceTable": "empleado",
+                "referenceTable": "agente",
                 "referenceFields": [
                   "id"
                 ],
@@ -7894,7 +7894,7 @@
             "maxDataLength": 0,
             "rows": 0,
             "updateTime": "",
-            "DDL": "CREATE TABLE `registrojornadalaboral` (\n  `id` binary(16) NOT NULL,\n  `fecha` date NOT NULL,\n  `empleadoID` binary(16) NOT NULL,\n  `marcacionIngresoID` binary(16) NOT NULL,\n  `marcacionEgresoID` binary(16) NOT NULL,\n  `duracionJornada` int(11) DEFAULT NULL,\n  PRIMARY KEY (`id`),\n  KEY `empleadoID` (`empleadoID`),\n  KEY `marcacionIngresoID` (`marcacionIngresoID`),\n  KEY `marcacionEgresoID` (`marcacionEgresoID`),\n  CONSTRAINT `registrojornadalaboral_ibfk_1` FOREIGN KEY (`empleadoID`) REFERENCES `empleado` (`id`),\n  CONSTRAINT `registrojornadalaboral_ibfk_2` FOREIGN KEY (`marcacionIngresoID`) REFERENCES `marcacionempleado` (`id`),\n  CONSTRAINT `registrojornadalaboral_ibfk_3` FOREIGN KEY (`marcacionEgresoID`) REFERENCES `marcacionempleado` (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+            "DDL": "CREATE TABLE `registrojornadalaboral` (\n  `id` binary(16) NOT NULL,\n  `fecha` date NOT NULL,\n  `empleadoID` binary(16) NOT NULL,\n  `marcacionIngresoID` binary(16) NOT NULL,\n  `marcacionEgresoID` binary(16) NOT NULL,\n  `duracionJornada` int(11) DEFAULT NULL,\n  PRIMARY KEY (`id`),\n  KEY `empleadoID` (`empleadoID`),\n  KEY `marcacionIngresoID` (`marcacionIngresoID`),\n  KEY `marcacionEgresoID` (`marcacionEgresoID`),\n  CONSTRAINT `registrojornadalaboral_ibfk_1` FOREIGN KEY (`empleadoID`) REFERENCES `agente` (`id`),\n  CONSTRAINT `registrojornadalaboral_ibfk_2` FOREIGN KEY (`marcacionIngresoID`) REFERENCES `marcacionempleado` (`id`),\n  CONSTRAINT `registrojornadalaboral_ibfk_3` FOREIGN KEY (`marcacionEgresoID`) REFERENCES `marcacionempleado` (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
             "partitionBy": "",
             "partitionByExpr": "",
             "partitions": 0,
@@ -8150,7 +8150,7 @@
                   "empleadoID"
                 ],
                 "referenceSchema": "aromito",
-                "referenceTable": "empleado",
+                "referenceTable": "agente",
                 "referenceFields": [
                   "id"
                 ],
@@ -8960,7 +8960,7 @@
         {
           "type": "table",
           "schemaName": "aromito",
-          "tableName": "empleado",
+          "tableName": "agente",
           "x": 1390,
           "y": 1040,
           "width": 276,
@@ -9710,7 +9710,7 @@
         },
         {
           "name": "empleado_ibfk_2",
-          "sourceTableName": "empleado",
+          "sourceTableName": "agente",
           "sourceSchemaName": "aromito",
           "lineWidth": 1,
           "visible": true,
@@ -10162,7 +10162,7 @@
         },
         {
           "name": "empleado_ibfk_3",
-          "sourceTableName": "empleado",
+          "sourceTableName": "agente",
           "sourceSchemaName": "aromito",
           "lineWidth": 1,
           "visible": true,
@@ -10870,7 +10870,7 @@
         },
         {
           "name": "empleado_ibfk_4",
-          "sourceTableName": "empleado",
+          "sourceTableName": "agente",
           "sourceSchemaName": "aromito",
           "lineWidth": 1,
           "visible": true,
@@ -11052,7 +11052,7 @@
         },
         {
           "name": "empleado_ibfk_1",
-          "sourceTableName": "empleado",
+          "sourceTableName": "agente",
           "sourceSchemaName": "aromito",
           "lineWidth": 1,
           "visible": true,

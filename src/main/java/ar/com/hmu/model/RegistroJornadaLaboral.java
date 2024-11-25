@@ -11,13 +11,11 @@ import java.util.List;
   */
 public class RegistroJornadaLaboral {
 
-	private Empleado empleado;
+	private Agente agente;
 	private LocalDateTime fecha;
 	private LocalDateTime fechaEgreso;
 	private LocalDateTime fechaIngreso;
-	private List<MarcacionEmpleado> marcaciones;
-	public MarcacionEmpleado m_MarcacionEmpleado;
-	public Empleado m_Empleado;
+	private List<MarcacionAgente> marcacionesAgente;
 
 	public RegistroJornadaLaboral(){
 
@@ -28,7 +26,7 @@ public class RegistroJornadaLaboral {
 	 * 
 	 * @param marcacion
 	 */
-	public void agregarMarcacion(MarcacionEmpleado marcacion){
+	public void agregarMarcacion(MarcacionAgente marcacion){
 
 	}
 

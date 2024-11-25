@@ -1,9 +1,9 @@
 package ar.com.hmu.constants;
 
 public enum TipoUsuario {
-    EMPLEADO("Empleado", "Agente"),
-    JEFATURA_DE_SERVICIO("JefaturaDeServicio", "Jefe de Servicio"),
-    OFICINA_DE_PERSONAL("OficinaDePersonal", "Oficina de Personal"),
+    AGENTE("Agente", "Agente"),
+    JEFEDESERVICIO("JefeDeServicio", "Jefe de Servicio"),
+    OFICINADEPERSONAL("OficinaDePersonal", "Oficina de Personal"),
     DIRECCION("Direccion", "Directivo");
 
     private final String internalName;

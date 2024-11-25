@@ -1,12 +1,12 @@
 package ar.com.hmu.roles.impl;
 
-import ar.com.hmu.roles.EmpleadoRole;
+import ar.com.hmu.roles.AgenteRole;
 import ar.com.hmu.model.Usuario;
 
-public class EmpleadoRoleImpl implements EmpleadoRole {
+public class AgenteRoleImpl implements AgenteRole {
     private Usuario usuario;
 
-    public EmpleadoRoleImpl(Usuario usuario) {
+    public AgenteRoleImpl(Usuario usuario) {
         this.usuario = usuario;
     }
 

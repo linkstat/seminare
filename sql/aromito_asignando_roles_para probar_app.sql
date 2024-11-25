@@ -22,20 +22,20 @@ INSERT INTO Usuario_Rol (usuario_id, rol_id) SELECT u.id, r.id FROM Usuario u JO
 
 
 
--- Crear usuario con roles: JefaturaDeServicio
+-- Crear usuario con roles: JefeDeServicio
 SET @cuilJefe=20112223332;
 SET @usuarioId2=UUID_TO_BIN(UUID());
 SET @fechaAltaJefe='2012-07-01';
-SET @tipoUsuarioJefaturaDeServicio='JefaturaDeServicio';
-SELECT r.id INTO @rolJefaturaDeServicio FROM Rol r WHERE r.nombre LIKE @tipoUsuarioJefaturaDeServicio;
+SET @tipoUsuarioJDS='JefeDeServicio';
+SELECT r.id INTO @rolJefeDeServicio FROM Rol r WHERE r.nombre LIKE @tipoUsuarioJDS;
 SELECT id INTO @domicilioId2 FROM Domicilio ORDER BY RAND() LIMIT 1;
 SELECT id INTO @cargoJefeId FROM Cargo c WHERE c.numero = 300;
 SELECT id INTO @servDireccionId FROM Servicio s WHERE s.nombre LIKE 'Dirección';
 
 INSERT INTO Usuario (id, fechaAlta, estado, cuil, apellidos, nombres, sexo, mail, tel, domicilioID, cargoID, servicioID, tipoUsuario, passwd)
-VALUES (@usuarioId2, @fechaAltaJefe, TRUE, @cuilJefe, 'Valentino', 'Marquez', 'MASCULINO', 'vale.mar@hmu.com.ar', 3512223355, @domicilioId2, @cargoJefeId, @servDireccionId, @tipoUsuarioJefaturaDeServicio, @initPass);
-INSERT INTO JefaturaDeServicio (id) VALUES (@usuarioId2);
-INSERT INTO Usuario_Rol (usuario_id, rol_id) SELECT u.id, r.id FROM Usuario u JOIN Rol r ON r.nombre = @tipoUsuarioJefaturaDeServicio WHERE u.id = @usuarioId2;
+VALUES (@usuarioId2, @fechaAltaJefe, TRUE, @cuilJefe, 'Valentino', 'Marquez', 'MASCULINO', 'vale.mar@hmu.com.ar', 3512223355, @domicilioId2, @cargoJefeId, @servDireccionId, @tipoUsuarioJDS, @initPass);
+INSERT INTO JefeDeServicio (id) VALUES (@usuarioId2);
+INSERT INTO Usuario_Rol (usuario_id, rol_id) SELECT u.id, r.id FROM Usuario u JOIN Rol r ON r.nombre = @tipoUsuarioJDS WHERE u.id = @usuarioId2;
 
 
 
@@ -44,7 +44,7 @@ SET @cuilOdeP=27112223333;
 SET @usuarioId3=UUID_TO_BIN(UUID());
 SET @fechaAltaOdeP='2010-12-15';
 SET @tipoUsuarioOdeP='OficinaDePersonal';
-SELECT r.id INTO @rolJefaturaDeServicio FROM Rol r WHERE r.nombre LIKE @tipoUsuarioJefaturaDeServicio;
+SELECT r.id INTO @rolJefeDeServicio FROM Rol r WHERE r.nombre LIKE @tipoUsuarioJDS;
 SELECT id INTO @domicilioId3 FROM Domicilio ORDER BY RAND() LIMIT 1;
 SELECT id INTO @cargoOdePId FROM Cargo c WHERE c.numero = 500;
 SELECT id INTO @servPersonalId FROM Servicio s WHERE s.nombre LIKE 'Personal';
@@ -54,40 +54,41 @@ VALUES (@usuarioId3, @fechaAltaOdeP, TRUE, @cuilOdeP, 'Felicitas', 'Herrera', 'F
 INSERT INTO OficinaDePersonal (id, reportesGenerados) VALUES (@usuarioId3, 0);
 INSERT INTO Usuario_Rol (usuario_id, rol_id) SELECT u.id, r.id FROM Usuario u JOIN Rol r ON r.nombre = @tipoUsuarioOdeP WHERE u.id = @usuarioId3;
 
-SELECT INTO @rolId id FROM Rol WHERE nombre LIKE @tipoUsuarioJefaturaDeServicio;
+SELECT id INTO @rolId FROM Rol WHERE nombre LIKE @tipoUsuarioJDS;
 DELETE FROM Usuario_Rol WHERE usuario_id = @usuarioId2 AND rol_id = @rolId;
 
 
 
--- Crear usuario con roles: Empleado
-SET @cuilEmpleado=20112223334;
+-- Crear usuario con roles: Agente
+SET @cuilAgente=20112223334;
 SET @usuarioId4=UUID_TO_BIN(UUID());
-SET @fechaAltaEmpleado='2021-09-01';
-SET @tipoUsuarioEmpleado='Empleado';
-SELECT r.id INTO @rolEmpleado FROM Rol r WHERE r.nombre LIKE @tipoUsuarioEmpleado;
+SET @fechaAltaAgente='2021-09-01';
+SET @tipoUsuarioAgente='Agente';
+SELECT r.id INTO @rolAgente FROM Rol r WHERE r.nombre LIKE @tipoUsuarioAgente;
 SELECT id INTO @domicilioId4 FROM Domicilio ORDER BY RAND() LIMIT 1;
-SELECT id INTO @cargoEmpleado FROM Cargo c WHERE c.numero = 400;
+SELECT id INTO @cargoAgente FROM Cargo c WHERE c.numero = 400;
 SELECT id INTO @servInformaticaId FROM Servicio s WHERE s.nombre LIKE 'Informática';
 SELECT id INTO @domId4 FROM Domicilio ORDER BY RAND() LIMIT 1;
 
 INSERT INTO Usuario (id, fechaAlta, estado, cuil, apellidos, nombres, sexo, mail, tel, domicilioID, cargoID, servicioID, tipoUsuario, passwd)
-VALUES (@usuarioId4, @fechaAltaEmpleado, TRUE, @cuilEmpleado, 'Luis', 'Masson', 'MASCULINO', 'lmasson@hmu.com.ar', 3512223377, @domicilioId4, @cargoEmpleado, @servInformaticaId, @tipoUsuarioEmpleado, @initPass);
+VALUES (@usuarioId4, @fechaAltaAgente, TRUE, @cuilAgente, 'Luis', 'Masson', 'MASCULINO', 'lmasson@hmu.com.ar', 3512223377, @domicilioId4, @cargoAgente, @servInformaticaId, @tipoUsuarioAgente, @initPass);
 
-SELECT jds.id INTO @jefeEmpleado FROM JefaturaDeServicio jds
+SELECT jds.id INTO @jefeAgente FROM JefeDeServicio jds
 JOIN Usuario jefe ON jds.id = jefe.id
 JOIN Servicio s ON jefe.servicioID = s.id
 WHERE s.nombre = 'Informática';
 
-INSERT INTO Empleado (id, francosCompensatoriosUtilizados, jefaturaID) VALUES (@usuarioId4, 0, @jefeEmpleado);
+INSERT INTO Agente (id, francosCompensatoriosUtilizados) VALUES (@usuarioId4, 0);
 
 
 
 -- Listar todas las asignaciones de roles
-SELECT 'Aromito1' AS DefaultPass, u.cuil, u.apellidos, u.nombres, BIN_TO_UUID(u.id) AS usuario_id, BIN_TO_UUID(r.id) AS rol_id, r.nombre
+SELECT 'Aromito1' AS DefaultPass, u.cuil, CONCAT(u.apellidos, ', ', u.nombres) AS usuario_fullname, BIN_TO_UUID(u.id) AS usuario_id, BIN_TO_UUID(r.id) AS rol_id, r.nombre AS rol_name
 FROM Usuario u
 JOIN Usuario_Rol ur ON u.id = ur.usuario_id
 JOIN Rol r ON ur.rol_id = r.id
 ORDER BY apellidos;
 
 
-SELECT cuil, apellidos, nombres, passwd from Usuario WHERE cuil = 27284644443;
+-- Seleccionar la jefa de oficina de Personal
+SELECT cuil, CONCAT(apellidos, ', ', nombres) AS JefeDeServicio_OficinaDePersonal, passwd from Usuario WHERE cuil = 27284644443;
