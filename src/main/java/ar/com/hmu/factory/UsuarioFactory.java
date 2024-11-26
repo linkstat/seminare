@@ -1,11 +1,22 @@
 package ar.com.hmu.factory;
-import ar.com.hmu.constants.TipoUsuario;
-import ar.com.hmu.model.*;
 
 import java.sql.Blob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Set;
 import java.util.UUID;
+
+import ar.com.hmu.constants.TipoUsuario;
+import ar.com.hmu.exceptions.ServiceException;
+import ar.com.hmu.model.*;
+import ar.com.hmu.repository.DatabaseConnector;
+import ar.com.hmu.repository.RoleRepository;
+import ar.com.hmu.roles.Role;
+import ar.com.hmu.roles.impl.AgenteRoleImpl;
+import ar.com.hmu.roles.impl.DireccionRoleImpl;
+import ar.com.hmu.roles.impl.JefeDeServicioRoleImpl;
+import ar.com.hmu.roles.impl.OficinaDePersonalRoleImpl;
+import ar.com.hmu.service.RoleService;
 
 /**
  * Clase {@code UsuarioFactory} que se encarga de crear instancias de las subclases de {@link Usuario}.
@@ -20,6 +31,12 @@ import java.util.UUID;
  */
 public class UsuarioFactory {
 
+    private RoleService roleService;
+
+    public UsuarioFactory(RoleService roleService) {
+        this.roleService = roleService;
+    }
+
     /**
      * Crea una instancia de {@link Usuario} basada en la información proporcionada en un {@link ResultSet}.
      * <p>
@@ -33,26 +50,8 @@ public class UsuarioFactory {
      * @throws SQLException si ocurre un error al acceder al {@code ResultSet}.
      * @throws IllegalArgumentException si el {@code tipoUsuario} no coincide con un tipo conocido.
      */
-    public static Usuario createUsuario(ResultSet resultSet) throws SQLException {
-        String tipoUsuario = resultSet.getString("tipoUsuario");
-        Usuario usuario;
-
-        switch (tipoUsuario) {
-            case "AGENTE":
-                usuario = new Agente();
-                break;
-            case "JEFEDESERVICIO":
-                usuario = new JefeDeServicio();
-                break;
-            case "OFICINADEPERSONAL":
-                usuario = new OficinaDePersonal();
-                break;
-            case "DIRECCION":
-                usuario = new Direccion();
-                break;
-            default:
-                throw new IllegalArgumentException("Tipo de usuario desconocido: " + tipoUsuario);
-        }
+    public Usuario createUsuario(ResultSet resultSet) throws SQLException, ServiceException {
+        Usuario usuario = new Usuario();
 
         // Asignar el ID (UUID) del usuario directamente desde la columna convertida con BIN_TO_UUID
         usuario.setId(UUID.fromString(resultSet.getString("id")));
@@ -66,13 +65,6 @@ public class UsuarioFactory {
         usuario.setSexo(Sexo.valueOf(resultSet.getString("sexo").toUpperCase()));
         usuario.setMail(resultSet.getString("mail"));
         usuario.setTel(resultSet.getLong("tel"));
-
-        try {
-            usuario.setTipoUsuario(TipoUsuario.fromInternalName(resultSet.getString("tipoUsuario")));
-        } catch (IllegalArgumentException | NullPointerException e) {
-            usuario.setTipoUsuario(TipoUsuario.AGENTE);
-            throw new SQLException("TipoUsuario inválido: " + resultSet.getString("tipoUsuario"), e);
-        }
 
         // Cargar el hash de la contraseña almacenado
         String passwordHash = resultSet.getString("passwd");
@@ -102,7 +94,26 @@ public class UsuarioFactory {
             usuario.setServicioId(UUID.fromString(servicioIdStr));
         }
 
+        // Obtener los roles de datos del usuario
+        Set<RoleData> rolesData = obtenerRolesDelUsuario(usuario.getId());
+        usuario.setRolesData(rolesData);
+
+        // Asignar roles de comportamiento
+        usuario.assignRoleBehaviors();
+
         return usuario;
+    }
+
+
+    /**
+     * Método para obtener los roles del usuario desde la base de datos
+     * @param usuarioId id de usuario
+     * @return un listado de roles de usuario
+     * @throws SQLException excepciones de SQL
+     * @throws ServiceException excepciones personalizadas ServiceException
+     */
+    private Set<RoleData> obtenerRolesDelUsuario(UUID usuarioId) throws SQLException, ServiceException {
+        return roleService.findRolesByUsuarioId(usuarioId);
     }
 
 }

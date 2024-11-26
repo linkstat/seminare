@@ -15,11 +15,11 @@ public class DiagramaDeServicio {
 	private LocalDateTime fechaInicio;
 	private LocalDateTime fechaFin;
 	private JornadaLaboral jornadaLaboral;
-	private Map<Agente, List<JornadaLaboral>> planificaciones;
+	private Map<Usuario, List<JornadaLaboral>> planificaciones;
 	private Servicio servicio;
 	private EstadoTramite estado;
 
-	public DiagramaDeServicio(UUID id, LocalDateTime fechaInicio, LocalDateTime fechaFin, JornadaLaboral jornadaLaboral, Map<Agente, List<JornadaLaboral>> planificaciones, Servicio servicio, EstadoTramite estado) {
+	public DiagramaDeServicio(UUID id, LocalDateTime fechaInicio, LocalDateTime fechaFin, JornadaLaboral jornadaLaboral, Map<Usuario, List<JornadaLaboral>> planificaciones, Servicio servicio, EstadoTramite estado) {
 		this.id = id;
 		this.fechaInicio = fechaInicio;
 		this.fechaFin = fechaFin;
@@ -47,7 +47,7 @@ public class DiagramaDeServicio {
 		this.jornadaLaboral = jornadaLaboral;
 	}
 
-	public void setPlanificaciones(Map<Agente, List<JornadaLaboral>> planificaciones) {
+	public void setPlanificaciones(Map<Usuario, List<JornadaLaboral>> planificaciones) {
 		this.planificaciones = planificaciones;
 	}
 
@@ -78,7 +78,7 @@ public class DiagramaDeServicio {
 		return jornadaLaboral;
 	}
 
-	public Map<Agente, List<JornadaLaboral>> getPlanificaciones() {
+	public Map<Usuario, List<JornadaLaboral>> getPlanificaciones() {
 		return planificaciones;
 	}
 
@@ -92,15 +92,15 @@ public class DiagramaDeServicio {
 
 	// Otros métodos
 
-	public void addPlanificacion(Agente agente, JornadaLaboral jornada){
+	public void addPlanificacion(Usuario agente, JornadaLaboral jornada){
 
 	}
 
-	public List<JornadaLaboral> getPlanificacionAgente(Agente agente){
+	public List<JornadaLaboral> getPlanificacionAgente(Usuario agente){
 		return null;
 	}
 
-	public Map<Agente, List<JornadaLaboral>> getPlanificacionServicio(){
+	public Map<Usuario, List<JornadaLaboral>> getPlanificacionServicio(){
 		return null;
 	}
 

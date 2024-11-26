@@ -1,6 +1,7 @@
 package ar.com.hmu.repository;
 
 import ar.com.hmu.constants.TipoUsuario;
+import ar.com.hmu.exceptions.ServiceException;
 import ar.com.hmu.factory.UsuarioFactory;
 import ar.com.hmu.model.*;
 import ar.com.hmu.repository.dao.GenericDAO;
@@ -14,16 +15,18 @@ import java.util.*;
 public class UsuarioRepository implements GenericDAO<Usuario> {
 
     private DatabaseConnector databaseConnector;
+    private UsuarioFactory usuarioFactory;
 
-    public UsuarioRepository(DatabaseConnector databaseConnector) {
+    public UsuarioRepository(DatabaseConnector databaseConnector, UsuarioFactory usuarioFactory) {
         this.databaseConnector = databaseConnector;
+        this.usuarioFactory = usuarioFactory;
     }
 
     @Override
     public void create(Usuario usuario) throws SQLException {
         try (Connection connection = databaseConnector.getConnection()) {
-            String query = "INSERT INTO Usuario (id, fechaAlta, estado, cuil, apellidos, nombres, sexo, mail, passwd, tipoUsuario, domicilioID, cargoID, servicioID) " +
-                    "VALUES (UUID_TO_BIN(?), ?, ?, ?, ?, ?, ?, ?, ?, ?, UUID_TO_BIN(?), UUID_TO_BIN(?), UUID_TO_BIN(?))";
+            String query = "INSERT INTO Usuario (id, fechaAlta, estado, cuil, apellidos, nombres, sexo, mail, passwd, domicilioID, cargoID, servicioID) " +
+                    "VALUES (UUID_TO_BIN(?), ?, ?, ?, ?, ?, ?, ?, ?, UUID_TO_BIN(?), UUID_TO_BIN(?), UUID_TO_BIN(?))";
             try (PreparedStatement stmt = connection.prepareStatement(query)) {
 
                 // Almacenar datos comunes de usuario
@@ -36,10 +39,9 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
                 stmt.setString(7, usuario.getSexo().name());
                 stmt.setString(8, usuario.getMail());
                 stmt.setString(9, usuario.getEncryptedPassword());
-                stmt.setString(10, usuario.getTipoUsuario().getInternalName());
-                stmt.setString(11, usuario.getDomicilioId().toString());
-                stmt.setString(12, usuario.getCargoId().toString());
-                stmt.setString(13, usuario.getServicioId().toString());
+                stmt.setString(10, usuario.getDomicilioId().toString());
+                stmt.setString(11, usuario.getCargoId().toString());
+                stmt.setString(12, usuario.getServicioId().toString());
                 stmt.executeUpdate();
 
             }
@@ -64,10 +66,12 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     // Fabrica de usuarios
-                    Usuario usuario = UsuarioFactory.createUsuario(rs);
+                    Usuario usuario = usuarioFactory.createUsuario(rs);
 
                     return usuario;
                 }
+            } catch (ServiceException e) {
+                throw new RuntimeException(e);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -92,12 +96,14 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
 
             while (rs.next()) {
                 // Fabrica de usuarios
-                Usuario usuario = UsuarioFactory.createUsuario(rs);
+                Usuario usuario = usuarioFactory.createUsuario(rs);
                 usuarios.add(usuario);
             }
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Error al leer todos los usuarios", e);
+        } catch (ServiceException e) {
+            throw new RuntimeException(e);
         }
         return usuarios;
     }
@@ -105,7 +111,7 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
     @Override
     public void update(Usuario usuario) throws SQLException {
         String query = "UPDATE Usuario SET fechaAlta = ?, estado = ?, cuil = ?, apellidos = ?, nombres = ?, sexo = ?, mail = ?, tel = ?, " +
-                "domicilioID = UUID_TO_BIN(?), cargoID = UUID_TO_BIN(?), servicioID = UUID_TO_BIN(?), tipoUsuario = ?, passwd = ?, profile_image = ? " +
+                "domicilioID = UUID_TO_BIN(?), cargoID = UUID_TO_BIN(?), servicioID = UUID_TO_BIN(?), passwd = ?, profile_image = ? " +
                 "WHERE id = UUID_TO_BIN(?)";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -121,13 +127,11 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
             stmt.setString(9, usuario.getDomicilioId() != null ? usuario.getDomicilioId().toString() : null);
             stmt.setString(10, usuario.getCargoId() != null ? usuario.getCargoId().toString() : null);
             stmt.setString(11, usuario.getServicioId() != null ? usuario.getServicioId().toString() : null);
-            stmt.setString(12, usuario.getTipoUsuario().getInternalName());
-            stmt.setString(13, usuario.getEncryptedPassword());
-            stmt.setBytes(14, usuario.getProfileImage() != null && usuario.getProfileImage().length > 0
+            stmt.setString(12, usuario.getEncryptedPassword());
+            stmt.setBytes(13, usuario.getProfileImage() != null && usuario.getProfileImage().length > 0
                     ? usuario.getProfileImage()
                     : null);
-
-            stmt.setString(15, usuario.getId().toString());
+            stmt.setString(14, usuario.getId().toString());
             stmt.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException("Error al actualizar el usuario", e);
@@ -162,7 +166,7 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
                 "BIN_TO_UUID(domicilioID) AS domicilioID, " +
                 "BIN_TO_UUID(cargoID) AS cargoID, " +
                 "BIN_TO_UUID(servicioID) AS servicioID, " +
-                "tipoUsuario, passwd, profile_image " +
+                "passwd, profile_image " +
                 "FROM Usuario WHERE estado = 1 AND cuil = ?";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -170,16 +174,18 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
             stmt.setLong(1, cuil);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    Usuario usuario = UsuarioFactory.createUsuario(rs);
+                    Usuario usuario = usuarioFactory.createUsuario(rs);
                     return usuario;
                 }
+            } catch (ServiceException e) {
+                throw new RuntimeException(e);
             }
         }
         return null;
     }
 
 
-    public Usuario findUsuarioByCuil(long cuil, boolean includeDisabled) throws SQLException {
+    public Usuario findUsuarioByCuil(long cuil, boolean includeDisabled) throws SQLException, ServiceException {
         if(includeDisabled) {
             String query = "SELECT BIN_TO_UUID(id) AS id, fechaAlta, estado, cuil, apellidos, nombres, sexo, mail, tel, " +
                     "BIN_TO_UUID(domicilioID) AS domicilioID, " +
@@ -193,7 +199,7 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
                 stmt.setLong(1, cuil);
                 try (ResultSet rs = stmt.executeQuery()) {
                     if (rs.next()) {
-                        Usuario usuario = UsuarioFactory.createUsuario(rs);
+                        Usuario usuario = usuarioFactory.createUsuario(rs);
                         return usuario;
                     }
                 }

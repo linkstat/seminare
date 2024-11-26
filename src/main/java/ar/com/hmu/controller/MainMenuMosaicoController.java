@@ -140,14 +140,14 @@ public class MainMenuMosaicoController {
     private CargoRepository cargoRepository;
     private ServicioRepository servicioRepository;
     private UsuarioRepository usuarioRepository;
-    private RolRepository rolRepository;
+    private RoleRepository roleRepository;
 
     // Servicios
     private UsuarioService usuarioService;
     private CargoService cargoService;
     private ServicioService servicioService;
     private DomicilioService domicilioService;
-    private RolService rolService;
+    private RoleService roleService;
 
     private Usuario usuarioActual;
 
@@ -168,12 +168,12 @@ public class MainMenuMosaicoController {
         this.databaseConnector = databaseConnector;
     }
 
-    public void setServices(UsuarioService usuarioService, CargoService cargoService, ServicioService servicioService, DomicilioService domicilioService, RolService rolService) {
+    public void setServices(UsuarioService usuarioService, CargoService cargoService, ServicioService servicioService, DomicilioService domicilioService, RoleService roleService) {
         this.usuarioService = usuarioService;
         this.cargoService = cargoService;
         this.servicioService = servicioService;
         this.domicilioService = domicilioService;
-        this.rolService = rolService;
+        this.roleService = roleService;
     }
 
     public static Stage getPrimaryStage() {
@@ -305,8 +305,8 @@ public class MainMenuMosaicoController {
         // Configurar visibilidad de mosaicos (VBox) según roles
         aprobacionSolicitudesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.JEFEDESERVICIO, TipoUsuario.OFICINADEPERSONAL, TipoUsuario.DIRECCION));
         aprobacionSolicitudesVBox.setManaged(usuarioActual.hasRole(TipoUsuario.JEFEDESERVICIO, TipoUsuario.OFICINADEPERSONAL, TipoUsuario.DIRECCION));
-        notasMemosVBox.setVisible(usuarioActual.hasAnyRole());
-        notasMemosVBox.setManaged(usuarioActual.hasAnyRole());
+        notasMemosVBox.setVisible(usuarioActual.hasAnyRoleData());
+        notasMemosVBox.setManaged(usuarioActual.hasAnyRoleData());
         partesDiariosVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL));
         partesDiariosVBox.setManaged(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL));
         consultaDiagramasDeServicioVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL, TipoUsuario.DIRECCION));
@@ -451,14 +451,14 @@ public class MainMenuMosaicoController {
             CargoService cargoService = this.cargoService;
             ServicioService servicioService = this.servicioService;
             DomicilioService domicilioService = this.domicilioService;
-            RolService rolService = this.rolService;
+            RoleService roleService = this.roleService;
 
             // Configurar la fábrica de controladores
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/abmUsuario.fxml"));
             loader.setControllerFactory(controllerClass -> {
                 if (controllerClass == AbmUsuarioController.class) {
                     AbmUsuarioController controller = new AbmUsuarioController();
-                    controller.setServices(usuarioService, cargoService, servicioService, domicilioService, rolService);
+                    controller.setServices(usuarioService, cargoService, servicioService, domicilioService, roleService);
                     return controller;
                 } else {
                     // Manejo predeterminado
@@ -537,14 +537,14 @@ public class MainMenuMosaicoController {
             CargoService cargoService = this.cargoService;
             ServicioService servicioService = this.servicioService;
             DomicilioService domicilioService = this.domicilioService;
-            RolService rolService = this.rolService;
+            RoleService roleService = this.roleService;
 
             // Configurar la fábrica de controladores
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/listaUsuarios.fxml"));
             loader.setControllerFactory(controllerClass -> {
                 if (controllerClass == ListaUsuariosController.class) {
                     ListaUsuariosController controller = new ListaUsuariosController();
-                    controller.setServices(usuarioService, cargoService, servicioService, domicilioService, rolService);
+                    controller.setServices(usuarioService, cargoService, servicioService, domicilioService, roleService);
                     return controller;
                 } else {
                     // Manejo predeterminado
@@ -559,7 +559,7 @@ public class MainMenuMosaicoController {
             Parent root = loader.load();
 
             ListaUsuariosController controller = loader.getController();
-            controller.setServices(usuarioService, cargoService, servicioService, domicilioService, rolService);
+            controller.setServices(usuarioService, cargoService, servicioService, domicilioService, roleService);
 
             Stage stage = new Stage();
             stage.setTitle("Listado de Agentes" + " :: " + AppInfo.PRG_LONG_TITLE);
@@ -583,13 +583,13 @@ public class MainMenuMosaicoController {
             CargoService cargoService = this.cargoService;
             ServicioService servicioService = this.servicioService;
             DomicilioService domicilioService = this.domicilioService;
-            RolService rolService = this.rolService;
+            RoleService roleService = this.roleService;
 
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/listaServicios.fxml"));
             loader.setControllerFactory(controllerClass -> {
                 if (controllerClass == ListaServiciosController.class) {
                     ListaServiciosController controller = new ListaServiciosController();
-                    controller.setServices(usuarioService, cargoService, servicioService, domicilioService, rolService);
+                    controller.setServices(usuarioService, cargoService, servicioService, domicilioService, roleService);
                     return controller;
                 } else {
                     // Manejo predeterminado

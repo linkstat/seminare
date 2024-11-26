@@ -1,6 +1,8 @@
 package ar.com.hmu.model;
 
 
+import ar.com.hmu.roles.impl.AgenteRoleImpl;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -14,11 +16,11 @@ public class Servicio {
 	private UUID id;
 	private String nombre;
 	private Agrupacion agrupacion;
-	private Direccion direccion;
+	private Usuario direccion;
 
 	private UUID direccionId;
 
-	private List<Agente> agentes;
+	private List<Usuario> agentes;
 	private List<DiagramaDeServicio> diagramas;
 
 	public Servicio() {
@@ -39,7 +41,7 @@ public class Servicio {
 
 	}
 
-	public Servicio(UUID id, String nombre, Agrupacion agrupacion, List<Agente> agentes, List<DiagramaDeServicio> diagramas) {
+	public Servicio(UUID id, String nombre, Agrupacion agrupacion, List<Usuario> agentes, List<DiagramaDeServicio> diagramas) {
 		this.id = id;
 		this.nombre = nombre;
 		this.agrupacion = agrupacion;
@@ -67,7 +69,7 @@ public class Servicio {
 		this.agrupacion = agrupacion;
 	}
 
-	public void setDireccion(Direccion direccion) {
+	public void setDireccion(Usuario direccion) {
 		this.direccion = direccion;
 	}
 
@@ -75,7 +77,7 @@ public class Servicio {
 		this.direccionId = direccionId;
 	}
 
-	public void setAgentes(List<Agente> agentes) {
+	public void setAgentes(List<Usuario> agentes) {
 		this.agentes = agentes;
 	}
 
@@ -101,7 +103,7 @@ public class Servicio {
 		return diagramas;
 	}
 
-	public Direccion getDireccion() {
+	public Usuario getDireccion() {
 		return direccion;
 	}
 
@@ -109,21 +111,29 @@ public class Servicio {
 		return direccionId;
 	}
 
+	public List<Usuario> getAgentes(){
+		return null;
+	}
+
 
 	/**
 	 * 
 	 * Método para agregar agentes a un servicio
 	 */
-	public void addAgente(Agente agente){
-
+	public void addAgente(Usuario agente){
+		if (agente.hasRoleBehavior(AgenteRoleImpl.class)) {
+			this.agentes.add(agente);
+		} else {
+			throw new IllegalArgumentException("El usuario no tiene el rol de Agente.");
+		}
 	}
 
 	/**
 	 * 
 	 * @param agente
 	 */
-	public void delAgente(Agente agente){
-
+	public void delAgente(Usuario agente){
+		this.agentes.remove(agente);
 	}
 
 	/**
@@ -139,10 +149,6 @@ public class Servicio {
 	 * @param fechaEspecifica
 	 */
 	public DiagramaDeServicio getDiagramaFechaEspecifica(LocalDateTime fechaEspecifica){
-		return null;
-	}
-
-	public List<Agente> getAgentes(){
 		return null;
 	}
 

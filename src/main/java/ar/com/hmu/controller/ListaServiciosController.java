@@ -41,7 +41,7 @@ public class ListaServiciosController {
     private CargoService cargoService;
     private ServicioService servicioService;
     private DomicilioService domicilioService;
-    private RolService rolService;
+    private RoleService roleService;
 
     public void setServicioService(ServicioService servicioService) {
         this.servicioService = servicioService;
@@ -68,12 +68,12 @@ public class ListaServiciosController {
      * @param cargoService para la gestión de Cargos
      * @param servicioService para la gestión de Servicios
      */
-    public void setServices(UsuarioService usuarioService, CargoService cargoService, ServicioService servicioService, DomicilioService domicilioService, RolService rolService) {
+    public void setServices(UsuarioService usuarioService, CargoService cargoService, ServicioService servicioService, DomicilioService domicilioService, RoleService roleService) {
         this.usuarioService = usuarioService;
         this.cargoService = cargoService;
         this.servicioService = servicioService;
         this.domicilioService = domicilioService;
-        this.rolService = rolService;
+        this.roleService = roleService;
     }
 
 

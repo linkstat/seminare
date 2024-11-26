@@ -2,7 +2,6 @@ package ar.com.hmu.repository;
 
 import ar.com.hmu.model.Agrupacion;
 import ar.com.hmu.model.Cargo;
-import ar.com.hmu.model.Rol;
 import ar.com.hmu.repository.dao.GenericDAO;
 import java.sql.*;
 import java.util.ArrayList;

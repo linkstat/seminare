@@ -1,17 +1,25 @@
 package ar.com.hmu.constants;
 
+import ar.com.hmu.roles.Role;
+import ar.com.hmu.roles.impl.AgenteRoleImpl;
+import ar.com.hmu.roles.impl.DireccionRoleImpl;
+import ar.com.hmu.roles.impl.JefeDeServicioRoleImpl;
+import ar.com.hmu.roles.impl.OficinaDePersonalRoleImpl;
+
 public enum TipoUsuario {
-    AGENTE("Agente", "Agente"),
-    JEFEDESERVICIO("JefeDeServicio", "Jefe de Servicio"),
-    OFICINADEPERSONAL("OficinaDePersonal", "Oficina de Personal"),
-    DIRECCION("Direccion", "Directivo");
+    AGENTE("Agente", "Agente", AgenteRoleImpl.class),
+    JEFEDESERVICIO("JefeDeServicio", "Jefe de Servicio", JefeDeServicioRoleImpl.class),
+    OFICINADEPERSONAL("OficinaDePersonal", "Oficina de Personal", OficinaDePersonalRoleImpl.class),
+    DIRECCION("Direccion", "Directivo", DireccionRoleImpl.class);
 
     private final String internalName;
     private final String displayName;
+    private final Class<? extends Role> roleClass;
 
-    TipoUsuario(String internalName, String displayName) {
+    TipoUsuario(String internalName, String displayName, Class<? extends Role> roleClass) {
         this.internalName = internalName;
         this.displayName = displayName;
+        this.roleClass = roleClass;
     }
 
     public String getInternalName() {
@@ -20,6 +28,10 @@ public enum TipoUsuario {
 
     public String getDisplayName() {
         return displayName;
+    }
+
+    public Class<? extends Role> getRoleClass() {
+        return roleClass;
     }
 
     // Método de conversión para obtener el Enum a partir de la cadena de la base de datos

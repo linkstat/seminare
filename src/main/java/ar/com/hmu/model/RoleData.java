@@ -5,7 +5,7 @@ import ar.com.hmu.constants.TipoUsuario;
 import java.util.Objects;
 import java.util.UUID;
 
-public class Rol {
+public class RoleData {
 
     private UUID id;
     private String nombre;
@@ -13,11 +13,11 @@ public class Rol {
     private TipoUsuario tipoUsuario;
 
     // Constructor por defecto
-    public Rol() {
+    public RoleData() {
     }
 
     // Nuevo constructor que acepta TipoUsuario
-    public Rol(TipoUsuario tipoUsuario) {
+    public RoleData(TipoUsuario tipoUsuario) {
         this.tipoUsuario = tipoUsuario;
         this.nombre = tipoUsuario.getInternalName();
         this.descripcion = tipoUsuario.getDisplayName();
@@ -65,8 +65,8 @@ public class Rol {
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (!(obj instanceof Rol)) return false;
-        Rol other = (Rol) obj;
+        if (!(obj instanceof RoleData)) return false;
+        RoleData other = (RoleData) obj;
         return Objects.equals(id, other.id);
     }
 

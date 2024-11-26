@@ -4,13 +4,15 @@ import java.time.LocalDate;
 import java.util.*;
 
 import ar.com.hmu.constants.TipoUsuario;
+import ar.com.hmu.exceptions.ServiceException;
+import ar.com.hmu.roles.Role;
 import ar.com.hmu.util.PasswordUtils;
 import static ar.com.hmu.util.StringUtils.normalizar;
 
 /**
  * Clase base abstracta pra representar usuarios de forma genérica
  */
-public abstract class Usuario {
+public class Usuario {
 
 	private UUID id;
 	private LocalDate fechaAlta;
@@ -24,7 +26,6 @@ public abstract class Usuario {
 	private Domicilio domicilio;
 	private Cargo cargo;
 	private Servicio servicio;
-	private TipoUsuario tipoUsuario;
 	private String password;
 	private byte[] profileImage;
 
@@ -35,16 +36,18 @@ public abstract class Usuario {
 	private UUID servicioId;
 
 	// Gestión de roles de usuario
-	private Set<Rol> roles = new HashSet<>();
+	private Set<RoleData> rolesData = new HashSet<>();    // Roles de datos
+	private Set<Role> rolesBehavior = new HashSet<>();    // Roles de comportamiento
 
 
 	// Constructor por defecto
 	public Usuario(){
-		//void
+		this.rolesData = new HashSet<>();
+		this.rolesBehavior = new HashSet<>();
 	}
 
 	// Constructor con los datos principales
-	public Usuario(UUID id, LocalDate fechaAlta, boolean estado, long cuil, String apellidos, String nombres, Sexo sexo, String mail, TipoUsuario tipoUsuario) {
+	public Usuario(UUID id, LocalDate fechaAlta, boolean estado, long cuil, String apellidos, String nombres, Sexo sexo, String mail) {
 		this.id = id;
 		this.fechaAlta = fechaAlta;
 		this.estado = estado;
@@ -53,13 +56,10 @@ public abstract class Usuario {
 		this.nombres = nombres;
 		this.sexo = sexo;
 		this.mail = mail;
-		this.tipoUsuario = tipoUsuario;
 		this.password = PasswordUtils.hashPassword(String.valueOf(cuil).toCharArray());
 	}
 
-
 	// Getters
-
 
 	public UUID getId() {
 		return id;
@@ -122,10 +122,6 @@ public abstract class Usuario {
 		return servicio;
 	}
 
-	public TipoUsuario getTipoUsuario() {
-		return tipoUsuario;
-	}
-
 	// Método para obtener la contraseña cifrada (solo para uso interno de la base de datos)
 	/**
 	 * Este método permite al UsuarioRepository acceder a la contraseña ya cifrada
@@ -154,13 +150,16 @@ public abstract class Usuario {
 		return servicioId;
 	}
 
-	public Set<Rol> getRoles() {
-		return roles;
+	public Set<RoleData> getRolesData() {
+		return rolesData;
+	}
+
+	public Set<Role> getRolesBehavior() {
+		return rolesBehavior;
 	}
 
 
 	// Setters
-
 
 	public void setId(UUID id) {
 		this.id = id;
@@ -215,10 +214,6 @@ public abstract class Usuario {
 		this.servicio = servicio;
 	}
 
-	public void setTipoUsuario(TipoUsuario tipoUsuario) {
-		this.tipoUsuario = tipoUsuario;
-	}
-
 	// Setter para la contraseña (encriptada con BCrypt)
 	/**
 	 * Establece la contraseña del usuario cifrándola con BCrypt antes de almacenarla.
@@ -250,16 +245,20 @@ public abstract class Usuario {
 		this.servicioId = servicioId;
 	}
 
-	public void setRoles(Set<Rol> roles) {
-		this.roles = roles;
+	public void setRolesData(Set<RoleData> rolesData) {
+		this.rolesData = rolesData;
 	}
 
-	public void addRol(Rol rol) {
-		this.roles.add(rol);
+	public void setRolesBehavior(Set<Role> rolesBehavior) {
+		this.rolesBehavior = rolesBehavior;
 	}
 
 
 	// Otros métodos
+
+	public void addRoleBehavior(Role role) {
+		this.rolesBehavior.add(role);
+	}
 
 
 	/**
@@ -348,22 +347,15 @@ public abstract class Usuario {
 
 	/**
 	 * Método que indica si el usuario posé un determinado rol.
-	 * @param tipoUsuario es un Enum de tipo TipoUsuario, que contiene los valores posibles.
+	 * @param roleClass los roles
 	 * @return verdadero o falso, según el usuario tenga el rol o no.
 	 */
-	public boolean hasRole(TipoUsuario tipoUsuario) {
-		return roles.stream()
-				.anyMatch(rol -> rol.getNombre().equalsIgnoreCase(tipoUsuario.getInternalName()));
-	}
-
-	public boolean isDefaultRole(TipoUsuario tipoUsuario) {
-		if (this.tipoUsuario == null) {
-			return false;
-		}
-		if (this.tipoUsuario == tipoUsuario) {
-			return true;
-		}
-		return false;
+	public <T extends Role> T getRoleBehavior(Class<T> roleClass) {
+		return rolesBehavior.stream()
+				.filter(roleClass::isInstance)
+				.map(roleClass::cast)
+				.findFirst()
+				.orElse(null);
 	}
 
 	/**
@@ -372,18 +364,25 @@ public abstract class Usuario {
 	 * @return verdaero o falso, según el usuario tenga el rol o no.
 	 */
 	public boolean hasRole(TipoUsuario... tiposUsuario) {
-		if (roles == null || roles.isEmpty()) {
+		if (rolesBehavior == null || rolesBehavior.isEmpty()) {
 			return false;
 		}
-		for (TipoUsuario roleToCheck : tiposUsuario) {
-			for (Rol rol : roles) {
-				if (rol.getNombre().equalsIgnoreCase(roleToCheck.getInternalName())) {
+		for (TipoUsuario tipoUsuario : tiposUsuario) {
+			Class<? extends Role> roleClass = tipoUsuario.getRoleClass();
+			for (Role role : rolesBehavior) {
+				if (roleClass.isInstance(role)) {
 					return true;
 				}
 			}
 		}
 		return false;
 	}
+
+
+	public boolean hasRoleBehavior(Class<? extends Role> roleClass) {
+		return rolesBehavior.stream().anyMatch(roleClass::isInstance);
+	}
+
 
 	/**
 	 * Método que indica si el usuario posé algún rol o no
@@ -392,8 +391,8 @@ public abstract class Usuario {
 	 * pero cuidando que tenga al menos un rol configurado.
 	 * @return verdadero o false, según el usuario tenga el rol o no
 	 */
-	public boolean hasAnyRole() {
-		return roles != null && !roles.isEmpty();
+	public boolean hasAnyRoleData() {
+		return rolesData != null && !rolesData.isEmpty();
 	}
 
 	public void consultarHorario(){
@@ -448,6 +447,20 @@ public abstract class Usuario {
 				|| (nombres != null && nombres.toLowerCase().contains(textoBuscado))
 				|| (mail != null && mail.toLowerCase().contains(textoBuscado))
 				|| telStr.contains(textoBuscado);
+	}
+
+	public void assignRoleBehaviors() throws ServiceException {
+		this.rolesBehavior.clear();
+		for (RoleData roleData : this.rolesData) {
+			try {
+				TipoUsuario tipoUsuario = TipoUsuario.fromInternalName(roleData.getNombre());
+				Class<? extends Role> roleClass = tipoUsuario.getRoleClass();
+				Role roleBehavior = roleClass.getDeclaredConstructor(Usuario.class).newInstance(this);
+				this.addRoleBehavior(roleBehavior);
+			} catch (Exception e) {
+				throw new ServiceException("Error al crear instancia de role behavior para " + roleData.getNombre(), e);
+			}
+		}
 	}
 
 }

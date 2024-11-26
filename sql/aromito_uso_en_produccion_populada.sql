@@ -745,10 +745,10 @@ CREATE TABLE `registrojornadalaboral`  (
 -- ----------------------------
 
 -- ----------------------------
--- Table structure for rol
+-- Table structure for roleData
 -- ----------------------------
-DROP TABLE IF EXISTS `rol`;
-CREATE TABLE `rol`  (
+DROP TABLE IF EXISTS `roleData`;
+CREATE TABLE `roleData`  (
   `id` binary(16) NOT NULL,
   `nombre` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `descripcion` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
@@ -757,12 +757,12 @@ CREATE TABLE `rol`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Records of rol
+-- Records of roleData
 -- ----------------------------
-INSERT INTO `rol` VALUES (0x41D9024BAAC411EFA64E0028F8594024, 'Agente', 'Agente');
-INSERT INTO `rol` VALUES (0x41D90C9BAAC411EFA64E0028F8594024, 'JefeDeServicio', 'Jefe de Servicio');
-INSERT INTO `rol` VALUES (0x41D91581AAC411EFA64E0028F8594024, 'OficinaDePersonal', 'Oficina de Personal');
-INSERT INTO `rol` VALUES (0x41D91F9EAAC411EFA64E0028F8594024, 'Direccion', 'Directivo');
+INSERT INTO `roleData` VALUES (0x41D9024BAAC411EFA64E0028F8594024, 'Agente', 'Agente');
+INSERT INTO `roleData` VALUES (0x41D90C9BAAC411EFA64E0028F8594024, 'JefeDeServicio', 'Jefe de Servicio');
+INSERT INTO `roleData` VALUES (0x41D91581AAC411EFA64E0028F8594024, 'OficinaDePersonal', 'Oficina de Personal');
+INSERT INTO `roleData` VALUES (0x41D91F9EAAC411EFA64E0028F8594024, 'Direccion', 'Directivo');
 
 -- ----------------------------
 -- Table structure for servicio
@@ -941,7 +941,7 @@ CREATE TABLE `usuario_rol`  (
   INDEX `idx_usuario`(`usuario_id` ASC) USING BTREE,
   INDEX `idx_rol`(`rol_id` ASC) USING BTREE,
   CONSTRAINT `usuario_rol_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuario` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT `usuario_rol_ibfk_2` FOREIGN KEY (`rol_id`) REFERENCES `rol` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+  CONSTRAINT `usuario_rol_ibfk_2` FOREIGN KEY (`rol_id`) REFERENCES `roleData` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------

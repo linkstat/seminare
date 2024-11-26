@@ -6,12 +6,17 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import ar.com.hmu.constants.TipoUsuario;
 import ar.com.hmu.constants.UsuarioCreationResult;
 import ar.com.hmu.exceptions.ServiceException;
 import ar.com.hmu.model.*;
 import ar.com.hmu.repository.*;
+import ar.com.hmu.roles.Role;
+import ar.com.hmu.roles.impl.AgenteRoleImpl;
+import ar.com.hmu.roles.impl.DireccionRoleImpl;
+import ar.com.hmu.roles.impl.JefeDeServicioRoleImpl;
+import ar.com.hmu.roles.impl.OficinaDePersonalRoleImpl;
 import ar.com.hmu.util.PasswordUtils;
-
 
 public class UsuarioService {
 
@@ -19,16 +24,15 @@ public class UsuarioService {
     private final ServicioRepository servicioRepository;
     private final CargoRepository cargoRepository;
     private final DomicilioRepository domicilioRepository;
-    private final RolService rolService;
+    private final RoleService roleService;
 
-    public UsuarioService(UsuarioRepository usuarioRepository, ServicioRepository servicioRepository, CargoRepository cargoRepository, DomicilioRepository domicilioRepository, RolService rolService) {
+    public UsuarioService(UsuarioRepository usuarioRepository, ServicioRepository servicioRepository, CargoRepository cargoRepository, DomicilioRepository domicilioRepository, RoleService roleService) {
         this.usuarioRepository = usuarioRepository;
         this.servicioRepository = servicioRepository;
         this.cargoRepository = cargoRepository;
         this.domicilioRepository = domicilioRepository;
-        this.rolService = rolService;
+        this.roleService = roleService;
     }
-
 
     public UsuarioCreationResult create(Usuario usuario) throws ServiceException {
         try {
@@ -44,9 +48,18 @@ public class UsuarioService {
                 // Crear nuevo usuario
                 usuarioRepository.create(usuario);
 
-                // Assign roles using RolService
-                for (Rol rol : usuario.getRoles()) {
-                    rolService.asignarRol(usuario.getId(), rol.getId());
+                // Asignar roles de datos usando RoleService
+                for (RoleData roleData : usuario.getRolesData()) {
+                    roleService.asignarRol(usuario.getId(), roleData.getId());
+                }
+
+                // Crear y asignar roles de comportamiento basados en rolesData
+                usuario.getRolesBehavior().clear();
+                for (RoleData roleData : usuario.getRolesData()) {
+                    Role roleBehavior = createRoleBehaviorFromRoleData(roleData, usuario);
+                    if (roleBehavior != null) {
+                        usuario.addRoleBehavior(roleBehavior);
+                    }
                 }
 
                 return UsuarioCreationResult.USUARIO_CREADO;
@@ -56,6 +69,20 @@ public class UsuarioService {
         }
     }
 
+    // Método auxiliar para crear roles de comportamiento
+    private Role createRoleBehaviorFromRoleData(RoleData roleData, Usuario usuario) {
+        try {
+            // Obtener el TipoUsuario a partir del nombre interno
+            TipoUsuario tipoUsuario = TipoUsuario.fromInternalName(roleData.getNombre());
+            // Obtener la clase del rol de comportamiento
+            Class<? extends Role> roleClass = tipoUsuario.getRoleClass();
+            // Crear una instancia del rol de comportamiento
+            Role roleBehavior = roleClass.getDeclaredConstructor(Usuario.class).newInstance(usuario);
+            return roleBehavior;
+        } catch (Exception e) {
+            throw new RuntimeException("Error al crear instancia de role behavior para " + roleData.getNombre(), e);
+        }
+    }
 
     public void reactivarUsuario(Usuario usuario) throws ServiceException {
         try {
@@ -111,16 +138,14 @@ public class UsuarioService {
             for (Usuario usuario : usuarios) {
                 // Load Domicilio
                 Domicilio domicilio = domicilioRepository.findByIdAndUserId(usuario.getDomicilioId(), usuario.getId());
-                if (domicilio == null) {
-                    System.out.println("Domicilio es null para Usuario ID: " + usuario.getId());
-                    //TODO: Decidir cómo manejar este caso: lanzar una excepción o continuar.
-                    continue; // Por ejemplo, continuar con el siguiente usuario
-                }
                 usuario.setDomicilio(domicilio);
 
-                // Load Roles
-                Set<Rol> roles = rolService.findRolesByUsuarioId(usuario.getId());
-                usuario.setRoles(roles);
+                // Load Roles de Datos
+                Set<RoleData> rolesData = roleService.findRolesByUsuarioId(usuario.getId());
+                usuario.setRolesData(rolesData);
+
+                // Crear y asignar roles de comportamiento
+                usuario.assignRoleBehaviors();
 
                 // Load Cargo
                 Cargo cargo = cargoRepository.findById(usuario.getCargoId());
@@ -135,6 +160,7 @@ public class UsuarioService {
             throw new ServiceException("Error al leer todos los usuarios", e);
         }
     }
+
 
     public List<Usuario> readAllPrimarios() throws ServiceException {
         try {
@@ -169,8 +195,18 @@ public class UsuarioService {
                     usuario.setServicio(servicio);
                 }
 
-                // Asignación de roles (si es necesario)
-                usuario.setRoles(rolService.findRolesByUsuarioId(usuario.getId()));
+                // Cargar roles de datos usando RoleService
+                Set<RoleData> rolesData = roleService.findRolesByUsuarioId(usuario.getId());
+                usuario.setRolesData(rolesData);
+
+                // Crear y asignar roles de comportamiento
+                usuario.getRolesBehavior().clear();
+                for (RoleData roleData : rolesData) {
+                    Role roleBehavior = createRoleBehaviorFromRoleData(roleData, usuario);
+                    if (roleBehavior != null) {
+                        usuario.addRoleBehavior(roleBehavior);
+                    }
+                }
 
                 return usuario;
             } else {
@@ -186,13 +222,22 @@ public class UsuarioService {
         try {
             usuarioRepository.update(usuario);
 
-            // Update roles
-            // First, remove existing roles
-            rolService.revocarTodosLosRoles(usuario.getId());
+            // Actualizar roles de datos
+            // Primero, revocar roles existentes
+            roleService.revocarTodosLosRoles(usuario.getId());
 
-            // Then, assign new roles
-            for (Rol rol : usuario.getRoles()) {
-                rolService.asignarRol(usuario.getId(), rol.getId());
+            // Luego, asignar nuevos roles de datos
+            for (RoleData roleData : usuario.getRolesData()) {
+                roleService.asignarRol(usuario.getId(), roleData.getId());
+            }
+
+            // Actualizar roles de comportamiento en el objeto Usuario
+            usuario.getRolesBehavior().clear();
+            for (RoleData roleData : usuario.getRolesData()) {
+                Role roleBehavior = createRoleBehaviorFromRoleData(roleData, usuario);
+                if (roleBehavior != null) {
+                    usuario.addRoleBehavior(roleBehavior);
+                }
             }
 
         } catch (SQLException e) {
@@ -204,7 +249,7 @@ public class UsuarioService {
     public void delete(Usuario usuario) throws ServiceException {
         try {
             // Remove roles
-            rolService.revocarTodosLosRoles(usuario.getId());
+            roleService.revocarTodosLosRoles(usuario.getId());
 
             // Deactivate user
             usuario.setEstado(false);
@@ -291,9 +336,18 @@ public class UsuarioService {
                 usuario.setDomicilio(domicilio);
             }
 
-            // Cargar roles usando RolService
-            usuario.setRoles(rolService.findRolesByUsuarioId(usuario.getId()));
+            // Cargar roles de datos usando RoleService
+            Set<RoleData> rolesData = roleService.findRolesByUsuarioId(usuario.getId());
+            usuario.setRolesData(rolesData);
 
+            // Crear y asignar roles de comportamiento
+            usuario.getRolesBehavior().clear();
+            for (RoleData roleData : rolesData) {
+                Role roleBehavior = createRoleBehaviorFromRoleData(roleData, usuario);
+                if (roleBehavior != null) {
+                    usuario.addRoleBehavior(roleBehavior);
+                }
+            }
 
         } catch (SQLException e) {
             throw new ServiceException("Error al cargar datos adicionales del usuario\nmétodo loadAdditionalUserData", e);

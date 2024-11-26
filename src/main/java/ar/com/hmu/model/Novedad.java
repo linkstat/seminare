@@ -1,13 +1,10 @@
 package ar.com.hmu.model;
 
-
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-/**
- * @author Pablo Alejandro Hamann
- * @version 1.0
-  */
+import ar.com.hmu.roles.impl.AgenteRoleImpl;
+
 public class Novedad {
 
 	private int cod;
@@ -19,26 +16,41 @@ public class Novedad {
 	private LocalDateTime fechaSolicitud;
 	private UUID id;
 	private boolean reqAprobDireccion;
-	private Agente agente;
+	private Usuario agente; // Usuario con rol de Agente
 
-	public Novedad(){
-
+	public Novedad() {
 	}
 
-	
-	public void aprobar(){
+	// Getters y Setters con verificación de roles
 
+	public void setAgente(Usuario agente) {
+		if (agente.hasRoleBehavior(AgenteRoleImpl.class)) {
+			this.agente = agente;
+		} else {
+			throw new IllegalArgumentException("El usuario no tiene el rol de Agente.");
+		}
 	}
 
-	public void procesar(){
-
+	public Usuario getAgente() {
+		return agente;
 	}
 
-	public void rechazar(){
+	// Métodos actualizados
 
+	public void aprobar() {
+		// Implementar lógica para aprobar la novedad
 	}
 
-	public void registrarNovedad(){
-
+	public void procesar() {
+		// Implementar lógica para procesar la novedad
 	}
-}//end Novedad
+
+	public void rechazar() {
+		// Implementar lógica para rechazar la novedad
+	}
+
+	public void registrarNovedad() {
+		// Implementar lógica para registrar la novedad
+	}
+
+}

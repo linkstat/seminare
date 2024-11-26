@@ -1,49 +1,84 @@
 package ar.com.hmu.model;
 
-
 import java.time.LocalDateTime;
 
-/**
- * @author Pablo Alejandro Hamann
- * @version 1.0
-  */
+import ar.com.hmu.roles.impl.AgenteRoleImpl;
+import ar.com.hmu.roles.impl.JefeDeServicioRoleImpl;
+
 public class FrancoCompensatorio {
 
-	private Usuario autorizadaPor;
-	private JefeDeServicio jefeDeServicio;
+	private Usuario autorizadaPor; // Usuario con rol de JefeDeServicio
+	private Usuario jefeDeServicio; // Usuario con rol de JefeDeServicio
 	private double cantHoras;
 	private String desc;
-	private Agente agente;
+	private Usuario agente; // Usuario con rol de Agente
 	private EstadoTramite estadoTramite;
 	private LocalDateTime fechaAutorizacion;
 	private LocalDateTime fechaDeAplicacion;
 
-	public FrancoCompensatorio(){
-
+	public FrancoCompensatorio() {
 	}
 
-	
-	/**
-	 * 
-	 * @param franco
-	 */
-	public void autorizar(FrancoCompensatorio franco){
+	// Getters y Setters con verificación de roles
 
+	public void setAgente(Usuario agente) {
+		if (agente.hasRoleBehavior(AgenteRoleImpl.class)) {
+			this.agente = agente;
+		} else {
+			throw new IllegalArgumentException("El usuario no tiene el rol de Agente.");
+		}
 	}
 
-	public void descontarHorasExtra(){
-
+	public Usuario getAgente() {
+		return agente;
 	}
 
-	public void getEstado(){
-
+	public void setAutorizadaPor(Usuario autorizadaPor) {
+		if (autorizadaPor.hasRoleBehavior(JefeDeServicioRoleImpl.class)) {
+			this.autorizadaPor = autorizadaPor;
+		} else {
+			throw new IllegalArgumentException("El usuario no tiene el rol de Jefe de Servicio.");
+		}
 	}
 
-	public void solicitarFranco(){
-
+	public Usuario getAutorizadaPor() {
+		return autorizadaPor;
 	}
 
-	public boolean verificarHorasSuficientes(){
+	public void setJefeDeServicio(Usuario jefeDeServicio) {
+		if (jefeDeServicio.hasRoleBehavior(JefeDeServicioRoleImpl.class)) {
+			this.jefeDeServicio = jefeDeServicio;
+		} else {
+			throw new IllegalArgumentException("El usuario no tiene el rol de Jefe de Servicio.");
+		}
+	}
+
+	public Usuario getJefeDeServicio() {
+		return jefeDeServicio;
+	}
+
+	// Resto de getters y setters...
+
+	// Métodos actualizados
+	public void autorizar() {
+		// Implementar lógica de autorización
+	}
+
+	public void descontarHorasExtra() {
+		// Implementar lógica para descontar horas extra
+	}
+
+	public EstadoTramite getEstado() {
+		return estadoTramite;
+	}
+
+	public void solicitarFranco() {
+		// Implementar lógica para solicitar franco compensatorio
+	}
+
+	public boolean verificarHorasSuficientes() {
+		// Implementar lógica para verificar horas suficientes
 		return false;
 	}
-}//end FrancoCompensatorio
+
+}

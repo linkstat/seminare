@@ -2,32 +2,32 @@ package ar.com.hmu.service;
 
 import ar.com.hmu.constants.TipoUsuario;
 import ar.com.hmu.exceptions.ServiceException;
-import ar.com.hmu.model.Rol;
-import ar.com.hmu.repository.RolRepository;
+import ar.com.hmu.model.RoleData;
+import ar.com.hmu.repository.RoleRepository;
 
 import java.sql.SQLException;
 import java.util.Set;
 import java.util.UUID;
 
-public class RolService {
+public class RoleService {
 
-    private RolRepository rolRepository;
+    private RoleRepository roleRepository;
 
-    public RolService(RolRepository rolRepository) {
-        this.rolRepository = rolRepository;
+    public RoleService(RoleRepository roleRepository) {
+        this.roleRepository = roleRepository;
     }
 
-    public Rol findByTipoUsuario(TipoUsuario tipoUsuario) throws ServiceException {
+    public RoleData findByTipoUsuario(TipoUsuario tipoUsuario) throws ServiceException {
         try {
-            return rolRepository.findByTipoUsuario(tipoUsuario);
+            return roleRepository.findByTipoUsuario(tipoUsuario);
         } catch (SQLException e) {
             throw new ServiceException("Error al obtener el rol: " + tipoUsuario.getInternalName(), e);
         }
     }
 
-    public Set<Rol> findAll() throws ServiceException {
+    public Set<RoleData> findAll() throws ServiceException {
         try {
-            return rolRepository.findAll();
+            return roleRepository.findAll();
         } catch (SQLException e) {
             throw new ServiceException("Error al obtener todos los roles", e);
         }
@@ -35,7 +35,7 @@ public class RolService {
 
     public void asignarRol(UUID usuarioId, UUID rolId) throws ServiceException {
         try {
-            rolRepository.asignarRol(usuarioId, rolId);
+            roleRepository.asignarRol(usuarioId, rolId);
         } catch (SQLException e) {
             throw new ServiceException("Error al asignar rol", e);
         }
@@ -43,15 +43,15 @@ public class RolService {
 
     public void revocarTodosLosRoles(UUID usuarioId) throws ServiceException {
         try {
-            rolRepository.revocarTodosLosRoles(usuarioId);
+            roleRepository.revocarTodosLosRoles(usuarioId);
         } catch (SQLException e) {
             throw new ServiceException("Error al revocar todos los roles", e);
         }
     }
 
-    public Set<Rol> findRolesByUsuarioId(UUID usuarioId) throws ServiceException {
+    public Set<RoleData> findRolesByUsuarioId(UUID usuarioId) throws ServiceException {
         try {
-            return rolRepository.findRolesByUsuarioId(usuarioId);
+            return roleRepository.findRolesByUsuarioId(usuarioId);
         } catch (SQLException e) {
             throw new ServiceException("Error al obtener roles del usuario", e);
         }

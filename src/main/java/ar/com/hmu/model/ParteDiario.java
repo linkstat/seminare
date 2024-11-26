@@ -1,44 +1,48 @@
 package ar.com.hmu.model;
 
-
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.time.LocalDateTime;
 
-/**
- * @author Pablo Alejandro Hamann
- * @version 1.0
-  */
+import ar.com.hmu.roles.impl.AgenteRoleImpl;
+import ar.com.hmu.roles.impl.OficinaDePersonalRoleImpl;
+
 public class ParteDiario extends Reporte {
 
-	private List<Agente> agentes;
+	private List<Usuario> agentes; // Lista de usuarios con rol de Agente
 	private LocalDateTime fechaDeCierre;
-	private Map<OficinaDePersonal, LocalDateTime> modificadoPor;
-	private OficinaDePersonal oficinaDePersonal;
-	private Agente agente;
+	private Map<Usuario, LocalDateTime> modificadoPor; // Map de usuarios con rol de OficinaDePersonal
+	private Usuario oficinaDePersonal; // Usuario con rol de OficinaDePersonal
+	private Usuario agente; // Usuario con rol de Agente
 
-	public ParteDiario(){
-
+	public ParteDiario() {
+		this.agentes = new ArrayList<>();
+		this.modificadoPor = new HashMap<>();
 	}
 
-	
-	/**
-	 * 
-	 * @param agente
-	 */
-	public void agregarAgente(Agente agente){
+	// Métodos actualizados
 
+	public void agregarAgente(Usuario agente) {
+		if (agente.hasRoleBehavior(AgenteRoleImpl.class)) {
+			this.agentes.add(agente);
+		} else {
+			throw new IllegalArgumentException("El usuario no tiene el rol de Agente.");
+		}
 	}
 
-	public void enviarCapitalHumano(){
-
+	public void enviarCapitalHumano() {
+		// Implementar lógica para enviar a capital humano
 	}
 
-	public void generarParte(){
-
+	public void generarParte() {
+		// Implementar lógica para generar el parte diario
 	}
 
-	public List<Novedad> obtenerNovedades(){
+	public List<Novedad> obtenerNovedades() {
+		// Implementar lógica para obtener novedades
 		return null;
 	}
-}//end ParteDiario
+
+}

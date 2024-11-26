@@ -2,10 +2,10 @@ package ar.com.hmu.util;
 
 import ar.com.hmu.auth.LoginService;
 import ar.com.hmu.config.AppConfigReader;
-import ar.com.hmu.controller.MainMenuMosaicoController;
+import ar.com.hmu.factory.UsuarioFactory;
 import ar.com.hmu.repository.*;
 import ar.com.hmu.controller.LoginController;
-import ar.com.hmu.service.RolService;
+import ar.com.hmu.service.RoleService;
 import ar.com.hmu.service.UsuarioService;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -32,26 +32,37 @@ public class SessionUtils {
                 throw new IllegalStateException("El controlador de Login no fue inicializado correctamente.");
             }
 
-            // Configurar las dependencias
-            // Configuración y conector
+            // Inicialización de la configuración y el conector de base de datos
             AppConfigReader appConfigReader = new AppConfigReader();
             DatabaseConnector databaseConnector = new DatabaseConnector(appConfigReader);
-            // Repositorios
-            RolRepository rolRepository = new RolRepository(databaseConnector);
-            UsuarioRepository usuarioRepository = new UsuarioRepository(databaseConnector);
+
+            // Inicialización de repositorios (excepto UsuarioRepository)
+            RoleRepository roleRepository = new RoleRepository(databaseConnector);
             ServicioRepository servicioRepository = new ServicioRepository(databaseConnector);
             CargoRepository cargoRepository = new CargoRepository(databaseConnector);
             DomicilioRepository domicilioRepository = new DomicilioRepository(databaseConnector);
 
-            // Services
-            RolService rolService = new RolService(rolRepository);
-            UsuarioService usuarioService = new UsuarioService(usuarioRepository, servicioRepository, cargoRepository, domicilioRepository, rolService);
+            // Inicialización de servicios que no dependen de UsuarioRepository
+            RoleService roleService = new RoleService(roleRepository);
+
+            // Inicialización de UsuarioFactory
+            UsuarioFactory usuarioFactory = new UsuarioFactory(roleService);
+
+            // Inicialización de UsuarioRepository
+            UsuarioRepository usuarioRepository = new UsuarioRepository(databaseConnector, usuarioFactory);
+
+            // Inicialización de UsuarioService
+            UsuarioService usuarioService = new UsuarioService(
+                    usuarioRepository, servicioRepository, cargoRepository, domicilioRepository, roleService
+            );
+
+            // Inicialización de otros servicios
             LoginService loginService = new LoginService(usuarioService);
 
-            // Set services to controller
+            // Pasar los servicios al controlador
             controller.setLoginService(loginService);
             controller.setDatabaseConnector(databaseConnector);
-            controller.setRolService(rolService);
+            controller.setRolService(roleService);
             controller.setUsuarioService(usuarioService);
             controller.postInitialize();
 

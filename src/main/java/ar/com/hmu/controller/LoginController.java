@@ -19,8 +19,6 @@ import ar.com.hmu.auth.LoginService;
 import ar.com.hmu.model.Usuario;
 import ar.com.hmu.repository.*;
 
-import static ar.com.hmu.util.ServerStatusUtils.*;
-
 /**
  * Controlador encargado de gestionar la interfaz de usuario de la pantalla de login.
  * <p>
@@ -54,7 +52,7 @@ public class LoginController {
 
     private LoginService loginService;  // LoginService para la autenticación del usuario
     private DatabaseConnector databaseConnector;  // DatabaseConnector para la verificación del estado del servidor de BD
-    private RolService rolService;
+    private RoleService roleService;
     private UsuarioService usuarioService; // objeto para persistencia en la BD
     private ServerStatusUtils serverStatusUtils;
     private CargoService cargoService;
@@ -74,8 +72,8 @@ public class LoginController {
         this.usuarioService = usuarioService;
     }
 
-    public void setRolService(RolService rolService) {
-        this.rolService = rolService;
+    public void setRolService(RoleService roleService) {
+        this.roleService = roleService;
     }
 
     public void setCargoService(CargoService cargoService) {
@@ -408,7 +406,7 @@ public class LoginController {
             Stage stage = (Stage) loginButton.getScene().getWindow();
 
             // Pass services to the controller
-            controller.setServices(usuarioService, cargoService, servicioService, domicilioService, rolService);
+            controller.setServices(usuarioService, cargoService, servicioService, domicilioService, roleService);
 
             // Pass databaseConnector to the controller
             controller.setDatabaseConnector(databaseConnector);

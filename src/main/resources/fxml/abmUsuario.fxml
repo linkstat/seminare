@@ -155,8 +155,21 @@
             <VBox layoutX="14.0" layoutY="346.0">
                <children>
                      <!-- Fila 7: Tipo de Usuario -->
-                     <Label text="Tipo de Usuario:" />
-                     <ComboBox fx:id="tipoUsuarioComboBox" onAction="#onTipoUsuarioSelected" prefWidth="148.0" promptText="Agente" />
+                     <Label text="Roles de usuario:" />
+                  <VBox spacing="2.0">
+                     <children>
+                        <CheckBox fx:id="rolAgenteCheckBox" mnemonicParsing="false" text="Agente" />
+                        <CheckBox fx:id="rolJefeServicioCheckBox" mnemonicParsing="false" text="Jefe de Servicio" />
+                        <CheckBox fx:id="rolDireccionCheckBox" mnemonicParsing="false" text="Directivo" />
+                        <CheckBox fx:id="rolOficinaPersonalCheckBox" mnemonicParsing="false" text="Oficina de Personal" />
+                     </children>
+                  </VBox>
+                  <HBox spacing="22.0">
+                     <children>
+                        <VBox spacing="2.0" />
+                        <VBox spacing="2.0" />
+                     </children>
+                  </HBox>
                </children>
             </VBox>
             <VBox layoutX="187.0" layoutY="345.0">
@@ -195,28 +208,7 @@
             <padding>
                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
             </padding>
-         <VBox fillWidth="false" prefHeight="51.0" prefWidth="334.0" spacing="2.0" HBox.hgrow="ALWAYS">
-            <children>
-                  <!-- Fila 6: Estado -->
-                  <Label text="Roles de usuario:" />
-               <HBox spacing="22.0">
-                  <children>
-                     <VBox spacing="2.0">
-                        <children>
-                           <CheckBox fx:id="rolAgenteCheckBox" mnemonicParsing="false" text="Agente" />
-                           <CheckBox fx:id="rolJefeServicioCheckBox" mnemonicParsing="false" text="Jefe de Servicio" />
-                        </children>
-                     </VBox>
-                     <VBox spacing="2.0">
-                        <children>
-                           <CheckBox fx:id="rolDireccionCheckBox" mnemonicParsing="false" text="Directivo" />
-                           <CheckBox fx:id="rolOficinaPersonalCheckBox" mnemonicParsing="false" text="Oficina de Personal" />
-                        </children>
-                     </VBox>
-                  </children>
-               </HBox>
-            </children>
-         </VBox>
+         <VBox fillWidth="false" prefHeight="51.0" prefWidth="334.0" spacing="2.0" HBox.hgrow="ALWAYS" />
          <Line endX="10.0" endY="50.0" startX="10.0" stroke="LIGHTGRAY" />
             <Button fx:id="resetPasswdButton" onAction="#onResetPassword" text="Resetear Contraseña" />
          <Line endX="10.0" endY="50.0" layoutX="315.0" layoutY="21.0" startX="10.0" stroke="LIGHTGRAY" />

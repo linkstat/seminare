@@ -31,7 +31,7 @@ public class ListaUsuariosController {
     private CargoService cargoService;
     private ServicioService servicioService;
     private DomicilioService domicilioService;
-    private RolService rolService;
+    private RoleService roleService;
 
 
     @FXML
@@ -58,12 +58,12 @@ public class ListaUsuariosController {
      * @param cargoService para la gestión de Cargos
      * @param servicioService para la gestión de Servicios
      */
-    public void setServices(UsuarioService usuarioService, CargoService cargoService, ServicioService servicioService, DomicilioService domicilioService, RolService rolService) {
+    public void setServices(UsuarioService usuarioService, CargoService cargoService, ServicioService servicioService, DomicilioService domicilioService, RoleService roleService) {
         this.usuarioService = usuarioService;
         this.cargoService = cargoService;
         this.servicioService = servicioService;
         this.domicilioService = domicilioService;
-        this.rolService = rolService;
+        this.roleService = roleService;
     }
 
     private void cargarUsuarios() {

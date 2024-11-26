@@ -64,7 +64,7 @@ SET @cuilAgente=20112223334;
 SET @usuarioId4=UUID_TO_BIN(UUID());
 SET @fechaAltaAgente='2021-09-01';
 SET @tipoUsuarioAgente='Agente';
-SELECT r.id INTO @rolAgente FROM Rol r WHERE r.nombre LIKE @tipoUsuarioAgente;
+SELECT r.id INTO @roleDataAgente FROM Rol r WHERE r.nombre LIKE @tipoUsuarioAgente;
 SELECT id INTO @domicilioId4 FROM Domicilio ORDER BY RAND() LIMIT 1;
 SELECT id INTO @cargoAgente FROM Cargo c WHERE c.numero = 400;
 SELECT id INTO @servInformaticaId FROM Servicio s WHERE s.nombre LIKE 'Informática';

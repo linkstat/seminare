@@ -3,6 +3,7 @@ package ar.com.hmu.ui;
 import java.util.Objects;
 
 import ar.com.hmu.controller.LoginController;
+import ar.com.hmu.factory.UsuarioFactory;
 import ar.com.hmu.repository.*;
 import ar.com.hmu.service.*;
 import javafx.application.Application;
@@ -48,17 +49,26 @@ public class LoginScreen extends Application {
             DatabaseConnector databaseConnector = new DatabaseConnector(appConfigReader);
 
             // Inicialización de repositorios
-            RolRepository rolRepository = new RolRepository(databaseConnector);
-            UsuarioRepository usuarioRepository = new UsuarioRepository(databaseConnector);
+            RoleRepository roleRepository = new RoleRepository(databaseConnector);
             ServicioRepository servicioRepository = new ServicioRepository(databaseConnector);
             CargoRepository cargoRepository = new CargoRepository(databaseConnector);
             DomicilioRepository domicilioRepository = new DomicilioRepository(databaseConnector);
 
-            // Inicialización de servicios
-            RolService rolService = new RolService(rolRepository);
+            // Inicialización de servicios que no dependen de UsuarioRepository
+            RoleService roleService = new RoleService(roleRepository);
+
+            // Inicialización de UsuarioFactory (depende de RoleService)
+            UsuarioFactory usuarioFactory = new UsuarioFactory(roleService);
+
+            // Inicialización de UsuarioRepository (depende de DatabaseConnector y UsuarioFactory)
+            UsuarioRepository usuarioRepository = new UsuarioRepository(databaseConnector, usuarioFactory);
+
+            // Inicialización de UsuarioService (depende de UsuarioRepository y otros repositorios)
             UsuarioService usuarioService = new UsuarioService(
-                    usuarioRepository, servicioRepository, cargoRepository, domicilioRepository, rolService
+                    usuarioRepository, servicioRepository, cargoRepository, domicilioRepository, roleService
             );
+
+            // Inicialización de otros servicios
             LoginService loginService = new LoginService(usuarioService);
             ServicioService servicioService = new ServicioService(servicioRepository, usuarioRepository);
             CargoService cargoService = new CargoService(cargoRepository);
@@ -75,7 +85,7 @@ public class LoginScreen extends Application {
             // Pass services to the controller
             controller.setLoginService(loginService);
             controller.setDatabaseConnector(databaseConnector);
-            controller.setRolService(rolService);
+            controller.setRolService(roleService);
             controller.setUsuarioService(usuarioService);
             controller.setCargoService(cargoService);
             controller.setServicioService(servicioService);
