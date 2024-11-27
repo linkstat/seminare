@@ -22,11 +22,6 @@ public class Cargo {
 		this.agrupacion = agrupacion;
 	}
 
-	@Override
-	public String toString() {
-		return this.numero +" - " + this.getDescripcion();
-	}
-
 	// Getters
 
 	public UUID getId() {
@@ -61,6 +56,28 @@ public class Cargo {
 
 	public void setAgrupacion(Agrupacion agrupacion) {
 		this.agrupacion = agrupacion;
+	}
+
+	// Otros métodos
+
+	@Override
+	public String toString() {
+		return this.numero +" - " + this.getDescripcion();
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		Cargo cargo = (Cargo) o;
+
+		return id != null ? id.equals(cargo.id) : cargo.id == null;
+	}
+
+	@Override
+	public int hashCode() {
+		return id != null ? id.hashCode() : 0;
 	}
 
 }

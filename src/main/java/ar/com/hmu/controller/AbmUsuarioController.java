@@ -16,6 +16,7 @@ import ar.com.hmu.roles.impl.OficinaDePersonalRoleImpl;
 import ar.com.hmu.service.*;
 import ar.com.hmu.util.AlertUtils;
 import ar.com.hmu.util.AppInfo;
+import javafx.application.Platform;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -46,8 +47,7 @@ import ar.com.hmu.util.ImageUtils;
 public class AbmUsuarioController implements Initializable {
 
     // Contenedor
-    @FXML
-    private BorderPane rootPane;
+    @FXML private BorderPane rootPane;
 
     // Sección de Búsqueda
     @FXML private ComboBox<Usuario> busquedaComboBox;
@@ -180,7 +180,6 @@ public class AbmUsuarioController implements Initializable {
         // Estado inicial de los botones de acción
         altaModButton.setVisible(false);    // Oculto al comienzo
         eliminarButton.setVisible(false);   // Oculto al comienzo
-
         cancelarButton.setVisible(true);    // Visible al comienzo
         cancelarButton.setText("Salir");    // Pero con el texto "Salir"
 
@@ -195,12 +194,82 @@ public class AbmUsuarioController implements Initializable {
             try { onAltaMod(event); } catch (ServiceException e) { mostrarError("Error al realizar la operación: " + e.getMessage()); }
         });
 
+        // Agregar listener al cambio de enfoque de la ventana
+        Platform.runLater(() -> {
+            Stage stage = (Stage) rootPane.getScene().getWindow();
+            stage.focusedProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue) { // La ventana ha ganado el foco
+                    actualizarListas();
+                }
+            });
+        });
+
         // Habilitar solo el ComboBox y el botón "Nuevo Agente"
         busquedaComboBox.setDisable(false);
         nuevoAgenteButton.setDisable(false);
 
     }
 
+    /**
+     * Método que recarga las listas de cargos y servicios, y actualiza los ComboBox.
+     */
+    private void actualizarListas() {
+        try {
+            // Recargar cargos
+            List<Cargo> cargos = cargoService.readAll();
+            cargosList.clear();
+            cargosList.addAll(cargos);
+
+            // Recargar servicios
+            List<Servicio> servicios = servicioService.readAll();
+            serviciosList.clear();
+            serviciosList.addAll(servicios);
+
+            // Actualizar los ComboBox
+            cargoComboBox.setItems(cargosList);
+            servicioComboBox.setItems(serviciosList);
+
+            // Si hay un usuario seleccionado, actualizar su cargo y servicio en los ComboBox
+            Usuario usuarioSeleccionado = obtenerUsuarioActual();
+            if (usuarioSeleccionado != null) {
+                // Reasignar el cargo y servicio seleccionados
+                cargarCargoYServicioEnComboBox(usuarioSeleccionado);
+            }
+        } catch (ServiceException e) {
+            mostrarError("Error al actualizar las listas de cargos y servicios: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Método que asigna el cargo y servicio del usuario seleccionado a los ComboBox
+     * después de que las listas hayan sido recargadas.
+     * @param usuario El usuario actual
+     */
+    private void cargarCargoYServicioEnComboBox(Usuario usuario) {
+        // Cargar Cargo
+        if (usuario.getCargo() != null) {
+            for (Cargo cargo : cargosList) {
+                if (cargo.getId().equals(usuario.getCargo().getId())) {
+                    cargoComboBox.getSelectionModel().select(cargo);
+                    break;
+                }
+            }
+        } else {
+            cargoComboBox.getSelectionModel().clearSelection();
+        }
+
+        // Cargar Servicio
+        if (usuario.getServicio() != null) {
+            for (Servicio servicio : serviciosList) {
+                if (servicio.getId().equals(usuario.getServicio().getId())) {
+                    servicioComboBox.getSelectionModel().select(servicio);
+                    break;
+                }
+            }
+        } else {
+            servicioComboBox.getSelectionModel().clearSelection();
+        }
+    }
 
     /**
      * Método para cargar Usuarios desde la base de datos a través de UsuarioService
@@ -996,7 +1065,7 @@ public class AbmUsuarioController implements Initializable {
         Usuario usuarioSeleccionado = busquedaComboBox.getValue();
         if (usuarioSeleccionado != null) {
             cargarUsuarioEnFormulario(usuarioSeleccionado);
-            setControlsEnabled(true);
+            setControlsEnabled(true, true);
 
             // Actualizar botones de acción
             altaModButton.setVisible(true);
@@ -1035,7 +1104,7 @@ public class AbmUsuarioController implements Initializable {
         // Actualizar la interfaz con los datos del usuario
         TipoUsuario tipoUsuario = obtenerTipoUsuario(usuario);
 
-        // Cargar los datos...
+        // Cargar los datos personales...
         cuilTextField.setText(String.valueOf(usuario.getCuil()));
         apellidosTextField.setText(usuario.getApellidos());
         nombresTextField.setText(usuario.getNombres());
@@ -1052,44 +1121,104 @@ public class AbmUsuarioController implements Initializable {
         rolOficinaPersonalCheckBox.setSelected(usuario.hasRoleBehavior(OficinaDePersonalRoleImpl.class));
         rolDireccionCheckBox.setSelected(usuario.hasRoleBehavior(DireccionRoleImpl.class));
 
-        // Datos del domicilio
+        // Cargar Cargo y Servicio
+        cargoComboBox.getSelectionModel().select(usuario.getCargo());
+        servicioComboBox.getSelectionModel().select(usuario.getServicio());
+
+        // Cargar domicilio
         Domicilio domicilio = usuario.getDomicilio();
         if (domicilio != null) {
-            domCalleComboBox.getEditor().setText(
-                    (domicilio.getCalle() != null && !domicilio.getCalle().isEmpty()) ? domicilio.getCalle() : "");
+            // Calle
+            if (domicilio.getCalle() != null && !domicilio.getCalle().isEmpty()) {
+                domCalleComboBox.getEditor().setText(domicilio.getCalle());
+                domCalleComboBox.setValue(domicilio.getCalle());
+                domCalleComboBox.setPromptText("Nombre de la calle, avenida, camino, etc.");
+            } else {
+                domCalleComboBox.getEditor().clear();
+                domCalleComboBox.setValue(null);
+                domCalleComboBox.setPromptText("");
+            }
+
+            // Numeración y sin número
             int numeracion = domicilio.getNumeracion();
             boolean sinNumero = numeracion == 0;
             domSinNumeroCheckBox.setSelected(sinNumero);
             if (sinNumero) {
-                domNumeracionField.setText("0");
+                domNumeracionField.setText("");
                 domNumeracionField.setDisable(true);
             } else {
                 domNumeracionField.setText(String.valueOf(numeracion));
                 domNumeracionField.setDisable(false);
             }
-            domBarrioComboBox.getEditor().setText(
-                    (domicilio.getBarrio() != null && !domicilio.getBarrio().isEmpty()) ? domicilio.getBarrio() : "");
-            domCiudadComboBox.getEditor().setText(
-                    (domicilio.getCiudad() != null && !domicilio.getCiudad().isEmpty()) ? domicilio.getCiudad() : "");
-            domLocalidadComboBox.getEditor().setText(
-                    (domicilio.getLocalidad() != null && !domicilio.getLocalidad().isEmpty()) ? domicilio.getLocalidad() : "");
-            domProvinciaComboBox.getEditor().setText(
-                    (domicilio.getProvincia() != null && !domicilio.getProvincia().isEmpty()) ? domicilio.getProvincia() : "");
+
+            // Barrio
+            if (domicilio.getBarrio() != null && !domicilio.getBarrio().isEmpty()) {
+                domBarrioComboBox.getEditor().setText(domicilio.getBarrio());
+                domBarrioComboBox.setValue(domicilio.getBarrio());
+                domBarrioComboBox.setPromptText("Si indica un barrio, también la ciudad se debe indicar");
+            } else {
+                domBarrioComboBox.getEditor().clear();
+                domBarrioComboBox.setValue(null);
+                domBarrioComboBox.setPromptText("");
+            }
+
+            // Ciudad
+            if (domicilio.getCiudad() != null && !domicilio.getCiudad().isEmpty()) {
+                domCiudadComboBox.getEditor().setText(domicilio.getCiudad());
+                domCiudadComboBox.setValue(domicilio.getCiudad());
+                domCiudadComboBox.setPromptText("Nombre de la ciudad (obligatorio si indica un barrio)");
+            } else {
+                domCiudadComboBox.getEditor().clear();
+                domCiudadComboBox.setValue(null);
+                domCiudadComboBox.setPromptText("");
+            }
+
+            // Localidad
+            if (domicilio.getLocalidad() != null && !domicilio.getLocalidad().isEmpty()) {
+                domLocalidadComboBox.getEditor().setText(domicilio.getLocalidad());
+                domLocalidadComboBox.setValue(domicilio.getLocalidad());
+                domLocalidadComboBox.setPromptText("Nombre de la localidad");
+            } else {
+                domLocalidadComboBox.getEditor().clear();
+                domLocalidadComboBox.setValue(null);
+                domLocalidadComboBox.setPromptText("");
+            }
+
+            // Provincia
+            if (domicilio.getProvincia() != null && !domicilio.getProvincia().isEmpty()) {
+                domProvinciaComboBox.getEditor().setText(domicilio.getProvincia());
+                domProvinciaComboBox.setValue(domicilio.getProvincia());
+                domProvinciaComboBox.setPromptText("Nombre de la provincia");
+            } else {
+                domProvinciaComboBox.getEditor().clear();
+                domProvinciaComboBox.setValue(null);
+                domProvinciaComboBox.setPromptText("");
+            }
         } else {
             // Limpiar campos de domicilio si no hay datos
             domCalleComboBox.getEditor().clear();
+            domCalleComboBox.setValue(null);
+            domCalleComboBox.setPromptText("");
             domNumeracionField.clear();
-            domBarrioComboBox.getEditor().clear();
-            domCiudadComboBox.getEditor().clear();
-            domLocalidadComboBox.getEditor().clear();
-            domProvinciaComboBox.getEditor().clear();
+            domNumeracionField.setDisable(false);
             domSinNumeroCheckBox.setSelected(false);
+            domBarrioComboBox.getEditor().clear();
+            domBarrioComboBox.setValue(null);
+            domBarrioComboBox.setPromptText("");
+            domCiudadComboBox.getEditor().clear();
+            domCiudadComboBox.setValue(null);
+            domCiudadComboBox.setPromptText("");
+            domLocalidadComboBox.getEditor().clear();
+            domLocalidadComboBox.setValue(null);
+            domLocalidadComboBox.setPromptText("");
+            domProvinciaComboBox.getEditor().clear();
+            domProvinciaComboBox.setValue(null);
+            domProvinciaComboBox.setPromptText("");
         }
 
         // Restablecer el estado del formulario a "sin modificaciones"
         isFormModified = false;
         altaModButton.setDisable(true);  // Solo se habilitará cuando haya una modificación
-
         // Ahora, desactivar la fase de carga para detectar modificaciones a partir de aquí
         isLoading = false;
 
@@ -1158,32 +1287,17 @@ public class AbmUsuarioController implements Initializable {
 
         // Asignar roles basados en los CheckBoxes
         Set<RoleData> rolesSeleccionados = new HashSet<>();
-        if (rolAgenteCheckBox.isSelected()) {
-            RoleData roleDataAgente = roleService.findByTipoUsuario(TipoUsuario.AGENTE);
-            rolesSeleccionados.add(roleDataAgente);
-        }
-        if (rolJefeServicioCheckBox.isSelected()) {
-            RoleData roleDataJefe = roleService.findByTipoUsuario(TipoUsuario.JEFEDESERVICIO);
-            rolesSeleccionados.add(roleDataJefe);
-        }
-        if (rolOficinaPersonalCheckBox.isSelected()) {
-            RoleData roleDataOficina = roleService.findByTipoUsuario(TipoUsuario.OFICINADEPERSONAL);
-            rolesSeleccionados.add(roleDataOficina);
-        }
-        if (rolDireccionCheckBox.isSelected()) {
-            RoleData roleDataDireccion = roleService.findByTipoUsuario(TipoUsuario.DIRECCION);
-            rolesSeleccionados.add(roleDataDireccion);
+        for (TipoUsuario tipoUsuario : TipoUsuario.values()) {
+            CheckBox checkBox = getCheckBoxForTipoUsuario(tipoUsuario);
+            if (checkBox != null && checkBox.isSelected()) {
+                RoleData roleData = roleService.findByTipoUsuario(tipoUsuario);
+                rolesSeleccionados.add(roleData);
+            }
         }
         usuario.setRolesData(rolesSeleccionados);
 
-        // Crear y asignar roles de comportamiento
-        usuario.getRolesBehavior().clear();
-        for (RoleData roleData : rolesSeleccionados) {
-            Role roleBehavior = createRoleBehaviorFromRoleData(roleData, usuario);
-            if (roleBehavior != null) {
-                usuario.addRoleBehavior(roleBehavior);
-            }
-        }
+        // Asignar roles de comportamiento
+        usuario.assignRoleBehaviors();
 
         // Asignar domicilio
         String numeracionInput = domNumeracionField.getText().trim();
@@ -1251,26 +1365,42 @@ public class AbmUsuarioController implements Initializable {
         usuario.setCargoId(usuario.getCargo().getId());
         usuario.setServicioId(usuario.getServicio().getId());
         //Asignar la contraseña por defecto
-        usuario.setDefaultPassword();
+        //usuario.setDefaultPassword();
 
         return usuario;
     }
 
     private Role createRoleBehaviorFromRoleData(RoleData roleData, Usuario usuario) {
-        switch (roleData.getNombre()) {
-            case "AGENTE":
-                return new AgenteRoleImpl(usuario);
-            case "JEFEDESERVICIO":
-                return new JefeDeServicioRoleImpl(usuario);
-            case "OFICINADEPERSONAL":
-                return new OficinaDePersonalRoleImpl(usuario);
-            case "DIRECCION":
-                return new DireccionRoleImpl(usuario);
-            default:
-                throw new IllegalArgumentException("Rol desconocido: " + roleData.getNombre());
+        try {
+            TipoUsuario tipoUsuario = TipoUsuario.fromInternalName(roleData.getNombre());
+            Class<? extends Role> roleClass = tipoUsuario.getRoleClass();
+            // Crear instancia del rol de comportamiento
+            Role roleBehavior = roleClass.getDeclaredConstructor(Usuario.class).newInstance(usuario);
+            return roleBehavior;
+        } catch (Exception e) {
+            throw new RuntimeException("Error al crear instancia de role behavior para " + roleData.getNombre(), e);
         }
     }
 
+    /**
+     * Método para mapear cada TipoUsuario al CheckBox correspondiente.
+     * @param tipoUsuario enum que contiene los posibles tipos de usuario
+     * @return checkbox
+     */
+    private CheckBox getCheckBoxForTipoUsuario(TipoUsuario tipoUsuario) {
+        switch (tipoUsuario) {
+            case AGENTE:
+                return rolAgenteCheckBox;
+            case JEFEDESERVICIO:
+                return rolJefeServicioCheckBox;
+            case OFICINADEPERSONAL:
+                return rolOficinaPersonalCheckBox;
+            case DIRECCION:
+                return rolDireccionCheckBox;
+            default:
+                return null;
+        }
+    }
 
     /**
      * Método para validar los campos obligatorios
@@ -1300,6 +1430,7 @@ public class AbmUsuarioController implements Initializable {
      * Método para limpiar el formulario
      */
     private void limpiarFormulario() {
+        // Limpiar campos de datos personales
         cuilTextField.clear();
         apellidosTextField.clear();
         nombresTextField.clear();
@@ -1309,17 +1440,30 @@ public class AbmUsuarioController implements Initializable {
         cargoComboBox.getSelectionModel().clearSelection();
         servicioComboBox.getSelectionModel().clearSelection();
         imagenPerfilImageView.setImage(imagenPerfilOriginal);
-        // Limpiar domicilio...
+        // Limpiar domicilio y eliminar promptText
         domCalleComboBox.getEditor().clear();
+        domCalleComboBox.setValue(null);
+        domCalleComboBox.setPromptText(""); // Eliminar promptText temporalmente
+
         domNumeracionField.clear();
         domNumeracionField.setDisable(false);
         domSinNumeroCheckBox.setSelected(false);
+
         domBarrioComboBox.getEditor().clear();
+        domBarrioComboBox.setValue(null);
+        domBarrioComboBox.setPromptText("");
+
         domCiudadComboBox.getEditor().clear();
-        domBarrioComboBox.getEditor().setText("");
-        domLocalidadComboBox.getEditor().setText("");
+        domCiudadComboBox.setValue(null);
+        domCiudadComboBox.setPromptText("");
+
         domLocalidadComboBox.getEditor().clear();
+        domLocalidadComboBox.setValue(null);
+        domLocalidadComboBox.setPromptText("");
+
         domProvinciaComboBox.getEditor().clear();
+        domProvinciaComboBox.setValue(null);
+        domProvinciaComboBox.setPromptText("");
     }
 
 

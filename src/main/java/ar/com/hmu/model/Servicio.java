@@ -50,11 +50,6 @@ public class Servicio {
 		this.diagramas = diagramas;
 	}
 
-	@Override
-	public String toString() {
-		return this.getNombre();
-	}
-
 	// Setters
 
 	public void setId(UUID id) {
@@ -115,6 +110,27 @@ public class Servicio {
 		return null;
 	}
 
+	// Otros métodos
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		Servicio servicio = (Servicio) o;
+
+		return id != null ? id.equals(servicio.id) : servicio.id == null;
+	}
+
+	@Override
+	public int hashCode() {
+		return id != null ? id.hashCode() : 0;
+	}
+
+	@Override
+	public String toString() {
+		return this.getNombre();
+	}
 
 	/**
 	 * 
