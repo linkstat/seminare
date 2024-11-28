@@ -31,6 +31,17 @@ public class Domicilio {
 		this.provincia = builder.provincia;
 	}
 
+	// Constructor de copia
+	public Domicilio(Domicilio otro) {
+		this.id = otro.id;
+		this.calle = otro.calle;
+		this.numeracion = otro.numeracion;
+		this.barrio = otro.barrio;
+		this.ciudad = otro.ciudad;
+		this.localidad = otro.localidad;
+		this.provincia = otro.provincia;
+	}
+
 	/**
 	 * Builder estático que facilita la construcción de un objeto Domicilio.
 	 * Este patrón permite la creación de objetos Domicilio con solo los atributos necesarios, manteniendo

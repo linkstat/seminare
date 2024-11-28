@@ -39,7 +39,6 @@ public class Usuario {
 	private Set<RoleData> rolesData = new HashSet<>();    // Roles de datos
 	private Set<Role> rolesBehavior = new HashSet<>();    // Roles de comportamiento
 
-
 	// Constructor por defecto
 	public Usuario(){
 		this.rolesData = new HashSet<>();
@@ -57,6 +56,30 @@ public class Usuario {
 		this.sexo = sexo;
 		this.mail = mail;
 		this.password = PasswordUtils.hashPassword(String.valueOf(cuil).toCharArray());
+	}
+
+	// Constructor de copia
+	public Usuario(Usuario otro) {
+		this.id = otro.id;
+		this.fechaAlta = otro.fechaAlta;
+		this.estado = otro.estado;
+		this.cuil = otro.cuil;
+		this.apellidos = otro.apellidos;
+		this.nombres = otro.nombres;
+		this.sexo = otro.sexo;
+		this.mail = otro.mail;
+		this.tel = otro.tel;
+		this.domicilio = otro.domicilio;
+		this.cargo = otro.cargo;
+		this.servicio = otro.servicio;
+		this.password = otro.password;
+		this.profileImage = otro.profileImage;
+		this.domicilio = otro.domicilio != null ? new Domicilio(otro.domicilio) : null; // Copia profunda
+		this.cargoId = otro.cargoId;
+		this.servicioId = otro.servicioId;
+		//this.rolesData.addAll(otro.rolesData);
+		this.rolesData = otro.rolesData != null ? new HashSet<>(otro.rolesData) : null; // Copia superficial del Set
+		this.rolesBehavior = otro.rolesBehavior != null ? otro.rolesBehavior : null;
 	}
 
 	// Getters

@@ -888,20 +888,32 @@ public class AbmUsuarioController implements Initializable {
                 }
             }
         } else if (isModificacionMode) {
-            // "Modificar" mode
             Usuario usuarioSeleccionado = obtenerUsuarioActual();
             if (usuarioSeleccionado != null && validarCamposObligatorios()) {
-                Usuario usuarioActualizado = crearOActualizarUsuarioDesdeFormulario(usuarioSeleccionado);
-                if (usuarioActualizado != null) {
+                // Crear una copia del usuario original
+                Usuario usuarioModificado = new Usuario(usuarioSeleccionado);
+                // Actualizar la copia con los nuevos datos
+                crearOActualizarUsuarioDesdeFormulario(usuarioModificado);
+
+                // Generar el resumen de modificaciones
+                String resumen = generarResumenModificaciones(usuarioSeleccionado, usuarioModificado);
+
+                // Mostrar el resumen y pedir confirmación
+                boolean confirmar = mostrarConfirmacionConResumen("Confirmar Modificación", "¿Desea confirmar las siguientes modificaciones?", resumen);
+
+                if (confirmar) {
                     try {
-                        usuarioService.update(usuarioActualizado);
-                        int index = usuariosList.indexOf(usuarioSeleccionado);
-                        usuariosList.set(index, usuarioActualizado);
+                        // Actualizar el usuario original con los nuevos datos
+                        crearOActualizarUsuarioDesdeFormulario(usuarioSeleccionado);
+                        usuarioService.update(usuarioSeleccionado);
                         resetInterface();
                         mostrarMensaje("Usuario modificado correctamente.");
                     } catch (ServiceException e) {
                         mostrarError("Error al modificar el usuario: " + e.getMessage());
                     }
+                } else {
+                    // Permite al usuario seguir editando o cancelar
+                    mostrarMensaje("Modificación cancelada.");
                 }
             }
         }
@@ -1018,6 +1030,15 @@ public class AbmUsuarioController implements Initializable {
 
     }
 
+    private boolean mostrarConfirmacionConResumen(String titulo, String cabecera, String contenido) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(titulo);
+        alert.setHeaderText(cabecera);
+        alert.setContentText(contenido);
+
+        Optional<ButtonType> result = alert.showAndWait();
+        return result.isPresent() && result.get() == ButtonType.OK;
+    }
 
     /**
      * Restablece los controles a un estado inicial cada vez que sea invocado
@@ -1300,6 +1321,31 @@ public class AbmUsuarioController implements Initializable {
         usuario.assignRoleBehaviors();
 
         // Asignar domicilio
+        Domicilio domicilio = asignarDomicilioDesdeFormulario(usuario);
+        if (domicilio == null) {
+            // Si hubo un error al asignar el domicilio, se habrá mostrado un mensaje de error
+            return null;
+        }
+        usuario.setDomicilio(domicilio);
+        usuario.setDomicilioId(domicilio.getId());
+
+        // Asignar IDs de otros datos
+        if (usuario.getCargo() != null) {
+            usuario.setCargoId(usuario.getCargo().getId());
+        }
+        if (usuario.getServicio() != null) {
+            usuario.setServicioId(usuario.getServicio().getId());
+        }
+
+        // Asignar la contraseña por defecto si es un nuevo usuario
+        if (usuarioExistente == null) {
+            usuario.setDefaultPassword();
+        }
+
+        return usuario;
+    }
+
+    private Domicilio asignarDomicilioDesdeFormulario(Usuario usuario) throws ServiceException {
         String numeracionInput = domNumeracionField.getText().trim();
         int numeracion;
         if (domSinNumeroCheckBox.isSelected()) {
@@ -1320,16 +1366,19 @@ public class AbmUsuarioController implements Initializable {
         String ciudad = domCiudadComboBox.getEditor().getText().trim();
         String localidad = domLocalidadComboBox.getEditor().getText().trim();
         String provincia = domProvinciaComboBox.getEditor().getText().trim();
+
         if (!barrio.isEmpty()) {
-            if(ciudad.isEmpty()) {
+            if (ciudad.isEmpty()) {
                 mostrarError("Si indica un barrio, debe indicar la ciudad.");
                 return null;
             }
         }
+
+        Domicilio domicilio = null;
         try {
             if (usuario.getDomicilio() == null || usuario.getDomicilio().getId() == null) {
                 // Crear nuevo domicilio con un nuevo UUID
-                Domicilio domicilioCreado = new Domicilio.Builder()
+                domicilio = new Domicilio.Builder()
                         .id(UUID.randomUUID())
                         .calle(calle)
                         .numeracion(numeracion)
@@ -1338,12 +1387,10 @@ public class AbmUsuarioController implements Initializable {
                         .localidad(localidad)
                         .provincia(provincia)
                         .build();
-
-                domicilioService.create(domicilioCreado);
-                usuario.setDomicilio(domicilioCreado);
+                domicilioService.create(domicilio);
             } else {
                 // Actualizar domicilio existente usando toBuilder
-                Domicilio domicilioActualizado = usuario.getDomicilio().toBuilder()
+                domicilio = usuario.getDomicilio().toBuilder()
                         .calle(calle)
                         .numeracion(numeracion)
                         .barrio(barrio)
@@ -1351,23 +1398,14 @@ public class AbmUsuarioController implements Initializable {
                         .localidad(localidad)
                         .provincia(provincia)
                         .build();
-
-                domicilioService.update(domicilioActualizado);
-                usuario.setDomicilio(domicilioActualizado);
+                domicilioService.update(domicilio);
             }
         } catch (ServiceException e) {
             mostrarError("Error al asignar el domicilio: " + e.getMessage());
             return null;
         }
 
-        // Asignar IDs de otros datos
-        usuario.setDomicilioId(usuario.getDomicilio().getId());
-        usuario.setCargoId(usuario.getCargo().getId());
-        usuario.setServicioId(usuario.getServicio().getId());
-        //Asignar la contraseña por defecto
-        //usuario.setDefaultPassword();
-
-        return usuario;
+        return domicilio;
     }
 
     private Role createRoleBehaviorFromRoleData(RoleData roleData, Usuario usuario) {
@@ -1484,6 +1522,31 @@ public class AbmUsuarioController implements Initializable {
         Alert alert = new Alert(AlertType.INFORMATION);
         alert.setContentText(mensaje);
         alert.showAndWait();
+    }
+
+
+    private String generarResumenModificaciones(Usuario original, Usuario modificado) {
+        StringBuilder resumen = new StringBuilder();
+        if (original.getCuil() != modificado.getCuil()) {
+            resumen.append("CUIL: ").append(original.getCuil()).append(" -> ").append(modificado.getCuil()).append("\n");
+        }
+        if (!original.getApellidos().equals(modificado.getApellidos())) {
+            resumen.append("Apellidos: ").append(original.getApellidos()).append(" -> ").append(modificado.getApellidos()).append("\n");
+        }
+        if (!original.getNombres().equals(modificado.getNombres())) {
+            resumen.append("Nombres: ").append(original.getNombres()).append(" -> ").append(modificado.getNombres()).append("\n");
+        }
+        if (!Objects.equals(original.getMail(), modificado.getMail())) {
+            resumen.append("Mail: ").append(original.getMail()).append(" -> ").append(modificado.getMail()).append("\n");
+        }
+        if (original.getTel() != modificado.getTel()) {
+            resumen.append("Teléfono: ").append(original.getTel()).append(" -> ").append(modificado.getTel()).append("\n");
+        }
+        if (original.getSexo() != modificado.getSexo()) {
+            resumen.append("Sexo: ").append(original.getSexo()).append(" -> ").append(modificado.getSexo()).append("\n");
+        }
+        // Repite para los demás campos...
+        return resumen.toString();
     }
 
 
