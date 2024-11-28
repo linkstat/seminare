@@ -12,10 +12,6 @@ import ar.com.hmu.exceptions.ServiceException;
 import ar.com.hmu.model.*;
 import ar.com.hmu.repository.*;
 import ar.com.hmu.roles.Role;
-import ar.com.hmu.roles.impl.AgenteRoleImpl;
-import ar.com.hmu.roles.impl.DireccionRoleImpl;
-import ar.com.hmu.roles.impl.JefeDeServicioRoleImpl;
-import ar.com.hmu.roles.impl.OficinaDePersonalRoleImpl;
 import ar.com.hmu.util.PasswordUtils;
 
 public class UsuarioService {
@@ -148,11 +144,11 @@ public class UsuarioService {
                 usuario.assignRoleBehaviors();
 
                 // Load Cargo
-                Cargo cargo = cargoRepository.findById(usuario.getCargoId());
+                Cargo cargo = cargoRepository.readByUUID(usuario.getCargoId());
                 usuario.setCargo(cargo);
 
                 // Load Servicio
-                Servicio servicio = servicioRepository.findById(usuario.getServicioId());
+                Servicio servicio = servicioRepository.readByUUID(usuario.getServicioId());
                 usuario.setServicio(servicio);
             }
             return usuarios;

@@ -88,7 +88,7 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
                 "BIN_TO_UUID(cargoID) AS cargoID, " +
                 "BIN_TO_UUID(servicioID) AS servicioID, " +
                 "tipoUsuario, passwd, profile_image " +
-                "FROM Usuario WHERE estado = 1";
+                "FROM Usuario WHERE estado = 1 ORDER BY apellidos ASC";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query);

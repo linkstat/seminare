@@ -65,14 +65,14 @@ public class CargoRepository implements GenericDAO<Cargo> {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new RuntimeException("Error al leer el cargo por UUID", e);
+            throw new SQLException("Error al leer el cargo por UUID", e);
         }
     }
 
     @Override
     public List<Cargo> readAll() throws SQLException {
         List<Cargo> cargos = new ArrayList<>();
-        String query = "SELECT BIN_TO_UUID(id) AS id, numero, descripcion, agrupacion FROM Cargo";
+        String query = "SELECT BIN_TO_UUID(id) AS id, numero, descripcion, agrupacion FROM Cargo ORDER BY numero ASC";
 
         try (Connection connection = databaseConnector.getConnection();
              Statement stmt = connection.createStatement();
@@ -142,7 +142,7 @@ public class CargoRepository implements GenericDAO<Cargo> {
      * @return El número del cargo o null si no se encuentra.
      */
     public Integer findNumeroByDescripcion(String descripcion) throws SQLException {
-        String query = "SELECT numero FROM Cargo WHERE descripcion = ?";
+        String query = "SELECT numero FROM Cargo WHERE descripcion LIKE ? ORDER BY numero ASC";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -161,7 +161,7 @@ public class CargoRepository implements GenericDAO<Cargo> {
         return null;
     }
 
-    public Cargo findById(UUID id) throws SQLException {
+    public Cargo findByIdBorrar(UUID id) throws SQLException {
         String query = "SELECT BIN_TO_UUID(id) AS id, numero, descripcion, agrupacion FROM Cargo WHERE id = UUID_TO_BIN(?)";
 
         try (Connection connection = databaseConnector.getConnection();
@@ -192,7 +192,7 @@ public class CargoRepository implements GenericDAO<Cargo> {
      * @return La descripción del cargo o null si no se encuentra.
      */
     public String findDescripcionByNumero(Integer numero) throws SQLException {
-        String query = "SELECT descripcion FROM Cargo WHERE numero = ?";
+        String query = "SELECT descripcion FROM Cargo WHERE numero = ? ORDER BY numero ASC";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -219,7 +219,7 @@ public class CargoRepository implements GenericDAO<Cargo> {
     public List<Cargo> readAllByAgrupacion(Agrupacion agrupacion) throws SQLException {
         List<Cargo> cargos = new ArrayList<>();
         //String query = "SELECT *, BIN_TO_UUID(id) as idUUID FROM Cargo WHERE agrupacion = ?";
-        String query = "SELECT BIN_TO_UUID(id) as id, numero, descripcion, agrupacion FROM Cargo WHERE agrupacion = ?";
+        String query = "SELECT BIN_TO_UUID(id) as id, numero, descripcion, agrupacion FROM Cargo WHERE agrupacion = ? ORDER BY numero ASC";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {

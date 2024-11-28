@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.UUID;
 
 import ar.com.hmu.model.Agrupacion;
-import ar.com.hmu.model.Cargo;
 import ar.com.hmu.model.Servicio;
 import ar.com.hmu.repository.dao.GenericDAO;
 
@@ -57,26 +56,29 @@ public class ServicioRepository implements GenericDAO<Servicio> {
     public Servicio readByUUID(UUID id) throws SQLException {
         String query = "SELECT BIN_TO_UUID(id) AS id, nombre, agrupacion, BIN_TO_UUID(direccionID) AS direccionID " +
                 "FROM Servicio WHERE id = UUID_TO_BIN(?)";
+
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
             stmt.setString(1, id.toString());
+
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return mapResultSetToServicio(rs);
+                } else {
+                    return null; // No se encontró el servicio
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new RuntimeException("Error al leer el servicio por UUID", e);
+            throw new SQLException("Error al leer el servicio por UUID", e);
         }
-        return null;
     }
 
     @Override
     public List<Servicio> readAll() throws SQLException {
         List<Servicio> servicios = new ArrayList<>();
-        String query = "SELECT BIN_TO_UUID(id) AS id, nombre, agrupacion, BIN_TO_UUID(direccionID) AS direccionID FROM Servicio";
+        String query = "SELECT BIN_TO_UUID(id) AS id, nombre, agrupacion, BIN_TO_UUID(direccionID) AS direccionID FROM Servicio ORDER BY nombre ASC";
         try (Connection connection = databaseConnector.getConnection();
              Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
@@ -139,7 +141,7 @@ public class ServicioRepository implements GenericDAO<Servicio> {
         }
     }
 
-    public Servicio findById(UUID id) throws SQLException {
+    public Servicio findByIdBorrar(UUID id) throws SQLException {
         String query = "SELECT BIN_TO_UUID(id) AS id, nombre, agrupacion, BIN_TO_UUID(direccionID) AS direccionID FROM Servicio WHERE id = UUID_TO_BIN(?)";
 
         try (Connection connection = databaseConnector.getConnection();
@@ -197,13 +199,10 @@ public class ServicioRepository implements GenericDAO<Servicio> {
         UUID id = UUID.fromString(rs.getString("id"));
         String nombre = rs.getString("nombre");
         Agrupacion agrupacion = Agrupacion.valueOf(rs.getString("agrupacion"));
-        UUID direccionId;
-        if(rs.getString("direccionID") == null) {
-            //TODO: Decidir cómo manejar este caso: lanzar una excepción o establecer como null.
-            direccionId = null;
-            System.out.println("direccionID es null para ServicioID: " + nombre);
-        } else {
-            direccionId = UUID.fromString(rs.getString("direccionID"));
+        UUID direccionId = null;
+        String direccionIdStr = rs.getString("direccionID");
+        if (direccionIdStr != null) {
+            direccionId = UUID.fromString(direccionIdStr);
         }
 
         return new Servicio(id, nombre, agrupacion, direccionId);

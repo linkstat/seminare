@@ -1251,8 +1251,8 @@ public class AbmUsuarioController implements Initializable {
      */
     private Usuario crearOActualizarUsuarioDesdeFormulario(Usuario usuarioExistente) throws ServiceException {
         Usuario usuario = usuarioExistente != null ? usuarioExistente : new Usuario();
-
         if (usuarioExistente == null) {
+            // Configurar campos para un nuevo usuario
             usuario.setId(UUID.randomUUID());
             usuario.setEstado(true);
             usuario.setFechaAlta(LocalDate.now());
