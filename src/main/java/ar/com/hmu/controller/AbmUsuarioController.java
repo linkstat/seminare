@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import ar.com.hmu.constants.UsuarioCreationResult;
 import ar.com.hmu.exceptions.ServiceException;
@@ -664,6 +665,13 @@ public class AbmUsuarioController implements Initializable {
         sexoComboBox.valueProperty().addListener((observable, oldValue, newValue) -> onFormModified());
         cargoComboBox.valueProperty().addListener((observable, oldValue, newValue) -> onFormModified());
         servicioComboBox.valueProperty().addListener((observable, oldValue, newValue) -> onFormModified());
+
+        // Listeners a los CheckBoxes de Roles
+        rolAgenteCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> onFormModified());
+        rolJefeServicioCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> onFormModified());
+        rolOficinaPersonalCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> onFormModified());
+        rolDireccionCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> onFormModified());
+
     }
 
 
@@ -912,8 +920,8 @@ public class AbmUsuarioController implements Initializable {
                         mostrarError("Error al modificar el usuario: " + e.getMessage());
                     }
                 } else {
-                    // Permite al usuario seguir editando o cancelar
-                    mostrarMensaje("Modificación cancelada.");
+                    // No mostrar ningún mensaje, simplemente retornar al formulario
+                    // El usuario puede continuar editando o cancelar la operación desde el botón "Cancelar"
                 }
             }
         }
@@ -1527,28 +1535,121 @@ public class AbmUsuarioController implements Initializable {
 
     private String generarResumenModificaciones(Usuario original, Usuario modificado) {
         StringBuilder resumen = new StringBuilder();
+
+        // CUIL
         if (original.getCuil() != modificado.getCuil()) {
-            resumen.append("CUIL: ").append(original.getCuil()).append(" -> ").append(modificado.getCuil()).append("\n");
+            resumen.append("● CUIL: ").append(original.getCuil()).append(" -> ").append(modificado.getCuil()).append("\n");
         }
-        if (!original.getApellidos().equals(modificado.getApellidos())) {
-            resumen.append("Apellidos: ").append(original.getApellidos()).append(" -> ").append(modificado.getApellidos()).append("\n");
+        // Apellidos
+        if (!Objects.equals(original.getApellidos(), modificado.getApellidos())) {
+            resumen.append("● Apellidos: ").append(original.getApellidos()).append(" -> ").append(modificado.getApellidos()).append("\n");
         }
-        if (!original.getNombres().equals(modificado.getNombres())) {
-            resumen.append("Nombres: ").append(original.getNombres()).append(" -> ").append(modificado.getNombres()).append("\n");
+        // Nombres
+        if (!Objects.equals(original.getNombres(), modificado.getNombres())) {
+            resumen.append("● Nombres: ").append(original.getNombres()).append(" -> ").append(modificado.getNombres()).append("\n");
         }
+        // Mail
         if (!Objects.equals(original.getMail(), modificado.getMail())) {
-            resumen.append("Mail: ").append(original.getMail()).append(" -> ").append(modificado.getMail()).append("\n");
+            resumen.append("● Mail: ").append(original.getMail()).append(" -> ").append(modificado.getMail()).append("\n");
         }
+        // Teléfono
         if (original.getTel() != modificado.getTel()) {
-            resumen.append("Teléfono: ").append(original.getTel()).append(" -> ").append(modificado.getTel()).append("\n");
+            resumen.append("● Teléfono: ").append(original.getTel()).append(" -> ").append(modificado.getTel()).append("\n");
         }
+        // Sexo
         if (original.getSexo() != modificado.getSexo()) {
-            resumen.append("Sexo: ").append(original.getSexo()).append(" -> ").append(modificado.getSexo()).append("\n");
+            resumen.append("● Sexo: ").append(original.getSexo()).append(" -> ").append(modificado.getSexo()).append("\n");
         }
-        // Repite para los demás campos...
+        // Roles
+        if (!Objects.equals(original.getRolesData(), modificado.getRolesData())) {
+            resumen.append("\n● Roles modificados:\n");
+            resumen.append("    • Actualmente: ").append(rolesToString(original.getRolesData())).append("\n");
+            resumen.append("    • Modificación: ").append(rolesToString(modificado.getRolesData())).append("\n");
+        }
+        // Cargo
+        if (!Objects.equals(original.getCargo(), modificado.getCargo())) {
+            resumen.append("● Cargo: ").append(original.getCargo()).append(" -> ").append(modificado.getCargo()).append("\n");
+        }
+        // Servicio
+        if (!Objects.equals(original.getServicio(), modificado.getServicio())) {
+            resumen.append("● Servicio: ").append(original.getServicio()).append(" -> ").append(modificado.getServicio()).append("\n");
+        }
+        // Domicilio
+        Domicilio domOriginal = original.getDomicilio();
+        Domicilio domModificado = modificado.getDomicilio();
+        if (domOriginal != null && domModificado != null) {
+            String cambiosDomicilio = generarResumenCambiosDomicilio(domOriginal, domModificado);
+            if (!cambiosDomicilio.isEmpty()) {
+                resumen.append("\n● Domicilio modificado:\n").append(cambiosDomicilio);
+            }
+        } else if (domOriginal != null && domModificado == null) {
+            resumen.append("  • Domicilio eliminado.\n");
+        } else if (domOriginal == null && domModificado != null) {
+            resumen.append("  • Domicilio agregado:\n").append(domModificado).append("\n");
+        }
+        // Imagen de perfil
+        if (!areImagesEqual(original.getProfileImage(), modificado.getProfileImage())) {
+            resumen.append("● Imagen de perfil modificada.\n");
+        }
+
         return resumen.toString();
     }
 
+    private String rolesToString(Set<RoleData> roles) {
+        if (roles == null || roles.isEmpty()) {
+            return "Sin roles asignados";
+        }
+        return roles.stream()
+                .map(RoleData::getNombre) // O el método que devuelva el nombre legible del rol
+                .collect(Collectors.joining(", "));
+    }
+
+    private String generarResumenCambiosDomicilio(Domicilio original, Domicilio modificado) {
+        StringBuilder resumen = new StringBuilder();
+        if (!Objects.equals(original.getCalle(), modificado.getCalle())) {
+            resumen.append("    • Calle: ")
+                    .append(formatValue(original.getCalle())).append(" -> ")
+                    .append(formatValue(modificado.getCalle())).append("\n");
+        }
+        if (original.getNumeracion() != modificado.getNumeracion()) {
+            resumen.append("    • Numeración: ")
+                    .append(formatNumeracion(original.getNumeracion())).append(" -> ")
+                    .append(formatNumeracion(modificado.getNumeracion())).append("\n");
+        }
+        if (!Objects.equals(original.getBarrio(), modificado.getBarrio())) {
+            resumen.append("    • Barrio: ")
+                    .append(formatValue(original.getBarrio())).append(" -> ")
+                    .append(formatValue(modificado.getBarrio())).append("\n");
+        }
+        if (!Objects.equals(original.getCiudad(), modificado.getCiudad())) {
+            resumen.append("    • Ciudad: ")
+                    .append(formatValue(original.getCiudad())).append(" -> ")
+                    .append(formatValue(modificado.getCiudad())).append("\n");
+        }
+        if (!Objects.equals(original.getLocalidad(), modificado.getLocalidad())) {
+            resumen.append("    • Localidad: ")
+                    .append(formatValue(original.getLocalidad())).append(" -> ")
+                    .append(formatValue(modificado.getLocalidad())).append("\n");
+        }
+        if (!Objects.equals(original.getProvincia(), modificado.getProvincia())) {
+            resumen.append("    • Provincia: ")
+                    .append(formatValue(original.getProvincia())).append(" -> ")
+                    .append(formatValue(modificado.getProvincia())).append("\n");
+        }
+        return resumen.toString();
+    }
+
+    private boolean areImagesEqual(byte[] img1, byte[] img2) {
+        return Arrays.equals(img1, img2);
+    }
+
+    private String formatValue(String value) {
+        return (value == null || value.isEmpty()) ? "(ninguna)" : value;
+    }
+
+    private String formatNumeracion(int numeracion) {
+        return (numeracion == 0) ? "(S/N)" : String.valueOf(numeracion);
+    }
 
     /**
      * Método para mostrar mensajes de error

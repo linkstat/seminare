@@ -205,4 +205,15 @@ public class Domicilio {
 				.provincia(this.provincia);
 	}
 
+	@Override
+	public String toString() {
+		return String.format("%s %d, %s, %s, %s, %s",
+				calle != null ? calle : "",
+				numeracion,
+				barrio != null ? barrio : "",
+				ciudad != null ? ciudad : "",
+				localidad != null ? localidad : "",
+				provincia != null ? provincia : "");
+	}
+
 }
