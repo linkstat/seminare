@@ -3,6 +3,8 @@ package ar.com.hmu.controller;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -1127,6 +1129,9 @@ public class AbmUsuarioController implements Initializable {
      * @param usuario objeto de tipo Usuario
      */
     private void cargarUsuarioEnFormulario(Usuario usuario) {
+        //DEBUG:
+        System.out.println("Is FX Application Thread: " + Platform.isFxApplicationThread());
+
         // Indicar que estamos en la fase de carga
         isLoading = true;
 
@@ -1141,8 +1146,20 @@ public class AbmUsuarioController implements Initializable {
         telTextField.setText(String.valueOf(usuario.getTel()));
         sexoComboBox.getSelectionModel().select(usuario.getSexo());
 
+        // Cargar imagen de perfil de pruebas
+        try {
+            Image testImage = new Image(getClass().getResourceAsStream("/images/businessman.png"));
+            imagenPerfilImageView.setImage(testImage);
+            System.out.println("Imagen de prueba cargada en el ImageView. Size: " + testImage.getWidth() + " x " + testImage.getHeight());
+            System.out.println("imagenPerfilImageView X = " + imagenPerfilImageView.getX() + "  Y = " + imagenPerfilImageView.getY());
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error al cargar la imagen de prueba: " + e.getMessage());
+        }
+
         // Cargar imagen de perfil
-        ImageUtils.setProfileImage(imagenPerfilImageView, usuario.getProfileImage(), imagenPerfilOriginal);
+        //byte[] profileImageBytes = usuario.getProfileImage();
+        //ImageUtils.setProfileImage(imagenPerfilImageView, profileImageBytes, imagenPerfilOriginal);
 
         //Cargar roles en los CheckBoxes
         rolAgenteCheckBox.setSelected(usuario.hasRoleBehavior(AgenteRoleImpl.class));
@@ -1311,8 +1328,15 @@ public class AbmUsuarioController implements Initializable {
         usuario.setCargo(cargoComboBox.getSelectionModel().getSelectedItem());
         usuario.setServicio(servicioComboBox.getSelectionModel().getSelectedItem());
 
-        // Cargar imagen de perfil
-        ImageUtils.setProfileImage(imagenPerfilImageView, usuario.getProfileImage(), imagenPerfilOriginal);
+        // Asignar la imagen de perfil
+        try {
+            Image imagenPerfil = imagenPerfilImageView.getImage();
+            byte[] imagenBytes = ImageUtils.imageToByteArray(imagenPerfil);
+            usuario.setProfileImage(imagenBytes);
+        } catch (Exception e) {
+            mostrarError("Error al procesar la imagen de perfil: " + e.getMessage());
+            return null;
+        }
 
         // Asignar roles basados en los CheckBoxes
         Set<RoleData> rolesSeleccionados = new HashSet<>();
