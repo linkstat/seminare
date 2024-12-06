@@ -403,6 +403,9 @@ public class MainMenuMosaicoController {
         // Configura la funcionalidad del botón "Cerrar sesión"
         logoutButton.setOnAction(event -> handleLogoutAction());
 
+        // Configura acceso al controlador de pruebas
+        francosCompensatoriosVBox.setOnMouseClicked(this::handleTestController);
+
     }
 
 
@@ -719,4 +722,46 @@ public class MainMenuMosaicoController {
         }
     }
 
+    @FXML
+    private void handleTestController(Event event) {
+        try {
+            // Usa los servicios ya inicializados
+            UsuarioService usuarioService = this.usuarioService;
+            CargoService cargoService = this.cargoService;
+            ServicioService servicioService = this.servicioService;
+            DomicilioService domicilioService = this.domicilioService;
+            RoleService roleService = this.roleService;
+
+            // Configurar la fábrica de controladores
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/test.fxml"));
+            loader.setControllerFactory(controllerClass -> {
+                if (controllerClass == TestController.class) {
+                    TestController controller = new TestController();
+                    controller.setServices(usuarioService, cargoService, servicioService, domicilioService, roleService);
+                    return controller;
+                } else {
+                    // Manejo predeterminado
+                    try {
+                        return controllerClass.getDeclaredConstructor().newInstance();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+
+            // Carga del FXML después de configurada la Fábrica
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setTitle("Test Controller" + " :: " + AppInfo.PRG_LONG_TITLE);
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(MainMenuMosaicoController.getPrimaryStage());
+            stage.showAndWait();
+        } catch (IOException e) {
+            AlertUtils.showErr("Error al cargar la ventana de gestión de cargos: " + e.getMessage());
+        }
+    }
+
 }
+

@@ -211,6 +211,52 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
         return null;
     }
 
+    public Usuario findUsuarioByTel(long tel) throws SQLException {
+        String query = "SELECT BIN_TO_UUID(id) AS id, fechaAlta, estado, cuil, apellidos, nombres, sexo, mail, tel, " +
+                "BIN_TO_UUID(domicilioID) AS domicilioID, " +
+                "BIN_TO_UUID(cargoID) AS cargoID, " +
+                "BIN_TO_UUID(servicioID) AS servicioID, " +
+                "passwd, profile_image " +
+                "FROM Usuario WHERE estado = 1 AND tel = ?";
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+
+            stmt.setLong(1, tel);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Usuario usuario = usuarioFactory.createUsuario(rs);
+                    return usuario;
+                }
+            } catch (ServiceException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return null;
+    }
+
+    public Usuario findUsuarioByMail(String mail) throws SQLException {
+        String query = "SELECT BIN_TO_UUID(id) AS id, fechaAlta, estado, cuil, apellidos, nombres, sexo, mail, tel, " +
+                "BIN_TO_UUID(domicilioID) AS domicilioID, " +
+                "BIN_TO_UUID(cargoID) AS cargoID, " +
+                "BIN_TO_UUID(servicioID) AS servicioID, " +
+                "passwd, profile_image " +
+                "FROM Usuario WHERE estado = 1 AND mail LIKE '?'";
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+
+            stmt.setString(1, mail);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Usuario usuario = usuarioFactory.createUsuario(rs);
+                    return usuario;
+                }
+            } catch (ServiceException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return null;
+    }
+
 
     /**
      * Devuelve el UUID de un usuario en base a su CUIL

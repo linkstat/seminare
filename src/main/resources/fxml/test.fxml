@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.StackPane?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="ar.com.hmu.controller.TestController">
+    <ImageView fx:id="imagenPerfilImageView" fitWidth="200" preserveRatio="true" />
+</StackPane>

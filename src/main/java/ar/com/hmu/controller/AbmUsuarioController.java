@@ -9,8 +9,34 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.BorderPane;
+import javafx.stage.FileChooser;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.util.StringConverter;
+
+import ar.com.hmu.constants.NombreServicio;
+import ar.com.hmu.constants.TipoUsuario;
 import ar.com.hmu.constants.UsuarioCreationResult;
 import ar.com.hmu.exceptions.ServiceException;
+import ar.com.hmu.model.*;
 import ar.com.hmu.roles.Role;
 import ar.com.hmu.roles.impl.AgenteRoleImpl;
 import ar.com.hmu.roles.impl.DireccionRoleImpl;
@@ -19,31 +45,6 @@ import ar.com.hmu.roles.impl.OficinaDePersonalRoleImpl;
 import ar.com.hmu.service.*;
 import ar.com.hmu.util.AlertUtils;
 import ar.com.hmu.util.AppInfo;
-import javafx.application.Platform;
-import javafx.collections.transformation.FilteredList;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.BorderPane;
-import javafx.stage.Modality;
-import javafx.util.StringConverter;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
-import javafx.scene.control.*;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.image.*;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-
-import ar.com.hmu.constants.NombreServicio;
-import ar.com.hmu.constants.TipoUsuario;
-import ar.com.hmu.model.*;
 import ar.com.hmu.util.CuilUtils;
 import ar.com.hmu.util.ImageUtils;
 
@@ -202,7 +203,9 @@ public class AbmUsuarioController implements Initializable {
             Stage stage = (Stage) rootPane.getScene().getWindow();
             stage.focusedProperty().addListener((observable, oldValue, newValue) -> {
                 if (newValue) { // La ventana ha ganado el foco
+                    isLoading = true;
                     actualizarListas();
+                    isLoading = false;
                 }
             });
         });
@@ -491,7 +494,7 @@ public class AbmUsuarioController implements Initializable {
 
         // Imagen de Perfil
         //imagenPerfilImageView.setDisable(!enabled); //en vez de deshabilitar, establecemos imagen por defecto:
-        imagenPerfilImageView.setImage(imagenPerfilOriginal);
+        //imagenPerfilImageView.setImage(imagenPerfilOriginal);  //el problema es que sobrescribe la imagen de perfil previamente cargada (cuando existe)
         cargarImagenButton.setDisable(!enabled);
         revertirImagenButton.setDisable(!enabled);
         eliminarImagenButton.setDisable(!enabled);
@@ -548,7 +551,7 @@ public class AbmUsuarioController implements Initializable {
 
         // Imagen de Perfil
         //imagenPerfilImageView.setDisable(!enabled); //en vez de deshabilitar, establecemos imagen por defecto:
-        imagenPerfilImageView.setImage(imagenPerfilOriginal);
+        //imagenPerfilImageView.setImage(imagenPerfilOriginal);  //el problema es que sobrescribe la imagen de perfil previamente cargada (cuando existe)
         cargarImagenButton.setDisable(!enabled);
         revertirImagenButton.setDisable(!enabled);
         eliminarImagenButton.setDisable(!enabled);
@@ -1067,6 +1070,10 @@ public class AbmUsuarioController implements Initializable {
         // Limpiar selección del ComboBox
         busquedaComboBox.getSelectionModel().clearSelection();
         busquedaComboBox.getEditor().clear();
+        // Pedir foco
+        busquedaComboBox.requestFocus();
+        // Cerrar la lista si estuviese desplegada
+        busquedaComboBox.hide();
 
         // Resetear botones al estado inicial
         altaModButton.setDisable(true);
@@ -1129,9 +1136,6 @@ public class AbmUsuarioController implements Initializable {
      * @param usuario objeto de tipo Usuario
      */
     private void cargarUsuarioEnFormulario(Usuario usuario) {
-        //DEBUG:
-        System.out.println("Is FX Application Thread: " + Platform.isFxApplicationThread());
-
         // Indicar que estamos en la fase de carga
         isLoading = true;
 
@@ -1146,20 +1150,9 @@ public class AbmUsuarioController implements Initializable {
         telTextField.setText(String.valueOf(usuario.getTel()));
         sexoComboBox.getSelectionModel().select(usuario.getSexo());
 
-        // Cargar imagen de perfil de pruebas
-        try {
-            Image testImage = new Image(getClass().getResourceAsStream("/images/businessman.png"));
-            imagenPerfilImageView.setImage(testImage);
-            System.out.println("Imagen de prueba cargada en el ImageView. Size: " + testImage.getWidth() + " x " + testImage.getHeight());
-            System.out.println("imagenPerfilImageView X = " + imagenPerfilImageView.getX() + "  Y = " + imagenPerfilImageView.getY());
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Error al cargar la imagen de prueba: " + e.getMessage());
-        }
-
         // Cargar imagen de perfil
-        //byte[] profileImageBytes = usuario.getProfileImage();
-        //ImageUtils.setProfileImage(imagenPerfilImageView, profileImageBytes, imagenPerfilOriginal);
+        byte[] profileImageBytes = usuario.getProfileImage();
+        ImageUtils.setProfileImage(imagenPerfilImageView, profileImageBytes, imagenPerfilOriginal);
 
         //Cargar roles en los CheckBoxes
         rolAgenteCheckBox.setSelected(usuario.hasRoleBehavior(AgenteRoleImpl.class));
@@ -1632,33 +1625,33 @@ public class AbmUsuarioController implements Initializable {
         StringBuilder resumen = new StringBuilder();
         if (!Objects.equals(original.getCalle(), modificado.getCalle())) {
             resumen.append("    • Calle: ")
-                    .append(formatValue(original.getCalle())).append(" -> ")
-                    .append(formatValue(modificado.getCalle())).append("\n");
+                    .append(normalizarCampo(original.getCalle())).append(" -> ")
+                    .append(normalizarCampo(modificado.getCalle())).append("\n");
         }
         if (original.getNumeracion() != modificado.getNumeracion()) {
             resumen.append("    • Numeración: ")
-                    .append(formatNumeracion(original.getNumeracion())).append(" -> ")
-                    .append(formatNumeracion(modificado.getNumeracion())).append("\n");
+                    .append(normalizarNumeracion(original.getNumeracion())).append(" -> ")
+                    .append(normalizarNumeracion(modificado.getNumeracion())).append("\n");
         }
         if (!Objects.equals(original.getBarrio(), modificado.getBarrio())) {
             resumen.append("    • Barrio: ")
-                    .append(formatValue(original.getBarrio())).append(" -> ")
-                    .append(formatValue(modificado.getBarrio())).append("\n");
+                    .append(normalizarCampo(original.getBarrio())).append(" -> ")
+                    .append(normalizarCampo(modificado.getBarrio())).append("\n");
         }
         if (!Objects.equals(original.getCiudad(), modificado.getCiudad())) {
             resumen.append("    • Ciudad: ")
-                    .append(formatValue(original.getCiudad())).append(" -> ")
-                    .append(formatValue(modificado.getCiudad())).append("\n");
+                    .append(normalizarCampo(original.getCiudad())).append(" -> ")
+                    .append(normalizarCampo(modificado.getCiudad())).append("\n");
         }
         if (!Objects.equals(original.getLocalidad(), modificado.getLocalidad())) {
             resumen.append("    • Localidad: ")
-                    .append(formatValue(original.getLocalidad())).append(" -> ")
-                    .append(formatValue(modificado.getLocalidad())).append("\n");
+                    .append(normalizarCampo(original.getLocalidad())).append(" -> ")
+                    .append(normalizarCampo(modificado.getLocalidad())).append("\n");
         }
         if (!Objects.equals(original.getProvincia(), modificado.getProvincia())) {
             resumen.append("    • Provincia: ")
-                    .append(formatValue(original.getProvincia())).append(" -> ")
-                    .append(formatValue(modificado.getProvincia())).append("\n");
+                    .append(normalizarCampo(original.getProvincia())).append(" -> ")
+                    .append(normalizarCampo(modificado.getProvincia())).append("\n");
         }
         return resumen.toString();
     }
@@ -1667,12 +1660,15 @@ public class AbmUsuarioController implements Initializable {
         return Arrays.equals(img1, img2);
     }
 
-    private String formatValue(String value) {
-        return (value == null || value.isEmpty()) ? "(ninguna)" : value;
+    private String normalizarNumeracion(int num) {
+        return num == 0 ? "(S/N)" : String.valueOf(num);
     }
 
-    private String formatNumeracion(int numeracion) {
-        return (numeracion == 0) ? "(S/N)" : String.valueOf(numeracion);
+    private String normalizarCampo(String valor) {
+        if (valor == null || valor.trim().isEmpty()) {
+            return "(ninguna)";
+        }
+        return valor;
     }
 
     /**
@@ -1808,5 +1804,6 @@ public class AbmUsuarioController implements Initializable {
             AlertUtils.showErr("Error al cargar la ventana de gestión de servicios: " + e.getMessage());
         }
     }
+
 
 }
