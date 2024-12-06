@@ -184,7 +184,6 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
         return null;
     }
 
-
     public Usuario findUsuarioByCuil(long cuil, boolean includeDisabled) throws SQLException, ServiceException {
         if(includeDisabled) {
             String query = "SELECT BIN_TO_UUID(id) AS id, fechaAlta, estado, cuil, apellidos, nombres, sexo, mail, tel, " +

@@ -48,6 +48,8 @@ import ar.com.hmu.util.AppInfo;
 import ar.com.hmu.util.CuilUtils;
 import ar.com.hmu.util.ImageUtils;
 
+import static ar.com.hmu.util.CuilUtils.formatCuil;
+
 public class AbmUsuarioController implements Initializable {
 
     // Contenedor
@@ -821,34 +823,34 @@ public class AbmUsuarioController implements Initializable {
     }
 
 
-    /**
-     * Evento al hacer clic en "Alta"
-     * @param event Evento
-     */
-    @FXML
-    public void onAlta(ActionEvent event) throws ServiceException {
-        if (isCancelMode) {
-            // Confirmar si desea cancelar
-            Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
-            confirmacion.setTitle("Confirmación");
-            confirmacion.setHeaderText("¿Cancelar la carga actual?");
-            confirmacion.showAndWait().ifPresent(response -> {
-                if (response == ButtonType.OK) {
-                    resetInterface();
-                }
-            });
-        } else {
-            // Lógica para dar de alta un nuevo usuario
-            if (validarCamposObligatorios()) {
-                Usuario nuevoUsuario = crearOActualizarUsuarioDesdeFormulario(null);
-                if (nuevoUsuario != null) {
-                    usuariosList.add(nuevoUsuario);
-                    resetInterface();
-                    mostrarMensaje("Usuario agregado correctamente.");
-                }
-            }
-        }
-    }
+//    /**
+//     * Evento al hacer clic en "Alta"
+//     * @param event Evento
+//     */
+//    @FXML
+//    public void onAlta(ActionEvent event) throws ServiceException {
+//        if (isCancelMode) {
+//            // Confirmar si desea cancelar
+//            Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
+//            confirmacion.setTitle("Confirmación");
+//            confirmacion.setHeaderText("¿Cancelar la carga actual?");
+//            confirmacion.showAndWait().ifPresent(response -> {
+//                if (response == ButtonType.OK) {
+//                    resetInterface();
+//                }
+//            });
+//        } else {
+//            // Lógica para dar de alta un nuevo usuario
+//            if (validarCamposObligatorios()) {
+//                Usuario nuevoUsuario = crearOActualizarUsuarioDesdeFormulario(null);
+//                if (nuevoUsuario != null) {
+//                    usuariosList.add(nuevoUsuario);
+//                    resetInterface();
+//                    mostrarMensaje("Usuario agregado correctamente.");
+//                }
+//            }
+//        }
+//    }
 
     /**
      * Evento al hacer clic en "Dar de alta" (o "Modificar", según contexto)
@@ -908,6 +910,11 @@ public class AbmUsuarioController implements Initializable {
                 // Actualizar la copia con los nuevos datos
                 crearOActualizarUsuarioDesdeFormulario(usuarioModificado);
 
+                // Verificar unicidad de ciertos datos (CUIL, Tel, Mail)
+                String verificaciones = realizarVerificaciones(usuarioModificado);
+                // Mostrar el resumen en caso de errores
+                mostrarErrorConResumen("Problema con la validación de datos", "Verifique los siguientes problemas:", verificaciones);
+
                 // Generar el resumen de modificaciones
                 String resumen = generarResumenModificaciones(usuarioSeleccionado, usuarioModificado);
 
@@ -960,24 +967,24 @@ public class AbmUsuarioController implements Initializable {
         }
     }
 
-    /**
-     * Evento al hacer clic en "Modificar"
-     */
-    @FXML
-    private void onModificar() throws ServiceException {
-        Usuario usuarioSeleccionado = busquedaComboBox.getSelectionModel().getSelectedItem();
-        if (usuarioSeleccionado != null && validarCamposObligatorios()) {
-            Usuario usuarioActualizado = crearOActualizarUsuarioDesdeFormulario(usuarioSeleccionado);
-            if (usuarioActualizado != null) {
-                // Actualizar en la lista si es necesario
-                int index = usuariosList.indexOf(usuarioSeleccionado);
-                usuariosList.set(index, usuarioActualizado);
-                resetInterface();
-                mostrarMensaje("Usuario modificado correctamente.");
-            }
-        }
-        resetInterface();
-    }
+//    /**
+//     * Evento al hacer clic en "Modificar"
+//     */
+//    @FXML
+//    private void onModificar() throws ServiceException {
+//        Usuario usuarioSeleccionado = busquedaComboBox.getSelectionModel().getSelectedItem();
+//        if (usuarioSeleccionado != null && validarCamposObligatorios()) {
+//            Usuario usuarioActualizado = crearOActualizarUsuarioDesdeFormulario(usuarioSeleccionado);
+//            if (usuarioActualizado != null) {
+//                // Actualizar en la lista si es necesario
+//                int index = usuariosList.indexOf(usuarioSeleccionado);
+//                usuariosList.set(index, usuarioActualizado);
+//                resetInterface();
+//                mostrarMensaje("Usuario modificado correctamente.");
+//            }
+//        }
+//        resetInterface();
+//    }
 
 
     /**
@@ -1041,16 +1048,6 @@ public class AbmUsuarioController implements Initializable {
         isAltaMode = true;
         isModificacionMode = false;
 
-    }
-
-    private boolean mostrarConfirmacionConResumen(String titulo, String cabecera, String contenido) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle(titulo);
-        alert.setHeaderText(cabecera);
-        alert.setContentText(contenido);
-
-        Optional<ButtonType> result = alert.showAndWait();
-        return result.isPresent() && result.get() == ButtonType.OK;
     }
 
     /**
@@ -1550,6 +1547,28 @@ public class AbmUsuarioController implements Initializable {
     }
 
 
+    private String realizarVerificaciones(Usuario propuesto) throws ServiceException {
+        StringBuilder verificaciones = new StringBuilder();
+        // CUIL
+        String cuilOwner = usuarioService.existUsuarioWithCuil(propuesto.getCuil());
+        if (cuilOwner != null) {
+            verificaciones.append("● El CUIL: ").append(formatCuil(String.valueOf(propuesto.getCuil()))).append(" pertenece a: ").append(cuilOwner).append("\n");
+        }
+        // Mail
+        String mailOwner = usuarioService.existUsuarioWithMail(propuesto.getMail());
+        if (mailOwner != null) {
+            verificaciones.append("● El mail: ").append(propuesto.getMail()).append(" pertenece a: ").append(mailOwner).append("\n");
+        }
+        // Teléfono
+        String telOwner = usuarioService.existUsuarioWithTel(propuesto.getTel());
+        if (telOwner != null) {
+            verificaciones.append("● El teléfono: ").append(propuesto.getTel()).append(" pertenece a: ").append(telOwner).append("\n");
+        }
+
+        return verificaciones.toString();
+    }
+
+
     private String generarResumenModificaciones(Usuario original, Usuario modificado) {
         StringBuilder resumen = new StringBuilder();
 
@@ -1684,11 +1703,31 @@ public class AbmUsuarioController implements Initializable {
     }
 
 
+    private void mostrarErrorConResumen(String titulo, String cabecera, String contenido) {
+        Alert alert = new Alert(AlertType.ERROR);
+        alert.setTitle(titulo);
+        alert.setHeaderText(cabecera);
+        alert.setContentText(contenido);
+
+        Optional<ButtonType> result = alert.showAndWait();
+
+    }
+
     private boolean mostrarConfirmacion(String mensaje) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        Alert alert = new Alert(AlertType.CONFIRMATION);
         alert.setTitle("Confirmación");
         alert.setHeaderText(null);
         alert.setContentText(mensaje);
+
+        Optional<ButtonType> result = alert.showAndWait();
+        return result.isPresent() && result.get() == ButtonType.OK;
+    }
+
+    private boolean mostrarConfirmacionConResumen(String titulo, String cabecera, String contenido) {
+        Alert alert = new Alert(AlertType.CONFIRMATION);
+        alert.setTitle(titulo);
+        alert.setHeaderText(cabecera);
+        alert.setContentText(contenido);
 
         Optional<ButtonType> result = alert.showAndWait();
         return result.isPresent() && result.get() == ButtonType.OK;

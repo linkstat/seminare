@@ -212,8 +212,8 @@
          <Line endX="10.0" endY="50.0" startX="10.0" stroke="LIGHTGRAY" />
             <Button fx:id="resetPasswdButton" onAction="#onResetPassword" text="Resetear Contraseña" />
          <Line endX="10.0" endY="50.0" layoutX="315.0" layoutY="21.0" startX="10.0" stroke="LIGHTGRAY" />
-            <Button fx:id="altaModButton" disable="true" minWidth="70.0" onAction="#onAlta" text="Alta / Mod." />
-            <Button fx:id="cancelarButton" disable="true" minWidth="70.0" onAction="#onModificar" text="Cancelar" />
+            <Button fx:id="altaModButton" disable="true" minWidth="70.0" onAction="#onAltaMod" text="Alta / Mod." />
+            <Button fx:id="cancelarButton" disable="true" minWidth="70.0" onAction="#onCancelar" text="Cancelar" />
             <Button fx:id="eliminarButton" disable="true" minWidth="70.0" onAction="#onEliminar" text="Eliminar" />
         </HBox>
     </bottom>

@@ -128,6 +128,68 @@ public class UsuarioService {
         }
     }
 
+    public Usuario findUsuarioByTel(long tel) throws ServiceException {
+        try {
+            Usuario usuario = usuarioRepository.findUsuarioByTel(tel);
+            if (usuario != null) {
+                // Load additional user data if necessary
+                loadAdditionalUserData(usuario);
+            }
+            return usuario;
+        } catch (SQLException e) {
+            throw new ServiceException("Error al recuperar usuario por Tel", e);
+        }
+    }
+
+    public Usuario findUsuarioByMail(String mail) throws ServiceException {
+        try {
+            Usuario usuario = usuarioRepository.findUsuarioByMail(mail);
+            if (usuario != null) {
+                // Load additional user data if necessary
+                loadAdditionalUserData(usuario);
+            }
+            return usuario;
+        } catch (SQLException e) {
+            throw new ServiceException("Error al recuperar usuario por Mail", e);
+        }
+    }
+
+    public String existUsuarioWithCuil(long cuil) throws ServiceException {
+        try {
+            Usuario usuario = usuarioRepository.findUsuarioByCuil(cuil, true);
+            if(usuario != null) {
+                return usuario.getEstado() ? usuario.getApellidos() + "  [Actualmente DESHABILITADO. Si se quiere habilitar, debe dar de alta un nuevo usuario indicando este CUIL]" : usuario.getApellidosNombres();
+            }
+            return null;
+        } catch (SQLException e) {
+            throw new ServiceException("Error al recuperar usuario por CUIL", e);
+        }
+    }
+
+    public String existUsuarioWithTel(long tel) throws ServiceException {
+        try {
+            Usuario usuario = usuarioRepository.findUsuarioByTel(tel);
+            if(usuario != null) {
+                return usuario.getApellidosNombres();
+            }
+            return null;
+        } catch (SQLException e) {
+            throw new ServiceException("Error al recuperar usuario por Tel", e);
+        }
+    }
+
+    public String existUsuarioWithMail(String mail) throws ServiceException {
+        try {
+            Usuario usuario = usuarioRepository.findUsuarioByMail(mail);
+            if(usuario != null) {
+                return usuario.getApellidosNombres();
+            }
+            return null;
+        } catch (SQLException e) {
+            throw new ServiceException("Error al recuperar usuario por Mail", e);
+        }
+    }
+
     public List<Usuario> readAll() throws ServiceException {
         try {
             List<Usuario> usuarios = usuarioRepository.readAll();
