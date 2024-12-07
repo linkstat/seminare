@@ -154,36 +154,40 @@ public class UsuarioService {
         }
     }
 
-    public String existUsuarioWithCuil(long cuil) throws ServiceException {
+    public String getUsuarioFullNameByCuil(long cuil) throws ServiceException {
         try {
-            Usuario usuario = usuarioRepository.findUsuarioByCuil(cuil, true);
-            if(usuario != null) {
-                return usuario.getEstado() ? usuario.getApellidos() + "  [Actualmente DESHABILITADO. Si se quiere habilitar, debe dar de alta un nuevo usuario indicando este CUIL]" : usuario.getApellidosNombres();
-            }
+            Usuario usuario = usuarioRepository.findUsuarioByCuil(cuil);
+            if(usuario != null) return usuario.getApellidosNombres();
             return null;
         } catch (SQLException e) {
             throw new ServiceException("Error al recuperar usuario por CUIL", e);
         }
     }
 
-    public String existUsuarioWithTel(long tel) throws ServiceException {
+    public String getDisabledUserFullNameByCuil(long cuil) throws ServiceException {
+        try {
+            Usuario usuario = usuarioRepository.findDisabledUserByCuil(cuil);
+            if(usuario != null) return usuario.getApellidosNombres();
+            return null;
+        } catch (SQLException e) {
+            throw new ServiceException("Error al recuperar usuario deshabilitado por CUIL", e);
+        }
+    }
+
+    public String getUsuarioFullNameByTel(long tel) throws ServiceException {
         try {
             Usuario usuario = usuarioRepository.findUsuarioByTel(tel);
-            if(usuario != null) {
-                return usuario.getApellidosNombres();
-            }
+            if(usuario != null) return usuario.getApellidosNombres();
             return null;
         } catch (SQLException e) {
             throw new ServiceException("Error al recuperar usuario por Tel", e);
         }
     }
 
-    public String existUsuarioWithMail(String mail) throws ServiceException {
+    public String getUsuarioFullNameByMail(String mail) throws ServiceException {
         try {
             Usuario usuario = usuarioRepository.findUsuarioByMail(mail);
-            if(usuario != null) {
-                return usuario.getApellidosNombres();
-            }
+            if(usuario != null) return usuario.getApellidosNombres();
             return null;
         } catch (SQLException e) {
             throw new ServiceException("Error al recuperar usuario por Mail", e);

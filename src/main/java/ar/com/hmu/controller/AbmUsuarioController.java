@@ -3,8 +3,6 @@ package ar.com.hmu.controller;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,7 +30,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
-import ar.com.hmu.constants.NombreServicio;
 import ar.com.hmu.constants.TipoUsuario;
 import ar.com.hmu.constants.UsuarioCreationResult;
 import ar.com.hmu.exceptions.ServiceException;
@@ -868,6 +865,15 @@ public class AbmUsuarioController implements Initializable {
             if (validarCamposObligatorios()) {
                 Usuario nuevoUsuario = crearOActualizarUsuarioDesdeFormulario(null);
                 if (nuevoUsuario != null) {
+
+                    // Verificar unicidad de ciertos datos (CUIL, Tel, Mail)
+                    String verificaciones = realizarVerificaciones(nuevoUsuario);
+                    // Mostrar el resumen en caso de errores
+                    if (!verificaciones.isEmpty()) {
+                        mostrarErrorConResumen("Error de validación", "No se puede crear un nuevo usuario con datos repetidos.\nLos siguientes datos deben ser únicos:", verificaciones);
+                        return; // Salir del método onAltaMod sin proceder.
+                    }
+
                     try {
                         UsuarioCreationResult result = usuarioService.create(nuevoUsuario);
                         switch (result) {
@@ -911,9 +917,12 @@ public class AbmUsuarioController implements Initializable {
                 crearOActualizarUsuarioDesdeFormulario(usuarioModificado);
 
                 // Verificar unicidad de ciertos datos (CUIL, Tel, Mail)
-                String verificaciones = realizarVerificaciones(usuarioModificado);
+                String verificaciones = realizarVerificaciones(usuarioSeleccionado, usuarioModificado);
                 // Mostrar el resumen en caso de errores
-                mostrarErrorConResumen("Problema con la validación de datos", "Verifique los siguientes problemas:", verificaciones);
+                if (!verificaciones.isEmpty()) {
+                    mostrarErrorConResumen("Error de validación", "Se han repetido datos que deben ser únicos para cada persona.\nVerifique los siguientes duplicados:", verificaciones);
+                    return; // Salir del método onAltaMod sin proceder.
+                }
 
                 // Generar el resumen de modificaciones
                 String resumen = generarResumenModificaciones(usuarioSeleccionado, usuarioModificado);
@@ -1547,27 +1556,86 @@ public class AbmUsuarioController implements Initializable {
     }
 
 
-    private String realizarVerificaciones(Usuario propuesto) throws ServiceException {
+    private String realizarVerificaciones(Usuario nuevoUsuario) throws ServiceException {
         StringBuilder verificaciones = new StringBuilder();
-        // CUIL
-        String cuilOwner = usuarioService.existUsuarioWithCuil(propuesto.getCuil());
+        // CUIL en Habilitados
+        String cuilOwner = usuarioService.getUsuarioFullNameByCuil(nuevoUsuario.getCuil());
         if (cuilOwner != null) {
-            verificaciones.append("● El CUIL: ").append(formatCuil(String.valueOf(propuesto.getCuil()))).append(" pertenece a: ").append(cuilOwner).append("\n");
+            verificaciones.append("≡  el CUIL ")
+                    .append(formatCuil(String.valueOf(nuevoUsuario.getCuil())))
+                    .append(" ya pertenece a:  «")
+                    .append(cuilOwner.toUpperCase()).append("»\n");
         }
+
         // Mail
-        String mailOwner = usuarioService.existUsuarioWithMail(propuesto.getMail());
+        String mailOwner = usuarioService.getUsuarioFullNameByMail(nuevoUsuario.getMail());
         if (mailOwner != null) {
-            verificaciones.append("● El mail: ").append(propuesto.getMail()).append(" pertenece a: ").append(mailOwner).append("\n");
+            verificaciones.append("≡  el mail ")
+                    .append(nuevoUsuario.getMail())
+                    .append(" ya pertenece a:  «").
+                    append(mailOwner.toUpperCase()).append("»\n");
         }
+
         // Teléfono
-        String telOwner = usuarioService.existUsuarioWithTel(propuesto.getTel());
+        String telOwner = usuarioService.getUsuarioFullNameByTel(nuevoUsuario.getTel());
         if (telOwner != null) {
-            verificaciones.append("● El teléfono: ").append(propuesto.getTel()).append(" pertenece a: ").append(telOwner).append("\n");
+            verificaciones.append("≡  el teléfono ")
+                    .append(nuevoUsuario.getTel())
+                    .append(" ya pertenece a:  «")
+                    .append(telOwner.toUpperCase()).append("»\n");
         }
 
         return verificaciones.toString();
     }
 
+    private String realizarVerificaciones(Usuario original, Usuario modificado) throws ServiceException {
+        StringBuilder verificaciones = new StringBuilder();
+        // CUIL
+        if(original.getCuil() != modificado.getCuil()) {
+            //CUIL en Habilitados
+            String cuilOwner = usuarioService.getUsuarioFullNameByCuil(modificado.getCuil());
+            if (cuilOwner != null) {
+                verificaciones.append("≡  el CUIL ")
+                        .append(formatCuil(String.valueOf(modificado.getCuil())))
+                        .append(" ya pertenece a:  «")
+                        .append(cuilOwner.toUpperCase()).append("»\n");
+            }
+            //CUIL en Deshabilitados
+            String cuilOwnerD = usuarioService.getDisabledUserFullNameByCuil(modificado.getCuil());
+            if (cuilOwnerD != null) {
+                verificaciones.append("≡  el CUIL ")
+                        .append(formatCuil(String.valueOf(modificado.getCuil())))
+                        .append(" ya pertenece a:  «")
+                        .append(cuilOwnerD.toUpperCase())
+                        .append("»  [DESHABILITADO]\n")
+                        .append("   (si se desea habilitar, debe dar de alta un nuevo usuario indicando este CUIL)\n");
+            }
+        }
+
+        // Mail
+        if (!original.getMail().equals(modificado.getMail())) {
+            String mailOwner = usuarioService.getUsuarioFullNameByMail(modificado.getMail());
+            if (mailOwner != null) {
+                verificaciones.append("≡  el mail ")
+                        .append(modificado.getMail())
+                        .append(" ya pertenece a:  «").
+                        append(mailOwner.toUpperCase()).append("»\n");
+            }
+        }
+
+        // Teléfono
+        if (original.getTel() != modificado.getTel()) {
+            String telOwner = usuarioService.getUsuarioFullNameByTel(modificado.getTel());
+            if (telOwner != null) {
+                verificaciones.append("≡  el teléfono ")
+                        .append(modificado.getTel())
+                        .append(" ya pertenece a:  «")
+                        .append(telOwner.toUpperCase()).append("»\n");
+            }
+        }
+
+        return verificaciones.toString();
+    }
 
     private String generarResumenModificaciones(Usuario original, Usuario modificado) {
         StringBuilder resumen = new StringBuilder();
@@ -1702,12 +1770,12 @@ public class AbmUsuarioController implements Initializable {
         alert.showAndWait();
     }
 
-
     private void mostrarErrorConResumen(String titulo, String cabecera, String contenido) {
         Alert alert = new Alert(AlertType.ERROR);
         alert.setTitle(titulo);
         alert.setHeaderText(cabecera);
         alert.setContentText(contenido);
+        alert.setResizable(true);
 
         Optional<ButtonType> result = alert.showAndWait();
 
