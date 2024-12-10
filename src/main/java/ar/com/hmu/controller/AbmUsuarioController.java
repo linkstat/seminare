@@ -126,6 +126,7 @@ public class AbmUsuarioController implements Initializable {
     private boolean isAltaMode = false;
     private boolean isCancelMode = false;
     private boolean isModificacionMode = false;
+    private boolean isCancellingOperation = false;
 
     // Servicios
     private UsuarioService usuarioService;
@@ -133,6 +134,10 @@ public class AbmUsuarioController implements Initializable {
     private ServicioService servicioService;
     private DomicilioService domicilioService;
     private RoleService roleService;
+
+    // Variables auxiliares
+    private Usuario originalUser;
+    private Stage primaryStage;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -213,6 +218,11 @@ public class AbmUsuarioController implements Initializable {
         busquedaComboBox.setDisable(false);
         nuevoAgenteButton.setDisable(false);
 
+    }
+
+    public void postInitialize(Stage stage) {
+        this.primaryStage = stage;
+        // Ahora puedes utilizar primaryStage sin problemas.
     }
 
     /**
@@ -399,7 +409,7 @@ public class AbmUsuarioController implements Initializable {
                 busquedaComboBox.getSelectionModel().clearSelection();
 
                 // Limpiar el formulario y deshabilitar controles
-                limpiarFormulario();
+                limpiarFormulario(true);
                 setControlsEnabled(false);
 
                 // Deshabilitar botones de acción
@@ -676,6 +686,12 @@ public class AbmUsuarioController implements Initializable {
         rolOficinaPersonalCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> onFormModified());
         rolDireccionCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> onFormModified());
 
+        // Listeners para valores unicos
+        //agregarListenerFocoCuilParaAlta();
+        agregarListenerFocoCuil();
+        agregarListenerFocoMail();
+        agregarListenerFocoTel();
+
     }
 
 
@@ -819,36 +835,6 @@ public class AbmUsuarioController implements Initializable {
         }
     }
 
-
-//    /**
-//     * Evento al hacer clic en "Alta"
-//     * @param event Evento
-//     */
-//    @FXML
-//    public void onAlta(ActionEvent event) throws ServiceException {
-//        if (isCancelMode) {
-//            // Confirmar si desea cancelar
-//            Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
-//            confirmacion.setTitle("Confirmación");
-//            confirmacion.setHeaderText("¿Cancelar la carga actual?");
-//            confirmacion.showAndWait().ifPresent(response -> {
-//                if (response == ButtonType.OK) {
-//                    resetInterface();
-//                }
-//            });
-//        } else {
-//            // Lógica para dar de alta un nuevo usuario
-//            if (validarCamposObligatorios()) {
-//                Usuario nuevoUsuario = crearOActualizarUsuarioDesdeFormulario(null);
-//                if (nuevoUsuario != null) {
-//                    usuariosList.add(nuevoUsuario);
-//                    resetInterface();
-//                    mostrarMensaje("Usuario agregado correctamente.");
-//                }
-//            }
-//        }
-//    }
-
     /**
      * Evento al hacer clic en "Dar de alta" (o "Modificar", según contexto)
      * @param event Evento
@@ -961,14 +947,17 @@ public class AbmUsuarioController implements Initializable {
             confirmacion.setTitle("Confirmación");
             confirmacion.setHeaderText("¿Cancelar la operación actual?");
             confirmacion.setContentText("Si ha realizado modificaciones, al cancelar ahora los cambios no se guardarán y se perderán.");
-            confirmacion.showAndWait().ifPresent(response -> {
-                if (response == ButtonType.OK) {
-                    resetInterface();
-                }
-            });
+            Optional<ButtonType> response = confirmacion.showAndWait();
+            if (response.isPresent() && response.get() == ButtonType.OK) {
+                isCancellingOperation = true; // Indicar que estamos en proceso de cancelar
+                resetInterface();
+                isCancellingOperation = false; // Una vez terminado el reset, vuelve a falso
+            }
         } else if (isAltaMode || isModificacionMode) {
             // Cancelar sin confirmación si no hubo modificaciones
+            isCancellingOperation = true;
             resetInterface();
+            isCancellingOperation = false;
         } else {
             // Operación "Salir" cuando no estamos en modo alta o modificación
             Stage stage = (Stage) cancelarButton.getScene().getWindow();
@@ -1033,29 +1022,267 @@ public class AbmUsuarioController implements Initializable {
         busquedaComboBox.setDisable(true);
         nuevoAgenteButton.setDisable(true);
 
-        // Habilitar los controles del formulario
-        setControlsEnabled(true, true);
-
-        // Limpiar el formulario
-        limpiarFormulario();
+        // Solo habilitar CUIL y el botón "Dar de alta" o un botón "Continuar"
+        setControlsForNuevoAgenteCuilOnly();
 
         // Enfocar el campo CUIL
         cuilTextField.requestFocus();
 
-        // Update buttons
+        // Ajustar botones
         altaModButton.setVisible(true);
         altaModButton.setText("Dar de alta");
         altaModButton.setDisable(false);
-
         cancelarButton.setVisible(true);
         cancelarButton.setText("Cancelar");
         cancelarButton.setDisable(false);
-
         eliminarButton.setVisible(false);  // Ocultar eliminarButton si fuera visible
 
         // Banderas de modo
         isAltaMode = true;
         isModificacionMode = false;
+
+        // Limpiar el formulario excepto CUIL
+        limpiarFormulario(false);
+
+    }
+
+    private void setControlsForNuevoAgenteCuilOnly() {
+        // Deshabilita todos los controles (incluyendo roles)
+        setControlsEnabled(false, true);
+
+        // Habilitar únicamente el campo CUIL
+        cuilTextField.setDisable(false);
+
+        // Quitar listeners previos que no se requieren ahora si los hubiera
+        // y agregar el listener de pérdida de foco para CUIL
+        agregarListenerFocoCuilParaAlta();
+    }
+
+    private void agregarListenerFocoCuilParaAlta() {
+        cuilTextField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+            if (!isNowFocused) {
+                // Perder foco de CUIL
+                Stage stage = (Stage)rootPane.getScene().getWindow();
+                if (!stage.isFocused()) {
+                    // Si la ventana no está en foco, no hacemos nada.
+                    return;
+                }
+
+                String cuilStr = cuilTextField.getText().replaceAll("-", "").trim();
+                if (cuilStr.isEmpty()) {
+                    mostrarError("Debe ingresar un CUIL.");
+                    return;
+                }
+
+                long cuilVal;
+                try {
+                    cuilVal = Long.parseLong(cuilStr);
+                } catch (NumberFormatException e) {
+                    mostrarError("El CUIL debe ser un número válido.");
+                    return;
+                }
+
+                try {
+                    String fullNameHabilitado = usuarioService.getUsuarioFullNameByCuil(cuilVal);
+                    if (fullNameHabilitado != null) {
+                        // Existe habilitado
+                        mostrarError("Ya existe un usuario activo con este CUIL ("+ fullNameHabilitado +"). No puede crear uno nuevo.");
+                        return;
+                    }
+
+                    String fullNameDeshabilitado = usuarioService.getDisabledUserFullNameByCuil(cuilVal);
+                    if (fullNameDeshabilitado != null) {
+                        // Existe deshabilitado, cargar datos
+                        Usuario deshabilitado = usuarioService.findUsuarioByCuil(cuilVal, true); // includeDisabled = true
+                        if (deshabilitado != null && !deshabilitado.getEstado()) {
+                            cargarUsuarioEnFormulario(deshabilitado);
+                            mostrarMensaje("Se ha encontrado un usuario deshabilitado con este CUIL ("+ fullNameDeshabilitado +").\nSus datos han sido cargados. Puede modificar y dar de alta para reactivarlo.");
+                            setControlsEnabled(true, true);
+                            return;
+                        }
+                    }
+
+                    // No existe ni habilitado ni deshabilitado
+                    mostrarMensaje("No existe un usuario con este CUIL. Puede proceder a dar de alta uno nuevo.");
+                    setControlsEnabled(true, true);
+
+                } catch (ServiceException e) {
+                    mostrarError("Error al verificar el CUIL: " + e.getMessage());
+                }
+            }
+        });
+    }
+
+    private void agregarListenerFocoCuil() {
+        cuilTextField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+            if (!isNowFocused) {
+                Stage stage = (Stage)rootPane.getScene().getWindow();
+                if (!stage.isFocused()) {
+                    return;
+                }
+
+                String cuilStr = cuilTextField.getText().replaceAll("-", "").trim();
+                if (cuilStr.isEmpty()) {
+                    mostrarError("Debe ingresar un CUIL.");
+                    return;
+                }
+
+                long cuil;
+                try {
+                    cuil = Long.parseLong(cuilStr);
+                } catch (NumberFormatException e) {
+                    mostrarError("El CUIL debe ser un número válido.");
+                    return;
+                }
+
+                if (cuil == 0) {
+                    return; // Nada que validar si está vacío
+                }
+
+                try {
+                    String owner = usuarioService.getUsuarioFullNameByTel(cuil);
+                    if (owner != null) {
+                        // Existe ese cuil
+                        if (isModificacionMode) {
+                            // estamos modificando
+                            // verificar si es el mismo usuario
+                            Usuario original = originalUser;
+                            if (original == null || cuil != original.getTel()) {
+                                mostrarError("El CUIL " + cuil + " ya pertenece a: «" + owner.toUpperCase() + "».");
+                            }
+                        } else if (isAltaMode) {
+                            mostrarError("El CUIL " + cuil + " ya pertenece a: «" + owner.toUpperCase() + "».");
+                        }
+                    }
+                } catch (ServiceException e) {
+                    mostrarError("Error al verificar el CUIL: " + e.getMessage());
+                }
+            }
+        });
+    }
+
+    private void agregarListenerFocoMail() {
+        mailTextField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+            if (!isNowFocused) {
+                Stage stage = (Stage)rootPane.getScene().getWindow();
+                if (!stage.isFocused()) {
+                    return;
+                }
+
+                String mail = mailTextField.getText().trim();
+                if (mail.isEmpty()) {
+                    return; // Nada que validar si está vacío
+                }
+
+                try {
+                    String owner = usuarioService.getUsuarioFullNameByMail(mail);
+                    if (owner != null) {
+                        // Existe ese mail
+                        if (isModificacionMode) {
+                            // estamos modificando
+                            // verificar si es el mismo usuario
+                            Usuario original = originalUser;
+                            if (original == null || !mail.equalsIgnoreCase(original.getMail())) {
+                                mostrarError("El mail " + mail + " ya pertenece a: «" + owner.toUpperCase() + "».");
+                            }
+                        } else if (isAltaMode) {
+                            mostrarError("El mail " + mail + " ya pertenece a: «" + owner.toUpperCase() + "».");
+                        }
+                    }
+                } catch (ServiceException e) {
+                    mostrarError("Error al verificar el mail: " + e.getMessage());
+                }
+            }
+        });
+    }
+
+    private void agregarListenerFocoTel() {
+        telTextField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (!newVal) { // se perdió el foco de telTextField
+                // Verificar si la ventana está enfocada
+                if (!primaryStage.isFocused()) {
+                    // La ventana no está enfocada, no validar
+                    return;
+                }
+
+                if (isCancellingOperation) {
+                    return;
+                }
+
+                String telStr = telTextField.getText().trim();
+                if (telStr.isEmpty()) {
+                    // Si está vacío, no hay que validar unicidad
+                    telTextField.setStyle("");
+                    return;
+                }
+
+                long tel;
+                try {
+                    tel = Long.parseLong(telStr);
+                } catch (NumberFormatException e) {
+                    mostrarError("El teléfono debe ser un número válido.");
+                    telTextField.requestFocus();
+                    telTextField.setStyle("-fx-border-color: red;");
+                    return;
+                }
+
+                String telOwner = null;
+                try {
+                    telOwner = usuarioService.getUsuarioFullNameByTel(tel);
+                } catch (ServiceException e) {
+                    mostrarError("Error al verificar el teléfono: " + e.getMessage());
+                    telTextField.requestFocus();
+                    telTextField.setStyle("-fx-border-color: red;");
+                    return;
+                }
+
+                long telOriginal = originalUser.getTel();
+                if (telOwner != null && (isAltaMode || (isModificacionMode && tel != telOriginal))) {
+                    mostrarError("El teléfono " + tel + " ya pertenece a: " + telOwner.toUpperCase());
+                    telTextField.requestFocus();
+                    telTextField.setStyle("-fx-border-color: red;");
+                } else {
+                    telTextField.setStyle("");
+                }
+            }
+        });
+    }
+
+    @FXML
+    private void onCuilTextField() throws ServiceException {
+        cuilTextField.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue) {
+                // Aquí creo tener un problema
+                try {
+                    if (!cuilTextField.getText().isEmpty()) {
+                        long cuilIngresado = Long.parseLong(cuilTextField.getText().replaceAll("-", ""));
+                        Usuario existente = usuarioService.findUsuarioByCuil(cuilIngresado, true); // includeDisabled=true
+                        if (existente != null && !existente.getEstado()) {
+                            // Usuario deshabilitado, cargar datos
+                            cargarUsuarioEnFormulario(existente);
+                            mostrarMensaje("Se ha encontrado un usuario deshabilitado con este CUIL. " +
+                                    "Sus datos han sido cargados. Puede modificar y dar de alta para reactivarlo.");
+                            // Habilitar el resto de los campos
+                            setControlsEnabled(true, true);
+                        } else {
+                            // No existe un usuario deshabilitado con este CUIL
+                            // Limpiar el formulario para alta nueva
+                            limpiarFormulario(false);
+                            mostrarMensaje("No existe un usuario deshabilitado con este CUIL. " +
+                                    "Puede proceder a dar de alta uno nuevo.");
+                            // Habilitar el resto de los campos
+                            setControlsEnabled(true, true);
+                        }
+                    } else {
+                        mostrarError("Debe ingresar un CUIL.");
+                    }
+                } catch (NumberFormatException e) {
+                    mostrarError("El CUIL debe ser un número válido.");
+                } catch (ServiceException e) {
+                    mostrarError("Error al verificar el CUIL: " + e.getMessage());
+                }
+            }
+        });
 
     }
 
@@ -1067,7 +1294,7 @@ public class AbmUsuarioController implements Initializable {
         setControlsEnabled(false, true);
 
         // Limpiar el formulario
-        limpiarFormulario();
+        limpiarFormulario(true);
 
         // Habilitar el ComboBox y el botón "Nuevo Agente"
         busquedaComboBox.setDisable(false);
@@ -1108,6 +1335,7 @@ public class AbmUsuarioController implements Initializable {
     private void onSeleccionarUsuario() {
         Usuario usuarioSeleccionado = busquedaComboBox.getValue();
         if (usuarioSeleccionado != null) {
+            originalUser = new Usuario(usuarioSeleccionado); // copiar original
             cargarUsuarioEnFormulario(usuarioSeleccionado);
             setControlsEnabled(true, true);
 
@@ -1498,9 +1726,9 @@ public class AbmUsuarioController implements Initializable {
     /**
      * Método para limpiar el formulario
      */
-    private void limpiarFormulario() {
+    private void limpiarFormulario(boolean includeCuil) {
         // Limpiar campos de datos personales
-        cuilTextField.clear();
+        if(includeCuil) cuilTextField.clear();
         apellidosTextField.clear();
         nombresTextField.clear();
         mailTextField.clear();

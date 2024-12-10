@@ -115,6 +115,19 @@ public class UsuarioService {
         }
     }
 
+    public Usuario findUsuarioByCuil(long cuil, boolean includeDisabled) throws ServiceException {
+        try {
+            Usuario usuario = usuarioRepository.findUsuarioByCuil(cuil, includeDisabled);
+            if (usuario != null) {
+                // Load additional user data if necessary
+                loadAdditionalUserData(usuario);
+            }
+            return usuario;
+        } catch (SQLException e) {
+            throw new ServiceException("Error al recuperar usuario por CUIL", e);
+        }
+    }
+
     public Usuario findUsuarioByCuil(long cuil) throws ServiceException {
         try {
             Usuario usuario = usuarioRepository.findUsuarioByCuil(cuil);

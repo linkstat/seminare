@@ -476,17 +476,22 @@ public class MainMenuMosaicoController {
             // Carga del FXML después de configurada la Fábrica
             Parent abmUsuariosRoot = loader.load();
 
+            // Obtener el controlador
+            AbmUsuarioController abmUsuariosController = loader.getController();
+
             // Crear una nueva escena y un nuevo Stage (ventana)
-            Stage stage = new Stage();  // Alternativa, que es lo mismo:  stage.setScene(new Scene(root))
+            Stage stage = new Stage();
             Scene scene = new Scene(abmUsuariosRoot);
             stage.setScene(scene);
             stage.setTitle("Alta, Baja y Modificación de Agentes" + " :: " + AppInfo.PRG_LONG_TITLE);
             stage.initModality(Modality.WINDOW_MODAL);
-            //stage.initOwner(((Node) event.getSource()).getScene().getWindow()); // Con esto, establecemos la ventana actual como propietaria, evitando múltiples instancias. Supuestamente, es mejor que lo que hacía antes:  stage.initOwner(abmAgentesVBox.getScene().getWindow());
-            //stage.initOwner(MainMenuMosaicoController.getPrimaryStage());
             stage.initOwner(abmAgentesVBox.getScene().getWindow());
+
+            // Llamar a postInitialize una vez que tenemos el stage listo
+            abmUsuariosController.postInitialize(stage);
+
             // Mostrar la nueva ventana
-            stage.show();  // También se sugiere el uso de:  stage.showAndWait(), lo que tal vez por ahí estaría bueno en conjunto con:  stage.initModality(Modality.WINDOW_MODAL)
+            stage.show();
         } catch (IOException e) {
             // Mostrar un error si no se puede cargar la vista
             AlertUtils.showErr("Error al cargar la pantalla de ABM de Usuarios: " + e.getMessage());
