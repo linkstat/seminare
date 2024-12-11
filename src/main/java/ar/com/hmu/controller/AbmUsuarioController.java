@@ -941,6 +941,7 @@ public class AbmUsuarioController implements Initializable {
      */
     @FXML
     private void onCancelar(ActionEvent event) {
+        isCancellingOperation = true;
         if ((isAltaMode || isModificacionMode) && isFormModified) {
             // Operación "Cancelar" con confirmación sólo si hubo modificaciones
             Alert confirmacion = new Alert(AlertType.CONFIRMATION);
@@ -950,14 +951,11 @@ public class AbmUsuarioController implements Initializable {
             Optional<ButtonType> response = confirmacion.showAndWait();
             if (response.isPresent() && response.get() == ButtonType.OK) {
                 isCancellingOperation = true; // Indicar que estamos en proceso de cancelar
-                resetInterface();
-                isCancellingOperation = false; // Una vez terminado el reset, vuelve a falso
+                resetInterface(); // el método ya establece la bandera isCancellingOperation = false
             }
         } else if (isAltaMode || isModificacionMode) {
             // Cancelar sin confirmación si no hubo modificaciones
-            isCancellingOperation = true;
             resetInterface();
-            isCancellingOperation = false;
         } else {
             // Operación "Salir" cuando no estamos en modo alta o modificación
             Stage stage = (Stage) cancelarButton.getScene().getWindow();
@@ -1204,7 +1202,7 @@ public class AbmUsuarioController implements Initializable {
                     // La ventana no está enfocada, no validar
                     return;
                 }
-
+                // Si estamos en modo cancelar, no validamos
                 if (isCancellingOperation) {
                     return;
                 }
@@ -1237,6 +1235,8 @@ public class AbmUsuarioController implements Initializable {
                 }
 
                 long telOriginal = originalUser.getTel();
+
+                // Verificar si el teléfono pertenece a otro usuario
                 if (telOwner != null && (isAltaMode || (isModificacionMode && tel != telOriginal))) {
                     mostrarError("El teléfono " + tel + " ya pertenece a: " + telOwner.toUpperCase());
                     telTextField.requestFocus();
@@ -1324,6 +1324,12 @@ public class AbmUsuarioController implements Initializable {
         isAltaMode = false;
         isModificacionMode = false;
         isFormModified = false;
+        isCancellingOperation = false;
+
+        // Restablecer colores
+        cuilTextField.setStyle("");
+        mailTextField.setStyle("");
+        telTextField.setStyle("");
 
     }
 
