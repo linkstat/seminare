@@ -30,12 +30,12 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
     @Override
     public void create(Domicilio domicilio) throws SQLException {
         String query = "INSERT INTO Domicilio (id, calle, numeracion, barrio, ciudad, localidad, provincia) " +
-                "VALUES (UUID_TO_BIN(?), ?, ?, ?, ?, ?, ?)";
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
-            stmt.setString(1, domicilio.getId().toString());
+            stmt.setObject(1, domicilio.getId());
             stmt.setString(2, domicilio.getCalle());
             stmt.setInt(3, domicilio.getNumeracion());
             stmt.setString(4, domicilio.getBarrio());
@@ -52,12 +52,12 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
 
     @Override
     public Domicilio readByUUID(UUID id) throws SQLException {
-        String query = "SELECT BIN_TO_UUID(id) AS id, calle, numeracion, barrio, ciudad, localidad, provincia FROM Domicilio WHERE id = UUID_TO_BIN(?)";
+        String query = "SELECT id, calle, numeracion, barrio, ciudad, localidad, provincia FROM Domicilio WHERE id = ?";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
-            stmt.setString(1, id.toString());
+            stmt.setObject(1, id);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -75,7 +75,7 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
     @Override
     public List<Domicilio> readAll() throws SQLException {
         List<Domicilio> domicilios = new ArrayList<>();
-        String query = "SELECT BIN_TO_UUID(id) AS id, calle, numeracion, barrio, ciudad, localidad, provincia FROM Domicilio";
+        String query = "SELECT id, calle, numeracion, barrio, ciudad, localidad, provincia FROM Domicilio";
 
         try (Connection connection = databaseConnector.getConnection();
              Statement stmt = connection.createStatement();
@@ -83,7 +83,7 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
 
             while (rs.next()) {
                 domicilios.add(new Domicilio.Builder()
-                        .id(UUID.fromString(rs.getString("id")))
+                        .id(rs.getObject("id", UUID.class))
                         .calle(rs.getString("calle"))
                         .numeracion(rs.getInt("numeracion"))
                         .barrio(rs.getString("barrio"))
@@ -102,7 +102,7 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
 
     @Override
     public void update(Domicilio domicilio) throws SQLException {
-        String query = "UPDATE Domicilio SET calle = ?, numeracion = ?, barrio = ?, ciudad = ?, localidad = ?, provincia = ? WHERE id = UUID_TO_BIN(?)";
+        String query = "UPDATE Domicilio SET calle = ?, numeracion = ?, barrio = ?, ciudad = ?, localidad = ?, provincia = ? WHERE id = ?";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -113,7 +113,7 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
             stmt.setString(4, domicilio.getCiudad());
             stmt.setString(5, domicilio.getLocalidad());
             stmt.setString(6, domicilio.getProvincia());
-            stmt.setString(7, domicilio.getId().toString());
+            stmt.setObject(7, domicilio.getId());
 
             int rowsUpdated = stmt.executeUpdate();
             if (rowsUpdated == 0) {
@@ -127,12 +127,12 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
 
     @Override
     public void delete(Domicilio domicilio) throws SQLException {
-        String query = "DELETE FROM Domicilio WHERE id = UUID_TO_BIN(?)";
+        String query = "DELETE FROM Domicilio WHERE id = ?";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
-            stmt.setString(1, domicilio.getId().toString());
+            stmt.setObject(1, domicilio.getId());
 
             int rowsDeleted = stmt.executeUpdate();
             if (rowsDeleted == 0) {
@@ -145,19 +145,19 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
     }
 
     public Domicilio findById(UUID id) throws SQLException {
-        String query = "SELECT BIN_TO_UUID(d.id) AS id, d.calle, d.numeracion, d.barrio, d.ciudad, d.localidad, d.provincia " +
+        String query = "SELECT d.id AS id, d.calle, d.numeracion, d.barrio, d.ciudad, d.localidad, d.provincia " +
                 "FROM Domicilio d JOIN Usuario u ON d.id = u.domicilioID " +
-                "WHERE u.domicilioID = UUID_TO_BIN(?)";
+                "WHERE u.domicilioID = ?";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
-            stmt.setString(1, id.toString());
+            stmt.setObject(1, id);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     Domicilio domicilio = new Domicilio.Builder()
-                            .id(UUID.fromString(rs.getString("id")))
+                            .id(rs.getObject("id", UUID.class))
                             .calle(rs.getString("calle"))
                             .numeracion(rs.getInt("numeracion"))
                             .barrio(rs.getString("barrio"))
@@ -176,20 +176,20 @@ public class DomicilioRepository implements GenericDAO<Domicilio> {
     }
 
     public Domicilio findByIdAndUserId(UUID domicilioId, UUID usuarioId) throws SQLException, ServiceException {
-        String query = "SELECT BIN_TO_UUID(d.id) AS id, d.calle, d.numeracion, d.barrio, d.ciudad, d.localidad, d.provincia " +
+        String query = "SELECT d.id AS id, d.calle, d.numeracion, d.barrio, d.ciudad, d.localidad, d.provincia " +
                 "FROM Domicilio d JOIN Usuario u ON d.id = u.domicilioID " +
-                "WHERE d.id = UUID_TO_BIN(?) AND u.id = UUID_TO_BIN(?)";
+                "WHERE d.id = ? AND u.id = ?";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
-            stmt.setString(1, domicilioId.toString());
-            stmt.setString(2, usuarioId.toString());
+            stmt.setObject(1, domicilioId);
+            stmt.setObject(2, usuarioId);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     Domicilio domicilio = new Domicilio.Builder()
-                            .id(UUID.fromString(rs.getString("id")))
+                            .id(rs.getObject("id", UUID.class))
                             .calle(rs.getString("calle"))
                             .numeracion(rs.getInt("numeracion"))
                             .barrio(rs.getString("barrio"))

@@ -18,8 +18,8 @@ import ar.com.hmu.exceptions.DatabaseErrorType;
  * Clase responsable de gestionar la conexión a la base de datos.
  * <p>
  * La clase {@link DatabaseConnector} utiliza los valores de configuración proporcionados por {@link AppConfigReader}
- * para establecer una conexión con la base de datos especificada. Actualmente, soporta la conexión
- * a bases de datos de tipo <i>MariaDB</i> (y desestima otros motores de BD, indicando que no están soportados).
+ * para establecer una conexión con la base de datos especificada. Soporta la conexión a bases de datos de tipo
+ * <i>PostgreSQL</i> (y desestima otros motores de BD, indicando que no están soportados).
  */
 public class DatabaseConnector {
 
@@ -55,33 +55,33 @@ public class DatabaseConnector {
      * Establece y devuelve una conexión con la base de datos.
      * <p>
      * Este método crea una conexión a la base de datos utilizando los valores de configuración previamente
-     * obtenidos. Actualmente, solo se soporta la conexión a bases de datos de tipo <i>MariaDB</i>, por lo cual si
-     * el motor de BD fuera otro distinto de <i>MariaDB</i>, se tira una excepción indicando que no hay implementación.
+     * obtenidos. Solo se soporta la conexión a bases de datos de tipo <i>PostgreSQL</i>; si el motor configurado
+     * es otro, se tira una excepción indicando que no hay implementación.
      *
      * @return una instancia de {@link Connection} que representa la conexión activa a la base de datos.
      * @throws SQLException si ocurre un error al intentar conectar a la base de datos.
      * @throws UnsupportedOperationException si el tipo de base de datos no es soportado.
      */
     public Connection getConnection() throws SQLException, DatabaseAuthenticationException, DatabaseConnectionException {
-        if (!dbType.equalsIgnoreCase("mariadb")) {
+        if (!dbType.equalsIgnoreCase("postgresql")) {
             throw new UnsupportedOperationException("Motor de base de datos no implementado: " + dbType);
         }
 
-        String url = String.format("jdbc:mariadb://%s:%d/%s", dbHost, dbPort, dbName);
+        String url = String.format("jdbc:postgresql://%s:%d/%s", dbHost, dbPort, dbName);
         try {
             return DriverManager.getConnection(url, dbUser, dbPass);
         } catch (SQLException e) {
             String sqlState = e.getSQLState();
-            int errorCode = e.getErrorCode();
 
-            if ("28000".equals(sqlState) && errorCode == 1045) {
-                // Authentication error
+            // PostgreSQL SQLState class "28" = invalid_authorization_specification:
+            //   28000 = invalid_authorization_specification
+            //   28P01 = invalid_password
+            if (sqlState != null && sqlState.startsWith("28")) {
                 String exceptionMessage = "Error de autenticación: No se pudo autenticar con el servidor de base de datos "
                         + dbType + " en " + dbHost + ":" + dbPort + " con el usuario '" + dbUser
                         + "'. Verificar credenciales en el archivo de configuración YAML.";
                 throw new DatabaseAuthenticationException(exceptionMessage, e, DatabaseErrorType.AUTHENTICATION_FAILURE);
             } else {
-                // Other SQL exceptions
                 String exceptionMessage = "Error al conectar a la base de datos '" + dbName + "' en " + dbHost + ":" + dbPort
                         + " para el usuario '" + dbUser + "'. Revisa el archivo de configuración 'config.yaml'";
                 throw new DatabaseConnectionException(exceptionMessage, e, dbHost, dbPort, dbName, dbUser);

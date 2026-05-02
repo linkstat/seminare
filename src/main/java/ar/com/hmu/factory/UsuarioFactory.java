@@ -1,6 +1,5 @@
 package ar.com.hmu.factory;
 
-import java.sql.Blob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Set;
@@ -45,10 +44,7 @@ public class UsuarioFactory {
     public Usuario createUsuario(ResultSet resultSet) throws SQLException, ServiceException {
         Usuario usuario = new Usuario();
 
-        // Asignar el ID (UUID) del usuario directamente desde la columna convertida con BIN_TO_UUID
-        usuario.setId(UUID.fromString(resultSet.getString("id")));
-
-        // Asignar otros campos
+        usuario.setId(resultSet.getObject("id", UUID.class));
         usuario.setFechaAlta(resultSet.getDate("fechaAlta").toLocalDate());
         usuario.setEstado(resultSet.getBoolean("estado"));
         usuario.setCuil(resultSet.getLong("cuil"));
@@ -58,39 +54,24 @@ public class UsuarioFactory {
         usuario.setMail(resultSet.getString("mail"));
         usuario.setTel(resultSet.getLong("tel"));
 
-        // Cargar el hash de la contraseña almacenado
         String passwordHash = resultSet.getString("passwd");
         if (passwordHash != null && !passwordHash.isEmpty()) {
             usuario.setPasswordHash(passwordHash);
         }
-        // Obtener la imagen de perfil (si existe)
-        Blob profileImageBlob = resultSet.getBlob("profile_image");
-        if (profileImageBlob != null) {
-            int blobLength = (int) profileImageBlob.length();
-            usuario.setProfileImage(profileImageBlob.getBytes(1, blobLength));
+
+        // profile_image es BYTEA; getBytes() devuelve byte[] directo
+        byte[] profileImage = resultSet.getBytes("profile_image");
+        if (profileImage != null && profileImage.length > 0) {
+            usuario.setProfileImage(profileImage);
         }
 
-        // Asignar los IDs de las relaciones (sin cargar las entidades)
-        String domicilioIdStr = resultSet.getString("domicilioID");
-        if (domicilioIdStr != null) {
-            usuario.setDomicilioId(UUID.fromString(domicilioIdStr));
-        }
+        usuario.setDomicilioId(resultSet.getObject("domicilioID", UUID.class));
+        usuario.setCargoId(resultSet.getObject("cargoID", UUID.class));
+        usuario.setServicioId(resultSet.getObject("servicioID", UUID.class));
 
-        String cargoIdStr = resultSet.getString("cargoID");
-        if (cargoIdStr != null) {
-            usuario.setCargoId(UUID.fromString(cargoIdStr));
-        }
-
-        String servicioIdStr = resultSet.getString("servicioID");
-        if (servicioIdStr != null) {
-            usuario.setServicioId(UUID.fromString(servicioIdStr));
-        }
-
-        // Obtener los roles de datos del usuario
         Set<RoleData> rolesData = obtenerRolesDelUsuario(usuario.getId());
         usuario.setRolesData(rolesData);
 
-        // Asignar roles de comportamiento
         usuario.assignRoleBehaviors();
 
         return usuario;

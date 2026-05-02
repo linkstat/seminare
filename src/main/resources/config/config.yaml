@@ -3,9 +3,9 @@
 # y no son leídas por el programa (solo humanos ;-)
 #
 db:
-  dbType: mariadb
+  dbType: postgresql
   dbHost: localhost
-  dbPort: 3306
+  dbPort: 5432
   dbName: aromito
   dbUser: aromito
   dbPass: aromitoSuperSecretDBPass

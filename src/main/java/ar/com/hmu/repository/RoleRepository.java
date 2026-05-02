@@ -14,17 +14,16 @@ public class RoleRepository {
     }
 
     public RoleData findByNombre(String nombre) throws SQLException {
-        String query = "SELECT *, BIN_TO_UUID(id) AS id_str FROM Rol WHERE nombre = ?";
+        String query = "SELECT id, nombre, descripcion FROM Rol WHERE nombre = ?";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, nombre);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     RoleData roleData = new RoleData();
-                    roleData.setId(UUID.fromString(rs.getString("id_str")));
+                    roleData.setId(rs.getObject("id", UUID.class));
                     roleData.setNombre(rs.getString("nombre"));
                     roleData.setDescripcion(rs.getString("descripcion"));
-                    // Cuando creamos objetos de tipo Rol, debemos configurar el campo tipoUsuario, que podría ser necesario en otro lugar.
                     roleData.setTipoUsuario(TipoUsuario.fromInternalName(roleData.getNombre()));
 
                     return roleData;
@@ -41,7 +40,7 @@ public class RoleRepository {
 
     public Set<RoleData> findAll() throws SQLException {
         Set<RoleData> rolesSet = new HashSet<>();
-        String query = "SELECT *, BIN_TO_UUID(id) AS id_str FROM Rol";
+        String query = "SELECT id, nombre, descripcion FROM Rol";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query);
@@ -49,10 +48,9 @@ public class RoleRepository {
 
             while (rs.next()) {
                 RoleData roleData = new RoleData();
-                roleData.setId(UUID.fromString(rs.getString("id_str")));
+                roleData.setId(rs.getObject("id", UUID.class));
                 roleData.setNombre(rs.getString("nombre"));
                 roleData.setDescripcion(rs.getString("descripcion"));
-                // Se debe configurar tipoUsuario en función del nombre
                 roleData.setTipoUsuario(TipoUsuario.fromInternalName(roleData.getNombre()));
                 rolesSet.add(roleData);
             }
@@ -62,39 +60,38 @@ public class RoleRepository {
     }
 
     public void asignarRol(UUID usuarioId, UUID rolId) throws SQLException {
-        String query = "INSERT INTO Usuario_Rol (usuario_id, rol_id) VALUES (UUID_TO_BIN(?), UUID_TO_BIN(?))";
+        String query = "INSERT INTO Usuario_Rol (usuario_id, rol_id) VALUES (?, ?)";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, usuarioId.toString());
-            stmt.setString(2, rolId.toString());
+            stmt.setObject(1, usuarioId);
+            stmt.setObject(2, rolId);
             stmt.executeUpdate();
         }
     }
 
 
     public void revocarTodosLosRoles(UUID usuarioId) throws SQLException {
-        String query = "DELETE FROM Usuario_Rol WHERE usuario_id = UUID_TO_BIN(?)";
+        String query = "DELETE FROM Usuario_Rol WHERE usuario_id = ?";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, usuarioId.toString());
+            stmt.setObject(1, usuarioId);
             stmt.executeUpdate();
         }
     }
 
 
     public Set<RoleData> findRolesByUsuarioId(UUID usuarioId) throws SQLException {
-        String query = "SELECT BIN_TO_UUID(r.id) AS id, r.nombre, r.descripcion  " +
+        String query = "SELECT r.id AS id, r.nombre, r.descripcion " +
                 "FROM Rol r INNER JOIN Usuario_Rol ur ON r.id = ur.rol_id " +
-                "WHERE ur.usuario_id = UUID_TO_BIN(?)";
+                "WHERE ur.usuario_id = ?";
         Set<RoleData> roles = new HashSet<>();
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, usuarioId.toString());
+            stmt.setObject(1, usuarioId);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 RoleData roleData = new RoleData();
-                // Set properties of rol
-                roleData.setId(UUID.fromString(rs.getString("id")));
+                roleData.setId(rs.getObject("id", UUID.class));
                 roleData.setNombre(rs.getString("nombre"));
                 roleData.setDescripcion(rs.getString("descripcion"));
                 roles.add(roleData);

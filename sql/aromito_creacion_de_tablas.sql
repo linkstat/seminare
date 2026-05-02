@@ -1,66 +1,68 @@
 /* ============================================================================
- * Aromito - DDL de creación de tablas (MariaDB)
+ * Aromito - DDL de creación de tablas (PostgreSQL 13+)
  *
- * Estado: motor MariaDB. La migración a PostgreSQL es un paso posterior del
- * roadmap (ver CLAUDE.md). Mientras tanto se mantienen UUID en BINARY(16) y
- * las funciones de conversión UUID_TO_BIN / BIN_TO_UUID.
+ * Migración desde MariaDB realizada en el paso 3 del roadmap.
  *
- * Decisiones de diseño aplicadas en este DDL:
+ * Decisiones de la migración:
+ *  - Tipo UUID nativo (vs. BINARY(16) en MariaDB). gen_random_uuid() está
+ *    built-in desde PostgreSQL 13, no requiere extensión pgcrypto.
+ *  - Los antiguos ENUM(...) inline de MariaDB se traducen a CREATE TYPE ...
+ *    AS ENUM, con nombres tipados (sexo, agrupacion_cargo, etc.). Desde Java
+ *    se setean con casts explícitos en las queries: ?::sexo.
+ *  - DATETIME → TIMESTAMP (sin zona horaria; el HMU opera en una sola zona).
+ *  - BLOB → BYTEA.
+ *  - DOUBLE → DOUBLE PRECISION; INT → INTEGER.
+ *  - Backticks eliminados; PostgreSQL no los soporta (usa "" para identif.).
+ *  - El ciclo Servicio.direccionID → Empleado.id se resuelve creando Servicio
+ *    sin esa FK y agregándola con ALTER TABLE tras crear Empleado.
+ *  - ENGINE=InnoDB no aplica.
+ *  - SET FOREIGN_KEY_CHECKS no aplica; se reordenan tablas o se difieren FKs.
+ *
+ * Decisiones de diseño preservadas del rediseño previo (ver paso 1):
  *  - El polimorfismo de Usuario se resuelve por roles (tabla Rol + Usuario_Rol),
- *    no por Class Table Inheritance. Por eso se eliminan las tablas hijas
- *    Direccion, JefaturaDeServicio (ex JefeDeServicio) y OficinaDePersonal,
- *    que no aportaban atributos propios.
- *  - Se mantiene la tabla Empleado (ex Agente) porque sí tiene atributos
+ *    no por Class Table Inheritance. Por eso no existen tablas Direccion,
+ *    JefaturaDeServicio, OficinaDePersonal: son sólo roles.
+ *  - Empleado se mantiene como subclase persistida porque tiene atributos
  *    propios (francosCompensatoriosUtilizados, horarioActualID).
- *  - La columna Usuario.tipoUsuario se eliminó (el discriminador ahora vive
- *    en Usuario_Rol).
- *  - Nomenclatura unificada: Empleado en vez de Agente; JefaturaDeServicio
- *    en vez de JefeDeServicio (este último vive como nombre de rol y como
- *    sufijo en la tabla intermedia Servicio_JefaturaDeServicio).
- *  - Las FK que antes apuntaban a tablas hijas eliminadas (Direccion,
- *    JefaturaDeServicio, OficinaDePersonal) ahora apuntan a Empleado(id):
- *    se asume que el rol esperado se valida a nivel aplicación.
+ *  - Usuario.tipoUsuario fue eliminada (el discriminador vive en Usuario_Rol).
+ *  - FKs que antes apuntaban a las tablas hijas eliminadas ahora apuntan a
+ *    Empleado(id); el rol esperado se valida a nivel aplicación.
+ *
+ * Para regenerar desde cero:
+ *   DROP DATABASE aromito; CREATE DATABASE aromito;
+ *   psql -d aromito -f aromito_creacion_de_tablas.sql
  * ========================================================================== */
 
 
 /* ----------------------------------------------------------------------------
- * Funciones de conversión UUID <-> BINARY(16)
+ * Tipos enumerados
  *
- * Permiten manipular UUIDs como CHAR(36) desde la aplicación mientras se
- * almacenan compactos en BINARY(16). Se eliminarán en la migración a
- * PostgreSQL (donde existe el tipo UUID nativo).
+ * Se nombran por dominio (no por tabla.columna) para reusarlos si dos
+ * columnas comparten el mismo conjunto de valores. Los nombres son lower
+ * snake_case por convención de PostgreSQL.
  * -------------------------------------------------------------------------- */
-DELIMITER $$
-CREATE FUNCTION `UUID_TO_BIN`(uuid CHAR(36))
-RETURNS BINARY(16)
-DETERMINISTIC
-BEGIN
-  RETURN UNHEX(CONCAT(
-    SUBSTRING(uuid, 1, 8),      -- aaaaaaaa
-    SUBSTRING(uuid, 10, 4),     -- bbbb
-    SUBSTRING(uuid, 15, 4),     -- cccc
-    SUBSTRING(uuid, 20, 4),     -- dddd
-    SUBSTRING(uuid, 25, 12)     -- eeeeeeeeeeee
-  ));
-END$$
-DELIMITER ;
+CREATE TYPE agrupacion_cargo AS ENUM (
+    'INDEFINIDO', 'PLANTAPOLITICA', 'JEFATURA', 'TECNICO', 'ADMINISTRATIVO',
+    'SERVICIO', 'ENFERMERIA', 'MEDICO', 'PROFESIONAL'
+);
 
-DELIMITER $$
-CREATE FUNCTION `BIN_TO_UUID`(b BINARY(16))
-RETURNS CHAR(36) CHARSET ascii
-DETERMINISTIC
-BEGIN
-   DECLARE hexStr CHAR(32);
-   SET hexStr = HEX(b);
-   RETURN LOWER(CONCAT(
-     SUBSTR(hexStr, 1, 8), '-',      -- aaaaaaaa
-     SUBSTR(hexStr, 9, 4), '-',      -- bbbb
-     SUBSTR(hexStr, 13, 4), '-',     -- cccc
-     SUBSTR(hexStr, 17, 4), '-',     -- dddd
-     SUBSTR(hexStr, 21, 12)          -- eeeeeeeeeeee
-  ));
-END$$
-DELIMITER ;
+CREATE TYPE agrupacion_servicio AS ENUM (
+    'ADMINISTRATIVO', 'SERVICIO', 'MEDICO', 'ENFERMERIA', 'TECNICO', 'PLANTAPOLITICA'
+);
+
+CREATE TYPE sexo AS ENUM ('FEMENINO', 'MASCULINO', 'OTRO');
+
+CREATE TYPE tipo_rol_autorizacion AS ENUM (
+    'EMPLEADO', 'JEFATURADESERVICIO', 'OFICINADEPERSONAL', 'DIRECCION'
+);
+
+CREATE TYPE tipo_rol_memo_autorizacion AS ENUM (
+    'JEFATURADESERVICIO', 'OFICINADEPERSONAL', 'DIRECCION', 'USUARIO'
+);
+
+CREATE TYPE estado_memo_autorizacion AS ENUM ('PENDIENTE', 'AUTORIZADO', 'RECHAZADO');
+
+CREATE TYPE tipo_marcacion AS ENUM ('INGRESO', 'EGRESO');
 
 
 /* ----------------------------------------------------------------------------
@@ -71,17 +73,17 @@ DELIMITER ;
  * de Horario.
  * -------------------------------------------------------------------------- */
 CREATE TABLE HorarioBase (
-    id BINARY(16) PRIMARY KEY,
-    tipo VARCHAR(50) NOT NULL -- 'Horario', 'HorarioConFranquicia'
+    id UUID PRIMARY KEY,
+    tipo VARCHAR(50) NOT NULL  -- 'Horario', 'HorarioConFranquicia'
 );
 
 CREATE TABLE Horario (
-    id BINARY(16) PRIMARY KEY,
-    fechaIngreso DATETIME NOT NULL,
-    fechaEgreso DATETIME NOT NULL,
-    jornadasPlanificadas INT,
+    id UUID PRIMARY KEY,
+    fechaIngreso TIMESTAMP NOT NULL,
+    fechaEgreso TIMESTAMP NOT NULL,
+    jornadasPlanificadas INTEGER,
     reglasHorario VARCHAR(255),
-    horarioBaseID BINARY(16) NOT NULL,
+    horarioBaseID UUID NOT NULL,
     modalidad VARCHAR(50) NOT NULL,
     -- Posibles valores de modalidad: 'HorarioEstandar', 'HorarioSemanal',
     -- 'HorarioNocturno', 'HorarioFeriante', 'HorarioDXI',
@@ -91,85 +93,85 @@ CREATE TABLE Horario (
 );
 
 CREATE TABLE HorarioConFranquicia (
-    id BINARY(16) PRIMARY KEY,
-    fechaIngreso DATETIME NOT NULL,
-    fechaEgreso DATETIME NOT NULL,
-    horasFranquicia INT NOT NULL,
-    horarioDecoradoID BINARY(16) NOT NULL,
+    id UUID PRIMARY KEY,
+    fechaIngreso TIMESTAMP NOT NULL,
+    fechaEgreso TIMESTAMP NOT NULL,
+    horasFranquicia INTEGER NOT NULL,
+    horarioDecoradoID UUID NOT NULL,
     FOREIGN KEY (id) REFERENCES HorarioBase(id),
     FOREIGN KEY (horarioDecoradoID) REFERENCES Horario(id)
 );
 
 CREATE TABLE HorarioEstandar (
-    id BINARY(16) PRIMARY KEY,
+    id UUID PRIMARY KEY,
     diasLaborables VARCHAR(255) NOT NULL,
-    horasPorDia INT NOT NULL,
+    horasPorDia INTEGER NOT NULL,
     FOREIGN KEY (id) REFERENCES Horario(id)
 );
 
 CREATE TABLE HorarioSemanal (
-    id BINARY(16) PRIMARY KEY,
+    id UUID PRIMARY KEY,
     distribucionSemanal VARCHAR(255) NOT NULL,
     horaInicioPorDia VARCHAR(255) NOT NULL,
     FOREIGN KEY (id) REFERENCES Horario(id)
 );
 
 CREATE TABLE HorarioNocturno (
-    id BINARY(16) PRIMARY KEY,
+    id UUID PRIMARY KEY,
     diasProgramados VARCHAR(255) NOT NULL,
-    duracionJornadaHoras INT NOT NULL,
-    numeroJornadasMensuales INT NOT NULL,
+    duracionJornadaHoras INTEGER NOT NULL,
+    numeroJornadasMensuales INTEGER NOT NULL,
     FOREIGN KEY (id) REFERENCES Horario(id)
 );
 
 CREATE TABLE HorarioFeriante (
-    id BINARY(16) PRIMARY KEY,
+    id UUID PRIMARY KEY,
     diasNoLaborables VARCHAR(255) NOT NULL,
-    duracionGuardiaHoras INT NOT NULL,
+    duracionGuardiaHoras INTEGER NOT NULL,
     guardiasProgramadas VARCHAR(255) NOT NULL,
-    horasMinimasMensuales INT NOT NULL,
+    horasMinimasMensuales INTEGER NOT NULL,
     FOREIGN KEY (id) REFERENCES Horario(id)
 );
 
 CREATE TABLE HorarioDXI (
-    id BINARY(16) PRIMARY KEY,
+    id UUID PRIMARY KEY,
     distribucionHoraria VARCHAR(255) NOT NULL,
     horaInicioPorDia VARCHAR(255) NOT NULL,
-    horasSemanales INT NOT NULL,
+    horasSemanales INTEGER NOT NULL,
     FOREIGN KEY (id) REFERENCES Horario(id)
 );
 
 CREATE TABLE HorarioGuardiaMedica (
-    id BINARY(16) PRIMARY KEY,
-    duracionGuardiaHoras INT NOT NULL,
+    id UUID PRIMARY KEY,
+    duracionGuardiaHoras INTEGER NOT NULL,
     fechasGuardias VARCHAR(255) NOT NULL,
-    numeroGuardiasSemanal INT NOT NULL,
+    numeroGuardiasSemanal INTEGER NOT NULL,
     permitirGuardiasContinuas BOOLEAN NOT NULL,
-    tiempoDescansoMinimoHoras INT NOT NULL,
+    tiempoDescansoMinimoHoras INTEGER NOT NULL,
     FOREIGN KEY (id) REFERENCES Horario(id)
 );
 
 CREATE TABLE HorarioGuardiaEnfermeria (
-    id BINARY(16) PRIMARY KEY,
-    duracionGuardia10Horas INT NOT NULL,
-    duracionGuardia12Horas INT NOT NULL,
+    id UUID PRIMARY KEY,
+    duracionGuardia10Horas INTEGER NOT NULL,
+    duracionGuardia12Horas INTEGER NOT NULL,
     fechasGuardias VARCHAR(255) NOT NULL,
-    numeroGuardias10Horas INT NOT NULL,
-    numeroGuardias12Horas INT NOT NULL,
+    numeroGuardias10Horas INTEGER NOT NULL,
+    numeroGuardias12Horas INTEGER NOT NULL,
     FOREIGN KEY (id) REFERENCES Horario(id)
 );
 
 CREATE TABLE HorarioJefeServicioGuardiaPasiva (
-    id BINARY(16) PRIMARY KEY,
+    id UUID PRIMARY KEY,
     diasLaborables VARCHAR(255) NOT NULL,
-    horasPorDia INT NOT NULL,
+    horasPorDia INTEGER NOT NULL,
     FOREIGN KEY (id) REFERENCES Horario(id)
 );
 
 CREATE TABLE HorarioAbierto (
-    id BINARY(16) PRIMARY KEY,
+    id UUID PRIMARY KEY,
     flexibilidadHoraria BOOLEAN NOT NULL,
-    horasSemanales INT NOT NULL,
+    horasSemanales INTEGER NOT NULL,
     preferenciasHorarias VARCHAR(255),
     FOREIGN KEY (id) REFERENCES Horario(id)
 );
@@ -179,16 +181,16 @@ CREATE TABLE HorarioAbierto (
  * Cargo y Domicilio
  * -------------------------------------------------------------------------- */
 CREATE TABLE Cargo (
-    id BINARY(16) PRIMARY KEY,
-    numero INT UNIQUE NOT NULL,
+    id UUID PRIMARY KEY,
+    numero INTEGER UNIQUE NOT NULL,
     descripcion VARCHAR(255) NOT NULL,
-    agrupacion ENUM('INDEFINIDO', 'PLANTAPOLITICA', 'JEFATURA', 'TECNICO', 'ADMINISTRATIVO', 'SERVICIO', 'ENFERMERIA', 'MEDICO', 'PROFESIONAL') NOT NULL
+    agrupacion agrupacion_cargo NOT NULL
 );
 
 CREATE TABLE Domicilio (
-    id BINARY(16) PRIMARY KEY,
+    id UUID PRIMARY KEY,
     calle VARCHAR(255) NOT NULL,
-    numeracion INT,
+    numeracion INTEGER,
     barrio VARCHAR(255),
     ciudad VARCHAR(255),
     localidad VARCHAR(255),
@@ -197,38 +199,20 @@ CREATE TABLE Domicilio (
 
 
 /* ----------------------------------------------------------------------------
- * Servicio y tabla intermedia Servicio_JefaturaDeServicio
+ * Servicio (sin FK direccionID por ahora — se cierra el ciclo más abajo)
  *
  * Servicio.direccionID apunta a Empleado(id): el empleado con rol DIRECCION
  * a cargo del servicio. La validación del rol queda a nivel aplicación.
  *
- * Servicio_JefaturaDeServicio mantiene la cardinalidad N:M (un servicio
- * puede tener varios jefes; un mismo empleado puede ser jefe de varios
- * servicios). La columna empleadoID FK a Empleado(id), donde se espera
- * que ese empleado tenga el rol JEFATURADESERVICIO.
- *
- * Se desactivan los FK checks porque hay un ciclo de dependencias entre
- * Servicio, Usuario y Empleado.
+ * Como Empleado todavía no existe, declaramos la columna acá pero la FK la
+ * agregamos con ALTER TABLE más adelante (rompe el ciclo de dependencias).
  * -------------------------------------------------------------------------- */
-SET FOREIGN_KEY_CHECKS = 0;
-
 CREATE TABLE Servicio (
-    id BINARY(16) PRIMARY KEY,
+    id UUID PRIMARY KEY,
     nombre VARCHAR(255) NOT NULL,
-    agrupacion ENUM('ADMINISTRATIVO', 'SERVICIO', 'MEDICO', 'ENFERMERIA', 'TECNICO', 'PLANTAPOLITICA') NOT NULL,
-    direccionID BINARY(16) NOT NULL,
-    FOREIGN KEY (direccionID) REFERENCES Empleado(id)
+    agrupacion agrupacion_servicio NOT NULL,
+    direccionID UUID NOT NULL
 );
-
-CREATE TABLE Servicio_JefaturaDeServicio (
-    servicioID BINARY(16) NOT NULL,
-    empleadoID BINARY(16) NOT NULL,
-    PRIMARY KEY (servicioID, empleadoID),
-    FOREIGN KEY (servicioID) REFERENCES Servicio(id) ON DELETE CASCADE,
-    FOREIGN KEY (empleadoID) REFERENCES Empleado(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
-
-SET FOREIGN_KEY_CHECKS = 1;
 
 
 /* ----------------------------------------------------------------------------
@@ -238,20 +222,20 @@ SET FOREIGN_KEY_CHECKS = 1;
  * se resuelve por la tabla Usuario_Rol, no por una columna discriminadora.
  * -------------------------------------------------------------------------- */
 CREATE TABLE Usuario (
-    id BINARY(16) PRIMARY KEY,
+    id UUID PRIMARY KEY,
     fechaAlta DATE NOT NULL,
     estado BOOLEAN NOT NULL,
     cuil BIGINT UNIQUE NOT NULL,
     apellidos VARCHAR(255) NOT NULL,
     nombres VARCHAR(255) NOT NULL,
-    sexo ENUM('FEMENINO', 'MASCULINO', 'OTRO') NOT NULL,
+    sexo sexo NOT NULL,
     mail VARCHAR(255) NOT NULL,
     tel BIGINT,
-    domicilioID BINARY(16),
-    cargoID BINARY(16),
-    servicioID BINARY(16),
+    domicilioID UUID,
+    cargoID UUID,
+    servicioID UUID,
     passwd VARCHAR(255) NOT NULL,
-    profile_image BLOB,
+    profile_image BYTEA,
     FOREIGN KEY (domicilioID) REFERENCES Domicilio(id),
     FOREIGN KEY (cargoID) REFERENCES Cargo(id),
     FOREIGN KEY (servicioID) REFERENCES Servicio(id)
@@ -266,11 +250,28 @@ CREATE TABLE Usuario (
  * OficinaDePersonal) se eliminaron: ahora son sólo roles.
  * -------------------------------------------------------------------------- */
 CREATE TABLE Empleado (
-    id BINARY(16) PRIMARY KEY,
-    francosCompensatoriosUtilizados INT,
-    horarioActualID BINARY(16),
+    id UUID PRIMARY KEY,
+    francosCompensatoriosUtilizados INTEGER,
+    horarioActualID UUID,
     FOREIGN KEY (id) REFERENCES Usuario(id) ON DELETE CASCADE,
     FOREIGN KEY (horarioActualID) REFERENCES HorarioBase(id)
+);
+
+
+/* ----------------------------------------------------------------------------
+ * Cierre del ciclo Servicio.direccionID → Empleado(id)
+ * Y tabla intermedia Servicio_JefaturaDeServicio
+ * -------------------------------------------------------------------------- */
+ALTER TABLE Servicio
+    ADD CONSTRAINT fk_servicio_direccion
+    FOREIGN KEY (direccionID) REFERENCES Empleado(id);
+
+CREATE TABLE Servicio_JefaturaDeServicio (
+    servicioID UUID NOT NULL,
+    empleadoID UUID NOT NULL,
+    PRIMARY KEY (servicioID, empleadoID),
+    FOREIGN KEY (servicioID) REFERENCES Servicio(id) ON DELETE CASCADE,
+    FOREIGN KEY (empleadoID) REFERENCES Empleado(id) ON DELETE CASCADE
 );
 
 
@@ -282,21 +283,21 @@ CREATE TABLE Empleado (
  * entidades evita modificar la jerarquía de clases para cada cambio.
  * -------------------------------------------------------------------------- */
 CREATE TABLE Rol (
-    id BINARY(16) PRIMARY KEY,
+    id UUID PRIMARY KEY,
     nombre VARCHAR(50) UNIQUE NOT NULL,
     descripcion VARCHAR(255)
 );
 
 CREATE TABLE Usuario_Rol (
-    usuario_id BINARY(16) NOT NULL,
-    rol_id BINARY(16) NOT NULL,
+    usuario_id UUID NOT NULL,
+    rol_id UUID NOT NULL,
     PRIMARY KEY (usuario_id, rol_id),
     FOREIGN KEY (usuario_id) REFERENCES Usuario(id) ON DELETE CASCADE,
     FOREIGN KEY (rol_id) REFERENCES Rol(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+);
 
-CREATE INDEX idx_usuario ON Usuario_Rol(usuario_id);
-CREATE INDEX idx_rol ON Usuario_Rol(rol_id);
+CREATE INDEX idx_usuariorol_usuario ON Usuario_Rol(usuario_id);
+CREATE INDEX idx_usuariorol_rol ON Usuario_Rol(rol_id);
 
 
 /* ----------------------------------------------------------------------------
@@ -308,35 +309,35 @@ CREATE INDEX idx_rol ON Usuario_Rol(rol_id);
  * propósito puede cubrirse con Memorandum_Autorizacion + Usuario_Rol.
  * -------------------------------------------------------------------------- */
 CREATE TABLE Autorizacion (
-    id BINARY(16) PRIMARY KEY,
-    fechaAutorizacion DATETIME NOT NULL,
-    tipoRol ENUM('EMPLEADO', 'JEFATURADESERVICIO', 'OFICINADEPERSONAL', 'DIRECCION') NOT NULL,
-    autorizadoPorID BINARY(16) NOT NULL,
+    id UUID PRIMARY KEY,
+    fechaAutorizacion TIMESTAMP NOT NULL,
+    tipoRol tipo_rol_autorizacion NOT NULL,
+    autorizadoPorID UUID NOT NULL,
     FOREIGN KEY (autorizadoPorID) REFERENCES Usuario(id)
 );
 
 CREATE TABLE EstadoTramite (
-    id BINARY(16) PRIMARY KEY,
+    id UUID PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL
 );
 INSERT INTO EstadoTramite (id, nombre) VALUES
-    (UUID_TO_BIN(UUID()), 'BORRADOR'),
-    (UUID_TO_BIN(UUID()), 'ENVIADO'),
-    (UUID_TO_BIN(UUID()), 'PENDIENTE DE FIRMA'),
-    (UUID_TO_BIN(UUID()), 'PENDIENTE DE AUTORIZACION'),
-    (UUID_TO_BIN(UUID()), 'AUTORIZADO'),
-    (UUID_TO_BIN(UUID()), 'RECHAZADO'),
-    (UUID_TO_BIN(UUID()), 'OBSERVADO'),
-    (UUID_TO_BIN(UUID()), 'LEIDO'),
-    (UUID_TO_BIN(UUID()), 'COMPLETADO');
+    (gen_random_uuid(), 'BORRADOR'),
+    (gen_random_uuid(), 'ENVIADO'),
+    (gen_random_uuid(), 'PENDIENTE DE FIRMA'),
+    (gen_random_uuid(), 'PENDIENTE DE AUTORIZACION'),
+    (gen_random_uuid(), 'AUTORIZADO'),
+    (gen_random_uuid(), 'RECHAZADO'),
+    (gen_random_uuid(), 'OBSERVADO'),
+    (gen_random_uuid(), 'LEIDO'),
+    (gen_random_uuid(), 'COMPLETADO');
 
 
 /* ----------------------------------------------------------------------------
  * Novedades
  * -------------------------------------------------------------------------- */
 CREATE TABLE Novedad (
-    id BINARY(16) PRIMARY KEY,
-    cod INT NOT NULL,
+    id UUID PRIMARY KEY,
+    cod INTEGER NOT NULL,
     descripcion VARCHAR(255) NOT NULL,
     estado VARCHAR(50) NOT NULL,
     estadoFechaModif TIMESTAMP,
@@ -344,14 +345,14 @@ CREATE TABLE Novedad (
     fechaFin DATE,
     fechaSolicitud DATE,
     reqAprobDireccion BOOLEAN NOT NULL,
-    estadoTramiteID BINARY(16),
+    estadoTramiteID UUID,
     FOREIGN KEY (estadoTramiteID) REFERENCES EstadoTramite(id)
 );
 
 -- Por la novedad 99 se requiere relación N:M Empleado <-> Novedad.
 CREATE TABLE Empleado_Novedad (
-    empleadoID BINARY(16) NOT NULL,
-    novedadID BINARY(16) NOT NULL,
+    empleadoID UUID NOT NULL,
+    novedadID UUID NOT NULL,
     PRIMARY KEY (empleadoID, novedadID),
     FOREIGN KEY (empleadoID) REFERENCES Empleado(id),
     FOREIGN KEY (novedadID) REFERENCES Novedad(id)
@@ -362,26 +363,26 @@ CREATE TABLE Empleado_Novedad (
  * Diagramación de servicios
  * -------------------------------------------------------------------------- */
 CREATE TABLE JornadaLaboral (
-    id BINARY(16) PRIMARY KEY,
-    fechaIngreso DATETIME NOT NULL,
-    fechaEgreso DATETIME NOT NULL
+    id UUID PRIMARY KEY,
+    fechaIngreso TIMESTAMP NOT NULL,
+    fechaEgreso TIMESTAMP NOT NULL
 );
 
 CREATE TABLE DiagramaDeServicio (
-    id BINARY(16) PRIMARY KEY,
+    id UUID PRIMARY KEY,
     estado VARCHAR(50) NOT NULL,
     fechaInicio DATE NOT NULL,
     fechaFin DATE NOT NULL,
-    servicioID BINARY(16) NOT NULL,
+    servicioID UUID NOT NULL,
     FOREIGN KEY (servicioID) REFERENCES Servicio(id)
 );
 
 -- Para el atributo 'planificaciones' de DiagramaDeServicio.
 -- Relaciona DiagramaDeServicio, Empleado y JornadaLaboral.
 CREATE TABLE Planificacion (
-    diagramaID BINARY(16) NOT NULL,
-    empleadoID BINARY(16) NOT NULL,
-    jornadaID BINARY(16) NOT NULL,
+    diagramaID UUID NOT NULL,
+    empleadoID UUID NOT NULL,
+    jornadaID UUID NOT NULL,
     PRIMARY KEY (diagramaID, empleadoID, jornadaID),
     FOREIGN KEY (diagramaID) REFERENCES DiagramaDeServicio(id),
     FOREIGN KEY (empleadoID) REFERENCES Empleado(id),
@@ -398,42 +399,42 @@ CREATE TABLE Planificacion (
  * porque NO es FK (es un ENUM); valores alineados con TipoUsuario.
  * -------------------------------------------------------------------------- */
 CREATE TABLE Memorandum (
-    id BINARY(16) PRIMARY KEY,
+    id UUID PRIMARY KEY,
     asunto VARCHAR(255) NOT NULL,
     contenido TEXT NOT NULL,
-    fechaEnvio DATETIME,
-    fechaRecepcion DATETIME,
-    estadoTramiteID BINARY(16) NOT NULL,
-    remitenteID BINARY(16) NOT NULL,
+    fechaEnvio TIMESTAMP,
+    fechaRecepcion TIMESTAMP,
+    estadoTramiteID UUID NOT NULL,
+    remitenteID UUID NOT NULL,
     FOREIGN KEY (estadoTramiteID) REFERENCES EstadoTramite(id),
     FOREIGN KEY (remitenteID) REFERENCES Usuario(id)
 );
 
 CREATE TABLE Memorandum_Destinatario (
-    memorandumID BINARY(16) NOT NULL,
-    usuarioID BINARY(16) NOT NULL,
-    fechaRecepcion DATETIME,
+    memorandumID UUID NOT NULL,
+    usuarioID UUID NOT NULL,
+    fechaRecepcion TIMESTAMP,
     PRIMARY KEY (memorandumID, usuarioID),
     FOREIGN KEY (memorandumID) REFERENCES Memorandum(id),
     FOREIGN KEY (usuarioID) REFERENCES Usuario(id)
 );
 
 CREATE TABLE Memorandum_Firmante (
-    memorandumID BINARY(16) NOT NULL,
-    usuarioID BINARY(16) NOT NULL,
-    fechaFirma DATETIME NOT NULL,
+    memorandumID UUID NOT NULL,
+    usuarioID UUID NOT NULL,
+    fechaFirma TIMESTAMP NOT NULL,
     PRIMARY KEY (memorandumID, usuarioID),
     FOREIGN KEY (memorandumID) REFERENCES Memorandum(id),
     FOREIGN KEY (usuarioID) REFERENCES Usuario(id)
 );
 
 CREATE TABLE Memorandum_Autorizacion (
-    id BINARY(16) PRIMARY KEY,
-    memorandumID BINARY(16) NOT NULL,
-    tipoRol ENUM('JEFATURADESERVICIO', 'OFICINADEPERSONAL', 'DIRECCION', 'USUARIO') NOT NULL,
-    autorizadoPorID BINARY(16),
-    fechaAutorizacion DATETIME,
-    estado ENUM('PENDIENTE', 'AUTORIZADO', 'RECHAZADO') NOT NULL,
+    id UUID PRIMARY KEY,
+    memorandumID UUID NOT NULL,
+    tipoRol tipo_rol_memo_autorizacion NOT NULL,
+    autorizadoPorID UUID,
+    fechaAutorizacion TIMESTAMP,
+    estado estado_memo_autorizacion NOT NULL,
     FOREIGN KEY (memorandumID) REFERENCES Memorandum(id),
     FOREIGN KEY (autorizadoPorID) REFERENCES Usuario(id)
 );
@@ -446,15 +447,15 @@ CREATE TABLE Memorandum_Autorizacion (
  * empleado tenga rol JEFATURADESERVICIO.
  * -------------------------------------------------------------------------- */
 CREATE TABLE FrancoCompensatorio (
-    id BINARY(16) PRIMARY KEY,
-    cantHoras DOUBLE NOT NULL,
+    id UUID PRIMARY KEY,
+    cantHoras DOUBLE PRECISION NOT NULL,
     descripcion VARCHAR(255) NOT NULL,
-    fechaAutorizacion DATETIME,
+    fechaAutorizacion TIMESTAMP,
     fechaDeAplicacion DATE,
-    estadoTramiteID BINARY(16) NOT NULL,
-    autorizadaPorID BINARY(16),
-    empleadoID BINARY(16) NOT NULL,
-    jefaturaID BINARY(16),
+    estadoTramiteID UUID NOT NULL,
+    autorizadaPorID UUID,
+    empleadoID UUID NOT NULL,
+    jefaturaID UUID,
     FOREIGN KEY (estadoTramiteID) REFERENCES EstadoTramite(id),
     FOREIGN KEY (autorizadaPorID) REFERENCES Usuario(id),
     FOREIGN KEY (empleadoID) REFERENCES Empleado(id),
@@ -462,16 +463,16 @@ CREATE TABLE FrancoCompensatorio (
 );
 
 CREATE TABLE HoraExtra (
-    id BINARY(16) PRIMARY KEY,
+    id UUID PRIMARY KEY,
     descripcion VARCHAR(255) NOT NULL,
-    fechaIngreso DATETIME NOT NULL,
-    fechaEgreso DATETIME NOT NULL,
-    ponderacion INT NOT NULL,
-    fechaAutorizacion DATETIME,
-    estadoTramiteID BINARY(16) NOT NULL,
-    autorizadaPorID BINARY(16),
-    empleadoID BINARY(16) NOT NULL,
-    jefaturaID BINARY(16),
+    fechaIngreso TIMESTAMP NOT NULL,
+    fechaEgreso TIMESTAMP NOT NULL,
+    ponderacion INTEGER NOT NULL,
+    fechaAutorizacion TIMESTAMP,
+    estadoTramiteID UUID NOT NULL,
+    autorizadaPorID UUID,
+    empleadoID UUID NOT NULL,
+    jefaturaID UUID,
     FOREIGN KEY (estadoTramiteID) REFERENCES EstadoTramite(id),
     FOREIGN KEY (autorizadaPorID) REFERENCES Usuario(id),
     FOREIGN KEY (empleadoID) REFERENCES Empleado(id),
@@ -486,30 +487,30 @@ CREATE TABLE HoraExtra (
  * que el empleado tenga rol OFICINADEPERSONAL.
  * -------------------------------------------------------------------------- */
 CREATE TABLE ParteDiario (
-    id BINARY(16) PRIMARY KEY,
-    fechaDeCierre DATETIME,
+    id UUID PRIMARY KEY,
+    fechaDeCierre TIMESTAMP,
     periodo VARCHAR(50) NOT NULL,
-    modificadoPorID BINARY(16),
-    oficinaPersonalID BINARY(16) NOT NULL,
+    modificadoPorID UUID,
+    oficinaPersonalID UUID NOT NULL,
     FOREIGN KEY (modificadoPorID) REFERENCES Usuario(id),
     FOREIGN KEY (oficinaPersonalID) REFERENCES Empleado(id)
 );
 
 CREATE TABLE ParteDiario_Empleado (
-    parteDiarioID BINARY(16) NOT NULL,
-    empleadoID BINARY(16) NOT NULL,
+    parteDiarioID UUID NOT NULL,
+    empleadoID UUID NOT NULL,
     PRIMARY KEY (parteDiarioID, empleadoID),
     FOREIGN KEY (parteDiarioID) REFERENCES ParteDiario(id),
     FOREIGN KEY (empleadoID) REFERENCES Empleado(id)
 );
 
 CREATE TABLE MarcacionEmpleado (
-    id BINARY(16) PRIMARY KEY,
-    fechaMarcacion DATETIME NOT NULL,
+    id UUID PRIMARY KEY,
+    fechaMarcacion TIMESTAMP NOT NULL,
     observaciones VARCHAR(255),
-    tipoMarcacion ENUM('INGRESO', 'EGRESO') NOT NULL,
+    tipoMarcacion tipo_marcacion NOT NULL,
     validada BOOLEAN NOT NULL,
-    empleadoID BINARY(16) NOT NULL,
+    empleadoID UUID NOT NULL,
     FOREIGN KEY (empleadoID) REFERENCES Empleado(id)
 );
 
@@ -519,12 +520,12 @@ CREATE TABLE MarcacionEmpleado (
  * restricciones se validan a nivel aplicación.
  */
 CREATE TABLE RegistroJornadaLaboral (
-    id BINARY(16) PRIMARY KEY,
+    id UUID PRIMARY KEY,
     fecha DATE NOT NULL,
-    empleadoID BINARY(16) NOT NULL,
-    marcacionIngresoID BINARY(16) NOT NULL,
-    marcacionEgresoID BINARY(16) NOT NULL,
-    duracionJornada INT, -- dato calculado, denormalizado para conveniencia
+    empleadoID UUID NOT NULL,
+    marcacionIngresoID UUID NOT NULL,
+    marcacionEgresoID UUID NOT NULL,
+    duracionJornada INTEGER, -- dato calculado, denormalizado para conveniencia
     FOREIGN KEY (empleadoID) REFERENCES Empleado(id),
     FOREIGN KEY (marcacionIngresoID) REFERENCES MarcacionEmpleado(id),
     FOREIGN KEY (marcacionEgresoID) REFERENCES MarcacionEmpleado(id)
@@ -534,19 +535,16 @@ CREATE TABLE RegistroJornadaLaboral (
 /* ----------------------------------------------------------------------------
  * Índices adicionales
  * -------------------------------------------------------------------------- */
-CREATE INDEX idx_servicio_direccion ON Servicio (direccionID);
+CREATE INDEX idx_servicio_direccion ON Servicio(direccionID);
 
-ALTER TABLE Domicilio
-    ADD INDEX `idx_calle` (`calle`),
-    ADD INDEX `idx_barrio` (`barrio`),
-    ADD INDEX `idx_ciudad` (`ciudad`),
-    ADD INDEX `idx_localidad` (`localidad`);
+CREATE INDEX idx_domicilio_calle ON Domicilio(calle);
+CREATE INDEX idx_domicilio_barrio ON Domicilio(barrio);
+CREATE INDEX idx_domicilio_ciudad ON Domicilio(ciudad);
+CREATE INDEX idx_domicilio_localidad ON Domicilio(localidad);
 
-ALTER TABLE Usuario
-    ADD INDEX `idx_apellidos`(`apellidos`),
-    ADD INDEX `idx_nombres`(`nombres`),
-    ADD UNIQUE INDEX `idx_mail`(`mail`),
-    ADD UNIQUE INDEX `idx_tel`(`tel`);
+CREATE INDEX idx_usuario_apellidos ON Usuario(apellidos);
+CREATE INDEX idx_usuario_nombres ON Usuario(nombres);
+CREATE UNIQUE INDEX idx_usuario_mail ON Usuario(mail);
+CREATE UNIQUE INDEX idx_usuario_tel ON Usuario(tel);
 
-ALTER TABLE Servicio
-    ADD UNIQUE INDEX `idx_nombre`(`nombre`);
+CREATE UNIQUE INDEX idx_servicio_nombre ON Servicio(nombre);

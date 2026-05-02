@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.UUID;
 
 import ar.com.hmu.model.Agrupacion;
-import ar.com.hmu.model.Cargo;
 import ar.com.hmu.model.Servicio;
 import ar.com.hmu.repository.dao.GenericDAO;
 
@@ -21,14 +20,14 @@ public class ServicioRepository implements GenericDAO<Servicio> {
 
     @Override
     public void create(Servicio servicio) throws SQLException {
-        String query = "INSERT INTO Servicio (id, nombre, agrupacion, direccionID) VALUES (UUID_TO_BIN(?), ?, ?, UUID_TO_BIN(?))";
+        String query = "INSERT INTO Servicio (id, nombre, agrupacion, direccionID) VALUES (?, ?, ?, ?)";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
-            stmt.setString(1, servicio.getId().toString());
+            stmt.setObject(1, servicio.getId());
             stmt.setString(2, servicio.getNombre());
-            stmt.setString(3, servicio.getAgrupacion().name());
-            stmt.setString(4, servicio.getDireccionId().toString());
+            stmt.setObject(3, servicio.getAgrupacion().name(), Types.OTHER);
+            stmt.setObject(4, servicio.getDireccionId());
 
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -38,13 +37,13 @@ public class ServicioRepository implements GenericDAO<Servicio> {
     }
 
     public void createWithoutDireccionId(Servicio servicio) throws SQLException {
-        String query = "INSERT INTO Servicio (id, nombre, agrupacion) VALUES (UUID_TO_BIN(?), ?, ?)";
+        String query = "INSERT INTO Servicio (id, nombre, agrupacion) VALUES (?, ?, ?)";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
-            stmt.setString(1, servicio.getId().toString());
+            stmt.setObject(1, servicio.getId());
             stmt.setString(2, servicio.getNombre());
-            stmt.setString(3, servicio.getAgrupacion().name());
+            stmt.setObject(3, servicio.getAgrupacion().name(), Types.OTHER);
 
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -55,12 +54,11 @@ public class ServicioRepository implements GenericDAO<Servicio> {
 
     @Override
     public Servicio readByUUID(UUID id) throws SQLException {
-        String query = "SELECT BIN_TO_UUID(id) AS id, nombre, agrupacion, BIN_TO_UUID(direccionID) AS direccionID " +
-                "FROM Servicio WHERE id = UUID_TO_BIN(?)";
+        String query = "SELECT id, nombre, agrupacion, direccionID FROM Servicio WHERE id = ?";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
-            stmt.setString(1, id.toString());
+            stmt.setObject(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return mapResultSetToServicio(rs);
@@ -76,7 +74,7 @@ public class ServicioRepository implements GenericDAO<Servicio> {
     @Override
     public List<Servicio> readAll() throws SQLException {
         List<Servicio> servicios = new ArrayList<>();
-        String query = "SELECT BIN_TO_UUID(id) AS id, nombre, agrupacion, BIN_TO_UUID(direccionID) AS direccionID FROM Servicio";
+        String query = "SELECT id, nombre, agrupacion, direccionID FROM Servicio";
         try (Connection connection = databaseConnector.getConnection();
              Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
@@ -93,14 +91,14 @@ public class ServicioRepository implements GenericDAO<Servicio> {
 
     @Override
     public void update(Servicio servicio) throws SQLException {
-        String query = "UPDATE Servicio SET nombre = ?, agrupacion = ?, direccionID = UUID_TO_BIN(?) WHERE id = UUID_TO_BIN(?)";
+        String query = "UPDATE Servicio SET nombre = ?, agrupacion = ?, direccionID = ? WHERE id = ?";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
-            stmt.setString(1, servicio.getNombre());                  // Nombre del servicio
-            stmt.setString(2, servicio.getAgrupacion().name());       // Agrupación como String
-            stmt.setString(3, servicio.getDireccionId().toString());  // UUID de la dirección
-            stmt.setString(4, servicio.getId().toString());           // UUID del servicio (WHERE)
+            stmt.setString(1, servicio.getNombre());
+            stmt.setObject(2, servicio.getAgrupacion().name(), Types.OTHER);
+            stmt.setObject(3, servicio.getDireccionId());
+            stmt.setObject(4, servicio.getId());
 
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -110,13 +108,13 @@ public class ServicioRepository implements GenericDAO<Servicio> {
     }
 
     public void updateWithoutDireccionId(Servicio servicio) throws SQLException {
-        String query = "UPDATE Servicio SET nombre = ?, agrupacion = ? WHERE id = UUID_TO_BIN(?)";
+        String query = "UPDATE Servicio SET nombre = ?, agrupacion = ? WHERE id = ?";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
-            stmt.setString(1, servicio.getNombre());                  // Nombre del servicio
-            stmt.setString(2, servicio.getAgrupacion().name());       // Agrupación como String
-            stmt.setString(3, servicio.getId().toString());           // UUID del servicio (WHERE)
+            stmt.setString(1, servicio.getNombre());
+            stmt.setObject(2, servicio.getAgrupacion().name(), Types.OTHER);
+            stmt.setObject(3, servicio.getId());
 
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -127,11 +125,11 @@ public class ServicioRepository implements GenericDAO<Servicio> {
 
     @Override
     public void delete(Servicio servicio) throws SQLException {
-        String query = "DELETE FROM Servicio WHERE id = UUID_TO_BIN(?)";
+        String query = "DELETE FROM Servicio WHERE id = ?";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
-            stmt.setString(1, servicio.getId().toString());
+            stmt.setObject(1, servicio.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -140,20 +138,20 @@ public class ServicioRepository implements GenericDAO<Servicio> {
     }
 
     public Servicio findById(UUID id) throws SQLException {
-        String query = "SELECT BIN_TO_UUID(id) AS id, nombre, agrupacion, BIN_TO_UUID(direccionID) AS direccionID FROM Servicio WHERE id = UUID_TO_BIN(?)";
+        String query = "SELECT id, nombre, agrupacion, direccionID FROM Servicio WHERE id = ?";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
-            stmt.setString(1, id.toString());
+            stmt.setObject(1, id);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     Servicio servicio = new Servicio();
-                    servicio.setId(UUID.fromString(rs.getString("id")));
+                    servicio.setId(rs.getObject("id", UUID.class));
                     servicio.setNombre(rs.getString("nombre"));
                     servicio.setAgrupacion(Agrupacion.valueOf(rs.getString("agrupacion")));
-                    servicio.setDireccionId(UUID.fromString(rs.getString("direccionID")));
+                    servicio.setDireccionId(rs.getObject("direccionID", UUID.class));
                     return servicio;
                 }
             }
@@ -170,16 +168,14 @@ public class ServicioRepository implements GenericDAO<Servicio> {
      * @return UUID del servicio buscado
      */
     public UUID findIdByName(String name) throws SQLException {
-        String query = "SELECT BIN_TO_UUID(id) AS id FROM Servicio WHERE nombre = ?";
+        String query = "SELECT id FROM Servicio WHERE nombre = ?";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
             stmt.setString(1, name);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    // Leer el UUID como String y convertirlo a UUID
-                    String uuidString = rs.getString("id");
-                    return UUID.fromString(uuidString);
+                    return rs.getObject("id", UUID.class);
                 }
             }
         } catch (SQLException e) {
@@ -194,16 +190,13 @@ public class ServicioRepository implements GenericDAO<Servicio> {
      * Método para mapear filas a un ResultSet de Servicio.
      */
     private Servicio mapResultSetToServicio(ResultSet rs) throws SQLException {
-        UUID id = UUID.fromString(rs.getString("id"));
+        UUID id = rs.getObject("id", UUID.class);
         String nombre = rs.getString("nombre");
         Agrupacion agrupacion = Agrupacion.valueOf(rs.getString("agrupacion"));
-        UUID direccionId;
-        if(rs.getString("direccionID") == null) {
+        UUID direccionId = rs.getObject("direccionID", UUID.class);
+        if (direccionId == null) {
             //TODO: Decidir cómo manejar este caso: lanzar una excepción o establecer como null.
-            direccionId = null;
             System.out.println("direccionID es null para ServicioID: " + nombre);
-        } else {
-            direccionId = UUID.fromString(rs.getString("direccionID"));
         }
 
         return new Servicio(id, nombre, agrupacion, direccionId);
@@ -225,9 +218,8 @@ public class ServicioRepository implements GenericDAO<Servicio> {
             throw new RuntimeException("Error al contar los servicios", e);
         }
 
-        return 0; // Retornar 0 si no se encuentra ningún registro
+        return 0;
     }
 
 
 }
-

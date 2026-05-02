@@ -42,11 +42,11 @@
             <artifactId>javafx-swing</artifactId>
             <version>${javafx.version}</version>
         </dependency>
-        <!-- MariaDB JDBC Dependencies -->
+        <!-- PostgreSQL JDBC Dependencies -->
         <dependency>
-            <groupId>org.mariadb.jdbc</groupId>
-            <artifactId>mariadb-java-client</artifactId>
-            <version>3.0.6</version>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.11</version>
         </dependency>
         <!-- Spring Security: usado únicamente para verificar hashes BCrypt
              legacy durante la migración a Argon2id. Una vez que todos los

@@ -10,7 +10,7 @@ public class DomicilioFactory {
 
     public static Domicilio createDomicilio(ResultSet rs) throws SQLException {
         return new Domicilio.Builder()
-                .id(UUID.fromString(rs.getString("id")))
+                .id(rs.getObject("id", UUID.class))
                 .calle(rs.getString("calle"))
                 .numeracion(rs.getInt("numeracion"))
                 .barrio(rs.getString("barrio"))

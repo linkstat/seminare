@@ -26,14 +26,14 @@ public class CargoRepository implements GenericDAO<Cargo> {
 
     @Override
     public void create(Cargo cargo) throws SQLException {
-        String query = "INSERT INTO Cargo (id, numero, descripcion, agrupacion) VALUES (UUID_TO_BIN(UUID()), ?, ?, ?)";
+        String query = "INSERT INTO Cargo (id, numero, descripcion, agrupacion) VALUES (gen_random_uuid(), ?, ?, ?)";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
             stmt.setInt(1, cargo.getNumero());
             stmt.setString(2, cargo.getDescripcion());
-            stmt.setString(3, cargo.getAgrupacion().name());
+            stmt.setObject(3, cargo.getAgrupacion().name(), Types.OTHER);
 
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -44,12 +44,12 @@ public class CargoRepository implements GenericDAO<Cargo> {
 
     @Override
     public Cargo readByUUID(UUID id) throws SQLException {
-        String query = "SELECT BIN_TO_UUID(id) AS id, numero, descripcion, agrupacion FROM Cargo WHERE id = UUID_TO_BIN(?)";
+        String query = "SELECT id, numero, descripcion, agrupacion FROM Cargo WHERE id = ?";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
-            stmt.setString(1, id.toString());
+            stmt.setObject(1, id);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -60,7 +60,7 @@ public class CargoRepository implements GenericDAO<Cargo> {
                             Agrupacion.valueOf(rs.getString("agrupacion"))
                     );
                 } else {
-                    return null; // No se encontró el cargo
+                    return null;
                 }
             }
         } catch (SQLException e) {
@@ -72,7 +72,7 @@ public class CargoRepository implements GenericDAO<Cargo> {
     @Override
     public List<Cargo> readAll() throws SQLException {
         List<Cargo> cargos = new ArrayList<>();
-        String query = "SELECT BIN_TO_UUID(id) AS id, numero, descripcion, agrupacion FROM Cargo";
+        String query = "SELECT id, numero, descripcion, agrupacion FROM Cargo";
 
         try (Connection connection = databaseConnector.getConnection();
              Statement stmt = connection.createStatement();
@@ -80,7 +80,7 @@ public class CargoRepository implements GenericDAO<Cargo> {
 
             while (rs.next()) {
                 cargos.add(new Cargo(
-                        UUID.fromString(rs.getString("id")),
+                        rs.getObject("id", UUID.class),
                         rs.getInt("numero"),
                         rs.getString("descripcion"),
                         Agrupacion.valueOf(rs.getString("agrupacion"))
@@ -96,15 +96,15 @@ public class CargoRepository implements GenericDAO<Cargo> {
 
     @Override
     public void update(Cargo cargo) throws SQLException {
-        String query = "UPDATE Cargo SET numero = ?, descripcion = ?, agrupacion = ? WHERE id = UUID_TO_BIN(?)";
+        String query = "UPDATE Cargo SET numero = ?, descripcion = ?, agrupacion = ? WHERE id = ?";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
             stmt.setInt(1, cargo.getNumero());
             stmt.setString(2, cargo.getDescripcion());
-            stmt.setString(3, cargo.getAgrupacion().name());
-            stmt.setString(4, cargo.getId().toString());
+            stmt.setObject(3, cargo.getAgrupacion().name(), Types.OTHER);
+            stmt.setObject(4, cargo.getId());
 
             int rowsUpdated = stmt.executeUpdate();
             if (rowsUpdated == 0) {
@@ -118,12 +118,12 @@ public class CargoRepository implements GenericDAO<Cargo> {
 
     @Override
     public void delete(Cargo cargo) throws SQLException {
-        String query = "DELETE FROM Cargo WHERE id = UUID_TO_BIN(?)";
+        String query = "DELETE FROM Cargo WHERE id = ?";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
-            stmt.setString(1, cargo.getId().toString());
+            stmt.setObject(1, cargo.getId());
 
             int rowsDeleted = stmt.executeUpdate();
             if (rowsDeleted == 0) {
@@ -162,17 +162,17 @@ public class CargoRepository implements GenericDAO<Cargo> {
     }
 
     public Cargo findById(UUID id) throws SQLException {
-        String query = "SELECT BIN_TO_UUID(id) AS id, numero, descripcion, agrupacion FROM Cargo WHERE id = UUID_TO_BIN(?)";
+        String query = "SELECT id, numero, descripcion, agrupacion FROM Cargo WHERE id = ?";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
-            stmt.setString(1, id.toString());
+            stmt.setObject(1, id);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     Cargo cargo = new Cargo();
-                    cargo.setId(UUID.fromString(rs.getString("id")));
+                    cargo.setId(rs.getObject("id", UUID.class));
                     cargo.setNumero(rs.getInt("numero"));
                     cargo.setDescripcion(rs.getString("descripcion"));
                     cargo.setAgrupacion(Agrupacion.valueOf(rs.getString("agrupacion")));
@@ -218,18 +218,17 @@ public class CargoRepository implements GenericDAO<Cargo> {
      */
     public List<Cargo> readAllByAgrupacion(Agrupacion agrupacion) throws SQLException {
         List<Cargo> cargos = new ArrayList<>();
-        //String query = "SELECT *, BIN_TO_UUID(id) as idUUID FROM Cargo WHERE agrupacion = ?";
-        String query = "SELECT BIN_TO_UUID(id) as id, numero, descripcion, agrupacion FROM Cargo WHERE agrupacion = ?";
+        String query = "SELECT id, numero, descripcion, agrupacion FROM Cargo WHERE agrupacion = ?";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
-            stmt.setString(1, agrupacion.name());
+            stmt.setObject(1, agrupacion.name(), Types.OTHER);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     cargos.add(new Cargo(
-                            UUID.fromString(rs.getString("id")),
+                            rs.getObject("id", UUID.class),
                             rs.getInt("numero"),
                             rs.getString("descripcion"),
                             agrupacion
