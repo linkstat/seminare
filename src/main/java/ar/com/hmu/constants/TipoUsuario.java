@@ -1,14 +1,14 @@
 package ar.com.hmu.constants;
 
 import ar.com.hmu.roles.Role;
-import ar.com.hmu.roles.impl.AgenteRoleImpl;
 import ar.com.hmu.roles.impl.DireccionRoleImpl;
-import ar.com.hmu.roles.impl.JefeDeServicioRoleImpl;
+import ar.com.hmu.roles.impl.EmpleadoRoleImpl;
+import ar.com.hmu.roles.impl.JefaturaDeServicioRoleImpl;
 import ar.com.hmu.roles.impl.OficinaDePersonalRoleImpl;
 
 public enum TipoUsuario {
-    AGENTE("Agente", "Agente", AgenteRoleImpl.class),
-    JEFEDESERVICIO("JefeDeServicio", "Jefe de Servicio", JefeDeServicioRoleImpl.class),
+    EMPLEADO("Empleado", "Empleado", EmpleadoRoleImpl.class),
+    JEFATURADESERVICIO("JefaturaDeServicio", "Jefatura de Servicio", JefaturaDeServicioRoleImpl.class),
     OFICINADEPERSONAL("OficinaDePersonal", "Oficina de Personal", OficinaDePersonalRoleImpl.class),
     DIRECCION("Direccion", "Directivo", DireccionRoleImpl.class);
 

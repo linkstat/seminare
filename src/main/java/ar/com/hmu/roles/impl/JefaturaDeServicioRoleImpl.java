@@ -1,12 +1,12 @@
 package ar.com.hmu.roles.impl;
 
-import ar.com.hmu.roles.JefeDeServicioRole;
+import ar.com.hmu.roles.JefaturaDeServicioRole;
 import ar.com.hmu.model.Usuario;
 
-public class JefeDeServicioRoleImpl implements JefeDeServicioRole {
+public class JefaturaDeServicioRoleImpl implements JefaturaDeServicioRole {
     private Usuario usuario;
 
-    public JefeDeServicioRoleImpl(Usuario usuario) {
+    public JefaturaDeServicioRoleImpl(Usuario usuario) {
         this.usuario = usuario;
     }
 

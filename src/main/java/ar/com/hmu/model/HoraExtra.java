@@ -2,17 +2,17 @@ package ar.com.hmu.model;
 
 import java.time.LocalDateTime;
 
-import ar.com.hmu.roles.impl.AgenteRoleImpl;
-import ar.com.hmu.roles.impl.JefeDeServicioRoleImpl;
+import ar.com.hmu.roles.impl.EmpleadoRoleImpl;
+import ar.com.hmu.roles.impl.JefaturaDeServicioRoleImpl;
 
 public class HoraExtra {
 
-	private Usuario autorizadaPor; // Usuario con rol de JefeDeServicio
-	private Usuario jefeDeServicio; // Usuario con rol de JefeDeServicio
+	private Usuario autorizadaPor; // Usuario con rol de JefaturaDeServicio
+	private Usuario jefatura; // Usuario con rol de JefaturaDeServicio
 	private EstadoTramite estadoAutorizacion;
 	private EstadoTramite estadoTramite;
 	private String desc;
-	private Usuario agente; // Usuario con rol de Agente
+	private Usuario empleado; // Usuario con rol de Empleado
 	private LocalDateTime fechaAutorizacion;
 	private int fechaEgreso;
 	private int fechaIngreso;
@@ -24,23 +24,23 @@ public class HoraExtra {
 
 	// Getters y Setters con verificación de roles
 
-	public void setAgente(Usuario agente) {
-		if (agente.hasRoleBehavior(AgenteRoleImpl.class)) {
-			this.agente = agente;
+	public void setEmpleado(Usuario empleado) {
+		if (empleado.hasRoleBehavior(EmpleadoRoleImpl.class)) {
+			this.empleado = empleado;
 		} else {
-			throw new IllegalArgumentException("El usuario no tiene el rol de Agente.");
+			throw new IllegalArgumentException("El usuario no tiene el rol de Empleado.");
 		}
 	}
 
-	public Usuario getAgente() {
-		return agente;
+	public Usuario getEmpleado() {
+		return empleado;
 	}
 
 	public void setAutorizadaPor(Usuario autorizadaPor) {
-		if (autorizadaPor.hasRoleBehavior(JefeDeServicioRoleImpl.class)) {
+		if (autorizadaPor.hasRoleBehavior(JefaturaDeServicioRoleImpl.class)) {
 			this.autorizadaPor = autorizadaPor;
 		} else {
-			throw new IllegalArgumentException("El usuario no tiene el rol de Jefe de Servicio.");
+			throw new IllegalArgumentException("El usuario no tiene el rol de Jefatura de Servicio.");
 		}
 	}
 
@@ -48,16 +48,16 @@ public class HoraExtra {
 		return autorizadaPor;
 	}
 
-	public void setJefeDeServicio(Usuario jefeDeServicio) {
-		if (jefeDeServicio.hasRoleBehavior(JefeDeServicioRoleImpl.class)) {
-			this.jefeDeServicio = jefeDeServicio;
+	public void setJefatura(Usuario jefatura) {
+		if (jefatura.hasRoleBehavior(JefaturaDeServicioRoleImpl.class)) {
+			this.jefatura = jefatura;
 		} else {
-			throw new IllegalArgumentException("El usuario no tiene el rol de Jefe de Servicio.");
+			throw new IllegalArgumentException("El usuario no tiene el rol de Jefatura de Servicio.");
 		}
 	}
 
-	public Usuario getJefeDeServicio() {
-		return jefeDeServicio;
+	public Usuario getJefatura() {
+		return jefatura;
 	}
 
 	// Resto de getters y setters...

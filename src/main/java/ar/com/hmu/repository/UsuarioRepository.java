@@ -57,7 +57,7 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
                 "BIN_TO_UUID(domicilioID) AS domicilioID, " +
                 "BIN_TO_UUID(cargoID) AS cargoID, " +
                 "BIN_TO_UUID(servicioID) AS servicioID, " +
-                "tipoUsuario, passwd, profile_image " +
+                "passwd, profile_image " +
                 "FROM Usuario WHERE estado = 1 AND id = UUID_TO_BIN(?)";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -87,7 +87,7 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
                 "BIN_TO_UUID(domicilioID) AS domicilioID, " +
                 "BIN_TO_UUID(cargoID) AS cargoID, " +
                 "BIN_TO_UUID(servicioID) AS servicioID, " +
-                "tipoUsuario, passwd, profile_image " +
+                "passwd, profile_image " +
                 "FROM Usuario WHERE estado = 1";
 
         try (Connection connection = databaseConnector.getConnection();
@@ -346,11 +346,18 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
     }
 
     public String findJefeByServicio(UUID servicioId) throws SQLException {
-        String query = "SELECT CONCAT(apellidos, ', ', nombres) AS Jefe FROM Usuario WHERE servicioID = UUID_TO_BIN(?) AND tipoUsuario = ? AND estado = 1 LIMIT 1";
+        // El "tipo" del usuario ya no se discrimina por columna en Usuario;
+        // se resuelve uniendo contra Usuario_Rol + Rol y filtrando por nombre.
+        String query = "SELECT CONCAT(u.apellidos, ', ', u.nombres) AS Jefe " +
+                "FROM Usuario u " +
+                "JOIN Usuario_Rol ur ON u.id = ur.usuario_id " +
+                "JOIN Rol r ON ur.rol_id = r.id " +
+                "WHERE u.servicioID = UUID_TO_BIN(?) AND r.nombre = ? AND u.estado = 1 " +
+                "LIMIT 1";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, servicioId.toString());
-            stmt.setString(2, TipoUsuario.JEFEDESERVICIO.getInternalName());
+            stmt.setString(2, TipoUsuario.JEFATURADESERVICIO.getInternalName());
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return rs.getString("Jefe");

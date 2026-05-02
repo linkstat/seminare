@@ -9,9 +9,9 @@ import java.util.*;
 import ar.com.hmu.constants.UsuarioCreationResult;
 import ar.com.hmu.exceptions.ServiceException;
 import ar.com.hmu.roles.Role;
-import ar.com.hmu.roles.impl.AgenteRoleImpl;
+import ar.com.hmu.roles.impl.EmpleadoRoleImpl;
 import ar.com.hmu.roles.impl.DireccionRoleImpl;
-import ar.com.hmu.roles.impl.JefeDeServicioRoleImpl;
+import ar.com.hmu.roles.impl.JefaturaDeServicioRoleImpl;
 import ar.com.hmu.roles.impl.OficinaDePersonalRoleImpl;
 import ar.com.hmu.service.*;
 import ar.com.hmu.util.AlertUtils;
@@ -51,7 +51,7 @@ public class AbmUsuarioController implements Initializable {
 
     // Sección de Búsqueda
     @FXML private ComboBox<Usuario> busquedaComboBox;
-    @FXML private Button nuevoAgenteButton;
+    @FXML private Button nuevoEmpleadoButton;
 
     // Imagen de Perfil
     @FXML private ImageView imagenPerfilImageView;
@@ -77,8 +77,8 @@ public class AbmUsuarioController implements Initializable {
     @FXML private ComboBox<String> domProvinciaComboBox;
 
     // Tipo de Usuario y Asignación de Roles
-    @FXML private CheckBox rolAgenteCheckBox;
-    @FXML private CheckBox rolJefeServicioCheckBox;
+    @FXML private CheckBox rolEmpleadoCheckBox;
+    @FXML private CheckBox rolJefaturaServicioCheckBox;
     @FXML private CheckBox rolOficinaPersonalCheckBox;
     @FXML private CheckBox rolDireccionCheckBox;
 
@@ -189,15 +189,15 @@ public class AbmUsuarioController implements Initializable {
         imagenPerfilImageView.setImage(imagenPerfilOriginal);
 
         // Eventos adicionales
-        nuevoAgenteButton.setOnAction(this::onNuevoAgente);
+        nuevoEmpleadoButton.setOnAction(this::onNuevoEmpleado);
         cancelarButton.setOnAction(this::onCancelar);
         altaModButton.setOnAction(event -> {
             try { onAltaMod(event); } catch (ServiceException e) { mostrarError("Error al realizar la operación: " + e.getMessage()); }
         });
 
-        // Habilitar solo el ComboBox y el botón "Nuevo Agente"
+        // Habilitar solo el ComboBox y el botón "Nuevo Empleado"
         busquedaComboBox.setDisable(false);
-        nuevoAgenteButton.setDisable(false);
+        nuevoEmpleadoButton.setDisable(false);
 
     }
 
@@ -317,9 +317,9 @@ public class AbmUsuarioController implements Initializable {
 
             filtrarUsuarios();
 
-            // Habilitar o deshabilitar el botón "Nuevo Agente" según el texto
+            // Habilitar o deshabilitar el botón "Nuevo Empleado" según el texto
             if (newText == null || newText.isEmpty()) {
-                nuevoAgenteButton.setDisable(false);
+                nuevoEmpleadoButton.setDisable(false);
 
                 // Limpiar la selección del ComboBox
                 busquedaComboBox.getSelectionModel().clearSelection();
@@ -334,7 +334,7 @@ public class AbmUsuarioController implements Initializable {
                 eliminarButton.setDisable(true);
                 resetPasswdButton.setDisable(true);
             } else {
-                nuevoAgenteButton.setDisable(true);
+                nuevoEmpleadoButton.setDisable(true);
             }
         });
 
@@ -343,13 +343,13 @@ public class AbmUsuarioController implements Initializable {
         busquedaComboBox.setOnAction(event -> {
             Usuario usuarioSeleccionado = busquedaComboBox.getSelectionModel().getSelectedItem();
             if (usuarioSeleccionado != null) {
-                nuevoAgenteButton.setDisable(true);
+                nuevoEmpleadoButton.setDisable(true);
                 onSeleccionarUsuario();
             } else {
                 // Si no hay selección, verificar el texto del editor
                 String text = busquedaComboBox.getEditor().getText();
                 if (text == null || text.isEmpty()) {
-                    nuevoAgenteButton.setDisable(false);
+                    nuevoEmpleadoButton.setDisable(false);
                 }
             }
         });
@@ -366,8 +366,8 @@ public class AbmUsuarioController implements Initializable {
 
                 // cuando el ComboBox está vacío
                 if (busquedaComboBox.getEditor().getText().isEmpty()) {
-                    // Mover el foco al botón "Nuevo Agente"
-                    nuevoAgenteButton.requestFocus();
+                    // Mover el foco al botón "Nuevo Empleado"
+                    nuevoEmpleadoButton.requestFocus();
                     event.consume();
                 }
 
@@ -460,8 +460,8 @@ public class AbmUsuarioController implements Initializable {
         // Tipo de Usuario y Roles
         if(includeRoles) {
             //TODO: Verificar, que se habilite solo si es nuevo usuario. Sino, tomar los valores desde la carga del usuario
-            rolAgenteCheckBox.setDisable(!enabled);
-            rolJefeServicioCheckBox.setDisable(!enabled);
+            rolEmpleadoCheckBox.setDisable(!enabled);
+            rolJefaturaServicioCheckBox.setDisable(!enabled);
             rolOficinaPersonalCheckBox.setDisable(!enabled);
             rolDireccionCheckBox.setDisable(!enabled);
         }
@@ -915,13 +915,13 @@ public class AbmUsuarioController implements Initializable {
 
 
     /**
-     * Evento al hacer clic en "Nuevo Agente"
+     * Evento al hacer clic en "Nuevo Empleado"
      */
     @FXML
-    private void onNuevoAgente(ActionEvent event) {
-        // Deshabilitar el ComboBox y el botón "Nuevo Agente"
+    private void onNuevoEmpleado(ActionEvent event) {
+        // Deshabilitar el ComboBox y el botón "Nuevo Empleado"
         busquedaComboBox.setDisable(true);
-        nuevoAgenteButton.setDisable(true);
+        nuevoEmpleadoButton.setDisable(true);
 
         // Habilitar los controles del formulario
         setControlsEnabled(true, true);
@@ -960,9 +960,9 @@ public class AbmUsuarioController implements Initializable {
         // Limpiar el formulario
         limpiarFormulario();
 
-        // Habilitar el ComboBox y el botón "Nuevo Agente"
+        // Habilitar el ComboBox y el botón "Nuevo Empleado"
         busquedaComboBox.setDisable(false);
-        nuevoAgenteButton.setDisable(false);
+        nuevoEmpleadoButton.setDisable(false);
 
         // Limpiar selección del ComboBox
         busquedaComboBox.getSelectionModel().clearSelection();
@@ -1011,7 +1011,7 @@ public class AbmUsuarioController implements Initializable {
             eliminarButton.setDisable(false);
 
             resetPasswdButton.setDisable(false);
-            nuevoAgenteButton.setDisable(true);
+            nuevoEmpleadoButton.setDisable(true);
             busquedaComboBox.setDisable(true);
 
             // Set mode flags
@@ -1047,8 +1047,8 @@ public class AbmUsuarioController implements Initializable {
         ImageUtils.setProfileImage(imagenPerfilImageView, usuario.getProfileImage(), imagenPerfilOriginal);
 
         //Cargar roles en los CheckBoxes
-        rolAgenteCheckBox.setSelected(usuario.hasRoleBehavior(AgenteRoleImpl.class));
-        rolJefeServicioCheckBox.setSelected(usuario.hasRoleBehavior(JefeDeServicioRoleImpl.class));
+        rolEmpleadoCheckBox.setSelected(usuario.hasRoleBehavior(EmpleadoRoleImpl.class));
+        rolJefaturaServicioCheckBox.setSelected(usuario.hasRoleBehavior(JefaturaDeServicioRoleImpl.class));
         rolOficinaPersonalCheckBox.setSelected(usuario.hasRoleBehavior(OficinaDePersonalRoleImpl.class));
         rolDireccionCheckBox.setSelected(usuario.hasRoleBehavior(DireccionRoleImpl.class));
 
@@ -1101,10 +1101,10 @@ public class AbmUsuarioController implements Initializable {
      * @return cadena de texto que indicado el tipo de usuario
      */
     private TipoUsuario obtenerTipoUsuario(Usuario usuario) {
-        if (usuario.hasRoleBehavior(AgenteRoleImpl.class)) {
-            return TipoUsuario.AGENTE;
-        } else if (usuario.hasRoleBehavior(JefeDeServicioRoleImpl.class)) {
-            return TipoUsuario.JEFEDESERVICIO;
+        if (usuario.hasRoleBehavior(EmpleadoRoleImpl.class)) {
+            return TipoUsuario.EMPLEADO;
+        } else if (usuario.hasRoleBehavior(JefaturaDeServicioRoleImpl.class)) {
+            return TipoUsuario.JEFATURADESERVICIO;
         } else if (usuario.hasRoleBehavior(OficinaDePersonalRoleImpl.class)) {
             return TipoUsuario.OFICINADEPERSONAL;
         } else if (usuario.hasRoleBehavior(DireccionRoleImpl.class)) {
@@ -1158,12 +1158,12 @@ public class AbmUsuarioController implements Initializable {
 
         // Asignar roles basados en los CheckBoxes
         Set<RoleData> rolesSeleccionados = new HashSet<>();
-        if (rolAgenteCheckBox.isSelected()) {
-            RoleData roleDataAgente = roleService.findByTipoUsuario(TipoUsuario.AGENTE);
-            rolesSeleccionados.add(roleDataAgente);
+        if (rolEmpleadoCheckBox.isSelected()) {
+            RoleData roleDataEmpleado = roleService.findByTipoUsuario(TipoUsuario.EMPLEADO);
+            rolesSeleccionados.add(roleDataEmpleado);
         }
-        if (rolJefeServicioCheckBox.isSelected()) {
-            RoleData roleDataJefe = roleService.findByTipoUsuario(TipoUsuario.JEFEDESERVICIO);
+        if (rolJefaturaServicioCheckBox.isSelected()) {
+            RoleData roleDataJefe = roleService.findByTipoUsuario(TipoUsuario.JEFATURADESERVICIO);
             rolesSeleccionados.add(roleDataJefe);
         }
         if (rolOficinaPersonalCheckBox.isSelected()) {
@@ -1259,9 +1259,9 @@ public class AbmUsuarioController implements Initializable {
     private Role createRoleBehaviorFromRoleData(RoleData roleData, Usuario usuario) {
         switch (roleData.getNombre()) {
             case "AGENTE":
-                return new AgenteRoleImpl(usuario);
+                return new EmpleadoRoleImpl(usuario);
             case "JEFEDESERVICIO":
-                return new JefeDeServicioRoleImpl(usuario);
+                return new JefaturaDeServicioRoleImpl(usuario);
             case "OFICINADEPERSONAL":
                 return new OficinaDePersonalRoleImpl(usuario);
             case "DIRECCION":

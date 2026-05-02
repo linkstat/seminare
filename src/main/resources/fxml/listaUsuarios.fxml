@@ -9,7 +9,7 @@
     <TableView fx:id="usuariosTableView" VBox.vgrow="ALWAYS">
         <columns>
             <TableColumn fx:id="cuilColumn" text="CUIL" />
-            <TableColumn fx:id="apellidosNombresColumn" text="Agente" />
+            <TableColumn fx:id="apellidosNombresColumn" text="Empleado" />
             <TableColumn fx:id="cargoNumeroColumn" text="Cargo" />
             <TableColumn fx:id="servicioNombreColumn" text="Servicio" />
         </columns>

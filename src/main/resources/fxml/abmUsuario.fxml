@@ -24,7 +24,7 @@
          </padding>
          <children>
             <ComboBox fx:id="busquedaComboBox" editable="true" maxWidth="1.7976931348623157E308" prefWidth="500.0" promptText="Búsqueda por CUIL, apellido, nombre, mail, tel" HBox.hgrow="ALWAYS" />
-            <Button fx:id="nuevoAgenteButton" minWidth="70.0" mnemonicParsing="false" text="Nuevo Agente" textAlignment="CENTER" />
+            <Button fx:id="nuevoEmpleadoButton" minWidth="70.0" mnemonicParsing="false" text="Nuevo Empleado" textAlignment="CENTER" />
          </children>
       </HBox>
     </top>
@@ -158,7 +158,7 @@
                      <Label text="Roles de usuario:" />
                   <VBox spacing="2.0">
                      <children>
-                        <CheckBox fx:id="rolAgenteCheckBox" mnemonicParsing="false" text="Agente" />
+                        <CheckBox fx:id="rolEmpleadoCheckBox" mnemonicParsing="false" text="Empleado" />
                         <CheckBox fx:id="rolJefeServicioCheckBox" mnemonicParsing="false" text="Jefe de Servicio" />
                         <CheckBox fx:id="rolDireccionCheckBox" mnemonicParsing="false" text="Directivo" />
                         <CheckBox fx:id="rolOficinaPersonalCheckBox" mnemonicParsing="false" text="Oficina de Personal" />

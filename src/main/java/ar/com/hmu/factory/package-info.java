@@ -5,9 +5,9 @@
  * responsabilidad única (SRP). Al agrupar la lógica de creación en un solo lugar, se facilita el mantenimiento,
  * la reutilización del código y la separación clara de responsabilidades dentro de la aplicación.
  * <p>
- * Este paquete incluye la clase {@code UsuarioFactory}, encargada de la creación de diferentes tipos de usuarios,
- * tales como {@code Agente}, {@code JefeDeServicio}, {@code OficinaDePersonal}, y {@code Direccion},
- * a partir de los datos obtenidos de la base de datos. Al hacerlo, se oculta la complejidad de la lógica de
- * instanciación y se permite un manejo más sencillo y flexible de las entidades según su tipo específico.
+ * Este paquete incluye la clase {@code UsuarioFactory}, encargada de la creación de instancias de
+ * {@code Usuario} a partir de los datos obtenidos de la base de datos. El "tipo" del usuario
+ * (Empleado, JefaturaDeServicio, OficinaDePersonal, Direccion) se resuelve por sus roles asignados,
+ * no por una columna discriminadora.
  */
 package ar.com.hmu.factory;

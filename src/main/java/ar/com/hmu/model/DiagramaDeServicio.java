@@ -92,11 +92,11 @@ public class DiagramaDeServicio {
 
 	// Otros métodos
 
-	public void addPlanificacion(Usuario agente, JornadaLaboral jornada){
+	public void addPlanificacion(Usuario empleado, JornadaLaboral jornada){
 
 	}
 
-	public List<JornadaLaboral> getPlanificacionAgente(Usuario agente){
+	public List<JornadaLaboral> getPlanificacionEmpleado(Usuario empleado){
 		return null;
 	}
 

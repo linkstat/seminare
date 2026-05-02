@@ -55,8 +55,8 @@ public class ListaServiciosController {
             return new SimpleIntegerProperty(cantidadUsuarios).asObject();
         });
         apellidoJefeColumn.setCellValueFactory(cellData -> {
-            String JefeDeServicio = obtenerJefeDeServicio(cellData.getValue());
-            return new SimpleStringProperty(JefeDeServicio);
+            String jefaturaDeServicio = obtenerJefaturaDeServicio(cellData.getValue());
+            return new SimpleStringProperty(jefaturaDeServicio);
         });
 
         cargarServicios();
@@ -96,7 +96,7 @@ public class ListaServiciosController {
         }
     }
 
-    private String obtenerJefeDeServicio(Servicio servicio) {
+    private String obtenerJefaturaDeServicio(Servicio servicio) {
         try {
             return servicioService.findJefeByServicio(servicio.getId());
         } catch (ServiceException e) {

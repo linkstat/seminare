@@ -3,7 +3,7 @@ package ar.com.hmu.model;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import ar.com.hmu.roles.impl.AgenteRoleImpl;
+import ar.com.hmu.roles.impl.EmpleadoRoleImpl;
 
 public class Novedad {
 
@@ -16,23 +16,23 @@ public class Novedad {
 	private LocalDateTime fechaSolicitud;
 	private UUID id;
 	private boolean reqAprobDireccion;
-	private Usuario agente; // Usuario con rol de Agente
+	private Usuario empleado; // Usuario con rol de Empleado
 
 	public Novedad() {
 	}
 
 	// Getters y Setters con verificación de roles
 
-	public void setAgente(Usuario agente) {
-		if (agente.hasRoleBehavior(AgenteRoleImpl.class)) {
-			this.agente = agente;
+	public void setEmpleado(Usuario empleado) {
+		if (empleado.hasRoleBehavior(EmpleadoRoleImpl.class)) {
+			this.empleado = empleado;
 		} else {
-			throw new IllegalArgumentException("El usuario no tiene el rol de Agente.");
+			throw new IllegalArgumentException("El usuario no tiene el rol de Empleado.");
 		}
 	}
 
-	public Usuario getAgente() {
-		return agente;
+	public Usuario getEmpleado() {
+		return empleado;
 	}
 
 	// Métodos actualizados

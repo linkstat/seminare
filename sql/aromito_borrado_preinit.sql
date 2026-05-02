@@ -4,6 +4,8 @@ USE aromito;
 -- Borrado de las funciones personalizadas
 DROP FUNCTION IF EXISTS UUID_TO_BIN;
 DROP FUNCTION IF EXISTS BIN_TO_UUID;
+-- Variante histórica generada por algún dump previo (paranoia)
+DROP FUNCTION IF EXISTS BIN_TO_UUID2;
 
 -- Desactiva la verificación de claves foráneas
 SET FOREIGN_KEY_CHECKS = 0;

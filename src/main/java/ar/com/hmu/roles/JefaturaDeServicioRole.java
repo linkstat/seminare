@@ -1,5 +1,5 @@
 package ar.com.hmu.roles;
 
-public interface JefeDeServicioRole extends Role {
+public interface JefaturaDeServicioRole extends Role {
     void aprobarFaltas();
 }

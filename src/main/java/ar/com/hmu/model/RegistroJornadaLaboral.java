@@ -5,38 +5,38 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import ar.com.hmu.roles.impl.AgenteRoleImpl;
+import ar.com.hmu.roles.impl.EmpleadoRoleImpl;
 
 public class RegistroJornadaLaboral {
 
-	private Usuario agente; // Usuario con rol de Agente
+	private Usuario empleado; // Usuario con rol de Empleado
 	private LocalDateTime fecha;
 	private LocalDateTime fechaEgreso;
 	private LocalDateTime fechaIngreso;
-	private List<MarcacionAgente> marcacionesAgente;
+	private List<MarcacionEmpleado> marcacionesEmpleado;
 
 	public RegistroJornadaLaboral() {
-		this.marcacionesAgente = new ArrayList<>();
+		this.marcacionesEmpleado = new ArrayList<>();
 	}
 
 	// Getters y Setters con verificación de roles
 
-	public void setAgente(Usuario agente) {
-		if (agente.hasRoleBehavior(AgenteRoleImpl.class)) {
-			this.agente = agente;
+	public void setEmpleado(Usuario empleado) {
+		if (empleado.hasRoleBehavior(EmpleadoRoleImpl.class)) {
+			this.empleado = empleado;
 		} else {
-			throw new IllegalArgumentException("El usuario no tiene el rol de Agente.");
+			throw new IllegalArgumentException("El usuario no tiene el rol de Empleado.");
 		}
 	}
 
-	public Usuario getAgente() {
-		return agente;
+	public Usuario getEmpleado() {
+		return empleado;
 	}
 
 	// Métodos actualizados
 
-	public void agregarMarcacion(MarcacionAgente marcacion) {
-		this.marcacionesAgente.add(marcacion);
+	public void agregarMarcacion(MarcacionEmpleado marcacion) {
+		this.marcacionesEmpleado.add(marcacion);
 	}
 
 	public Duration calcularDuracionJornada() {

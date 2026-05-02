@@ -13,11 +13,11 @@ SET @cuilB = '24554978443';
 SET @userAPass = '$2a$12$TCAy.mqVsaRIwjQs0imr/uD0xNoUq/W3LSVys3EISI5hdBREwZW5a';
 SET @userBPass = '$2a$12$x9SDga8sk3DyjvdeIwkhl.2e9wcWHewfHEFQFKkFp1.FiAKcyRZUG';
 
-UPDATE usuario
+UPDATE Usuario
 SET passwd = @userAPass
 WHERE cuil = @cuilA;
 
-UPDATE usuario
+UPDATE Usuario
 SET passwd = @userBPass
 WHERE cuil = @cuilB;
 

@@ -6,29 +6,29 @@ import java.util.List;
 import java.util.Map;
 import java.time.LocalDateTime;
 
-import ar.com.hmu.roles.impl.AgenteRoleImpl;
+import ar.com.hmu.roles.impl.EmpleadoRoleImpl;
 import ar.com.hmu.roles.impl.OficinaDePersonalRoleImpl;
 
 public class ParteDiario extends Reporte {
 
-	private List<Usuario> agentes; // Lista de usuarios con rol de Agente
+	private List<Usuario> empleados; // Lista de usuarios con rol de Empleado
 	private LocalDateTime fechaDeCierre;
 	private Map<Usuario, LocalDateTime> modificadoPor; // Map de usuarios con rol de OficinaDePersonal
 	private Usuario oficinaDePersonal; // Usuario con rol de OficinaDePersonal
-	private Usuario agente; // Usuario con rol de Agente
+	private Usuario empleado; // Usuario con rol de Empleado
 
 	public ParteDiario() {
-		this.agentes = new ArrayList<>();
+		this.empleados = new ArrayList<>();
 		this.modificadoPor = new HashMap<>();
 	}
 
 	// Métodos actualizados
 
-	public void agregarAgente(Usuario agente) {
-		if (agente.hasRoleBehavior(AgenteRoleImpl.class)) {
-			this.agentes.add(agente);
+	public void agregarEmpleado(Usuario empleado) {
+		if (empleado.hasRoleBehavior(EmpleadoRoleImpl.class)) {
+			this.empleados.add(empleado);
 		} else {
-			throw new IllegalArgumentException("El usuario no tiene el rol de Agente.");
+			throw new IllegalArgumentException("El usuario no tiene el rol de Empleado.");
 		}
 	}
 

@@ -6,16 +6,8 @@ import java.sql.SQLException;
 import java.util.Set;
 import java.util.UUID;
 
-import ar.com.hmu.constants.TipoUsuario;
 import ar.com.hmu.exceptions.ServiceException;
 import ar.com.hmu.model.*;
-import ar.com.hmu.repository.DatabaseConnector;
-import ar.com.hmu.repository.RoleRepository;
-import ar.com.hmu.roles.Role;
-import ar.com.hmu.roles.impl.AgenteRoleImpl;
-import ar.com.hmu.roles.impl.DireccionRoleImpl;
-import ar.com.hmu.roles.impl.JefeDeServicioRoleImpl;
-import ar.com.hmu.roles.impl.OficinaDePersonalRoleImpl;
 import ar.com.hmu.service.RoleService;
 
 /**
@@ -40,9 +32,9 @@ public class UsuarioFactory {
     /**
      * Crea una instancia de {@link Usuario} basada en la información proporcionada en un {@link ResultSet}.
      * <p>
-     * Este método lee la columna {@code tipoUsuario} del {@code ResultSet} para determinar el tipo específico
-     * de usuario que se debe instanciar (como {@code Agente}, {@code JefeDeServicio}, etc.).
-     * A continuación, asigna los valores comunes de {@code Usuario} desde el {@code ResultSet} a la instancia creada.
+     * Asigna los valores comunes de {@code Usuario} desde el {@code ResultSet} a la instancia creada
+     * y carga sus roles desde la tabla {@code Usuario_Rol} (el polimorfismo se resuelve por roles,
+     * no por una columna discriminadora).
      *
      * @param resultSet el {@link ResultSet} que contiene la información del usuario desde la base de datos.
      *                  Se espera que esté posicionado en una fila válida.

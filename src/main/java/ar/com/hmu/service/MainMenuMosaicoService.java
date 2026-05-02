@@ -35,7 +35,7 @@ public class MainMenuMosaicoService {
      *
      * @return El/los apellido/s y nombre/s del usuario.
      */
-    public String getAgenteFullName() {
+    public String getUsuarioFullName() {
         return usuarioActual.getApellidos() + ", " + usuarioActual.getNombres();
     }
 

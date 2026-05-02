@@ -1,5 +1,5 @@
 package ar.com.hmu.roles;
 
-public interface AgenteRole extends Role {
+public interface EmpleadoRole extends Role {
     void pedirFaltaJustificada();
 }

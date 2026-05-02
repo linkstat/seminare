@@ -1,7 +1,7 @@
 package ar.com.hmu.model;
 
 
-import ar.com.hmu.roles.impl.AgenteRoleImpl;
+import ar.com.hmu.roles.impl.EmpleadoRoleImpl;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,7 +20,7 @@ public class Servicio {
 
 	private UUID direccionId;
 
-	private List<Usuario> agentes;
+	private List<Usuario> empleados;
 	private List<DiagramaDeServicio> diagramas;
 
 	public Servicio() {
@@ -41,12 +41,12 @@ public class Servicio {
 
 	}
 
-	public Servicio(UUID id, String nombre, Agrupacion agrupacion, List<Usuario> agentes, List<DiagramaDeServicio> diagramas) {
+	public Servicio(UUID id, String nombre, Agrupacion agrupacion, List<Usuario> empleados, List<DiagramaDeServicio> diagramas) {
 		this.id = id;
 		this.nombre = nombre;
 		this.agrupacion = agrupacion;
 		this.direccionId = null;
-		this.agentes = agentes;
+		this.empleados = empleados;
 		this.diagramas = diagramas;
 	}
 
@@ -77,8 +77,8 @@ public class Servicio {
 		this.direccionId = direccionId;
 	}
 
-	public void setAgentes(List<Usuario> agentes) {
-		this.agentes = agentes;
+	public void setEmpleados(List<Usuario> empleados) {
+		this.empleados = empleados;
 	}
 
 	public void setDiagramas(List<DiagramaDeServicio> diagramas) {
@@ -111,29 +111,24 @@ public class Servicio {
 		return direccionId;
 	}
 
-	public List<Usuario> getAgentes(){
+	public List<Usuario> getEmpleados(){
 		return null;
 	}
 
 
 	/**
-	 * 
-	 * Método para agregar agentes a un servicio
+	 * Método para agregar empleados a un servicio
 	 */
-	public void addAgente(Usuario agente){
-		if (agente.hasRoleBehavior(AgenteRoleImpl.class)) {
-			this.agentes.add(agente);
+	public void addEmpleado(Usuario empleado){
+		if (empleado.hasRoleBehavior(EmpleadoRoleImpl.class)) {
+			this.empleados.add(empleado);
 		} else {
-			throw new IllegalArgumentException("El usuario no tiene el rol de Agente.");
+			throw new IllegalArgumentException("El usuario no tiene el rol de Empleado.");
 		}
 	}
 
-	/**
-	 * 
-	 * @param agente
-	 */
-	public void delAgente(Usuario agente){
-		this.agentes.remove(agente);
+	public void delEmpleado(Usuario empleado){
+		this.empleados.remove(empleado);
 	}
 
 	/**

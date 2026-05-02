@@ -36,9 +36,9 @@ public class MainMenuMosaicoController {
     @FXML
     private MenuBar menuBar;
     @FXML
-    private Menu agenteMenu;
+    private Menu empleadoMenu;
     @FXML
-    private Menu jefeDeServicioMenu;
+    private Menu jefaturaDeServicioMenu;
     @FXML
     private Menu oficinaDePersonalMenu;
     @FXML
@@ -52,11 +52,11 @@ public class MainMenuMosaicoController {
     @FXML
     private MenuItem exitMenuItem;
     @FXML
-    private MenuItem listadoAgentesMenuItem;
+    private MenuItem listadoEmpleadosMenuItem;
     @FXML
     private MenuItem listadoServiciosMenuItem;
     @FXML
-    private MenuItem abmAgentesMenuItem;
+    private MenuItem abmEmpleadosMenuItem;
     @FXML
     private MenuItem abmServiciosMenuItem;
     @FXML
@@ -112,11 +112,11 @@ public class MainMenuMosaicoController {
     @FXML
     private VBox reportesVBox;
     @FXML
-    private VBox listadoDeAgentesVBox;
+    private VBox listadoDeEmpleadosVBox;
     @FXML
     private VBox listadoDeServiciosVBox;
     @FXML
-    private VBox abmAgentesVBox;
+    private VBox abmEmpleadosVBox;
     @FXML
     private VBox abmServiciosVBox;
 
@@ -215,7 +215,7 @@ public class MainMenuMosaicoController {
         this.primaryStage.setOnCloseRequest(event -> saveWindowPreferences());
 
         // Actualizar la información del agente
-        agentFullNameText.setText(mainMenuMosaicoService.getAgenteFullName());
+        agentFullNameText.setText(mainMenuMosaicoService.getUsuarioFullName());
         agentServiceText.setText(mainMenuMosaicoService.getServicioNombre());
         agentCargoText.setText(mainMenuMosaicoService.getCargoUsuario());
         agentProfileImage.setImage(mainMenuMosaicoService.getProfileImage());
@@ -291,52 +291,52 @@ public class MainMenuMosaicoController {
      */
     private void configurarVisibilidadMenus() {
         // Inicializar todos los menús como no visibles
-        agenteMenu.setVisible(false);
-        jefeDeServicioMenu.setVisible(false);
+        empleadoMenu.setVisible(false);
+        jefaturaDeServicioMenu.setVisible(false);
         oficinaDePersonalMenu.setVisible(false);
         direccionMenu.setVisible(false);
 
         // Configurar visibilidad de menús según roles
-        agenteMenu.setVisible(usuarioActual.hasRole(TipoUsuario.AGENTE));
-        jefeDeServicioMenu.setVisible(usuarioActual.hasRole(TipoUsuario.JEFEDESERVICIO));
+        empleadoMenu.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        jefaturaDeServicioMenu.setVisible(usuarioActual.hasRole(TipoUsuario.JEFATURADESERVICIO));
         oficinaDePersonalMenu.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL));
         direccionMenu.setVisible(usuarioActual.hasRole(TipoUsuario.DIRECCION));
 
         // Configurar visibilidad de mosaicos (VBox) según roles
-        aprobacionSolicitudesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.JEFEDESERVICIO, TipoUsuario.OFICINADEPERSONAL, TipoUsuario.DIRECCION));
-        aprobacionSolicitudesVBox.setManaged(usuarioActual.hasRole(TipoUsuario.JEFEDESERVICIO, TipoUsuario.OFICINADEPERSONAL, TipoUsuario.DIRECCION));
+        aprobacionSolicitudesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.JEFATURADESERVICIO, TipoUsuario.OFICINADEPERSONAL, TipoUsuario.DIRECCION));
+        aprobacionSolicitudesVBox.setManaged(usuarioActual.hasRole(TipoUsuario.JEFATURADESERVICIO, TipoUsuario.OFICINADEPERSONAL, TipoUsuario.DIRECCION));
         notasMemosVBox.setVisible(usuarioActual.hasAnyRoleData());
         notasMemosVBox.setManaged(usuarioActual.hasAnyRoleData());
         partesDiariosVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL));
         partesDiariosVBox.setManaged(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL));
         consultaDiagramasDeServicioVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL, TipoUsuario.DIRECCION));
         consultaDiagramasDeServicioVBox.setManaged(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL, TipoUsuario.DIRECCION));
-        diagramacionDeServicioVBox.setVisible(usuarioActual.hasRole(TipoUsuario.JEFEDESERVICIO));
-        diagramacionDeServicioVBox.setManaged(usuarioActual.hasRole(TipoUsuario.JEFEDESERVICIO));
-        controlMarcacionesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.AGENTE));
-        controlMarcacionesVBox.setManaged(usuarioActual.hasRole(TipoUsuario.AGENTE));
-        pasesDeSalidaVBox.setVisible(usuarioActual.hasRole(TipoUsuario.AGENTE));
-        pasesDeSalidaVBox.setManaged(usuarioActual.hasRole(TipoUsuario.AGENTE));
-        omisionesIngresEgresoVBox.setVisible(usuarioActual.hasRole(TipoUsuario.AGENTE));
-        omisionesIngresEgresoVBox.setManaged(usuarioActual.hasRole(TipoUsuario.AGENTE));
-        faltasJustificadasVBox.setVisible(usuarioActual.hasRole(TipoUsuario.AGENTE));
-        faltasJustificadasVBox.setManaged(usuarioActual.hasRole(TipoUsuario.AGENTE));
-        faltasInjustificadasVBox.setVisible(usuarioActual.hasRole(TipoUsuario.AGENTE));
-        faltasInjustificadasVBox.setManaged(usuarioActual.hasRole(TipoUsuario.AGENTE));
-        faltasRazonFuerzaMayorVBox.setVisible(usuarioActual.hasRole(TipoUsuario.AGENTE));
-        faltasRazonFuerzaMayorVBox.setManaged(usuarioActual.hasRole(TipoUsuario.AGENTE));
-        solicitudHorasExtraFCVBox.setVisible(usuarioActual.hasRole(TipoUsuario.AGENTE));
-        solicitudHorasExtraFCVBox.setManaged(usuarioActual.hasRole(TipoUsuario.AGENTE));
-        francosCompensatoriosVBox.setVisible(usuarioActual.hasRole(TipoUsuario.AGENTE));
-        francosCompensatoriosVBox.setManaged(usuarioActual.hasRole(TipoUsuario.AGENTE));
-        reportesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.AGENTE));
-        reportesVBox.setManaged(usuarioActual.hasRole(TipoUsuario.AGENTE));
-        listadoDeAgentesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL, TipoUsuario.DIRECCION));
-        listadoDeAgentesVBox.setManaged(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL, TipoUsuario.DIRECCION));
+        diagramacionDeServicioVBox.setVisible(usuarioActual.hasRole(TipoUsuario.JEFATURADESERVICIO));
+        diagramacionDeServicioVBox.setManaged(usuarioActual.hasRole(TipoUsuario.JEFATURADESERVICIO));
+        controlMarcacionesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        controlMarcacionesVBox.setManaged(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        pasesDeSalidaVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        pasesDeSalidaVBox.setManaged(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        omisionesIngresEgresoVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        omisionesIngresEgresoVBox.setManaged(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        faltasJustificadasVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        faltasJustificadasVBox.setManaged(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        faltasInjustificadasVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        faltasInjustificadasVBox.setManaged(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        faltasRazonFuerzaMayorVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        faltasRazonFuerzaMayorVBox.setManaged(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        solicitudHorasExtraFCVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        solicitudHorasExtraFCVBox.setManaged(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        francosCompensatoriosVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        francosCompensatoriosVBox.setManaged(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        reportesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        reportesVBox.setManaged(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        listadoDeEmpleadosVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL, TipoUsuario.DIRECCION));
+        listadoDeEmpleadosVBox.setManaged(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL, TipoUsuario.DIRECCION));
         listadoDeServiciosVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL, TipoUsuario.DIRECCION));
         listadoDeServiciosVBox.setManaged(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL, TipoUsuario.DIRECCION));
-        abmAgentesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL));
-        abmAgentesVBox.setManaged(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL));
+        abmEmpleadosVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL));
+        abmEmpleadosVBox.setManaged(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL));
         abmServiciosVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL));
         abmServiciosVBox.setManaged(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL));
 
@@ -359,14 +359,14 @@ public class MainMenuMosaicoController {
         // Configura la funcionalidad del menú: Archivo -> Salir
         exitMenuItem.setOnAction(event -> System.exit(0));
 
-        // Configura la funcionalidad del menú: Oficina de Personal -> Listado de Agentes
-        listadoAgentesMenuItem.setOnAction(this::handleListadoDeAgentes);
+        // Configura la funcionalidad del menú: Oficina de Personal -> Listado de Empleados
+        listadoEmpleadosMenuItem.setOnAction(this::handleListadoDeEmpleados);
 
         // Configura la funcionalidad del menú: Oficina de Personal -> Listado de Servicios
         listadoServiciosMenuItem.setOnAction(this::handleListadoDeServicios);
 
-        // Configura la funcionalidad del menú: Oficina de Personal -> ABM de Agentes
-        abmAgentesMenuItem.setOnAction(this::handleAbmAgentes);
+        // Configura la funcionalidad del menú: Oficina de Personal -> ABM de Empleados
+        abmEmpleadosMenuItem.setOnAction(this::handleAbmEmpleados);
 
         // Configura la funcionalidad del menú: Oficina de Personal -> ABM de Servicios
         abmServiciosMenuItem.setOnAction(this::handleAbmServicios);
@@ -395,9 +395,9 @@ public class MainMenuMosaicoController {
         solicitudHorasExtraFCVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
         francosCompensatoriosVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
         reportesVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
-        listadoDeAgentesVBox.setOnMouseClicked(this::handleListadoDeAgentes);
+        listadoDeEmpleadosVBox.setOnMouseClicked(this::handleListadoDeEmpleados);
         listadoDeServiciosVBox.setOnMouseClicked(this::handleListadoDeServicios);
-        abmAgentesVBox.setOnMouseClicked(this::handleAbmAgentes);
+        abmEmpleadosVBox.setOnMouseClicked(this::handleAbmEmpleados);
         abmServiciosVBox.setOnMouseClicked(this::handleAbmServicios);
 
         // Configura la funcionalidad del botón "Cerrar sesión"
@@ -444,7 +444,7 @@ public class MainMenuMosaicoController {
      * Este método carga la ventana de ABM de usuarios y la muestra al usuario.
      */
     @FXML
-    private void handleAbmAgentes(Event event) {
+    private void handleAbmEmpleados(Event event) {
         try {
             // Usa los servicios ya inicializados
             UsuarioService usuarioService = this.usuarioService;
@@ -477,11 +477,11 @@ public class MainMenuMosaicoController {
             Stage stage = new Stage();  // Alternativa, que es lo mismo:  stage.setScene(new Scene(root))
             Scene scene = new Scene(abmUsuariosRoot);
             stage.setScene(scene);
-            stage.setTitle("Alta, Baja y Modificación de Agentes" + " :: " + AppInfo.PRG_LONG_TITLE);
+            stage.setTitle("Alta, Baja y Modificación de Empleados" + " :: " + AppInfo.PRG_LONG_TITLE);
             stage.initModality(Modality.WINDOW_MODAL);
-            //stage.initOwner(((Node) event.getSource()).getScene().getWindow()); // Con esto, establecemos la ventana actual como propietaria, evitando múltiples instancias. Supuestamente, es mejor que lo que hacía antes:  stage.initOwner(abmAgentesVBox.getScene().getWindow());
+            //stage.initOwner(((Node) event.getSource()).getScene().getWindow()); // Con esto, establecemos la ventana actual como propietaria, evitando múltiples instancias. Supuestamente, es mejor que lo que hacía antes:  stage.initOwner(abmEmpleadosVBox.getScene().getWindow());
             //stage.initOwner(MainMenuMosaicoController.getPrimaryStage());
-            stage.initOwner(abmAgentesVBox.getScene().getWindow());
+            stage.initOwner(abmEmpleadosVBox.getScene().getWindow());
             // Mostrar la nueva ventana
             stage.show();  // También se sugiere el uso de:  stage.showAndWait(), lo que tal vez por ahí estaría bueno en conjunto con:  stage.initModality(Modality.WINDOW_MODAL)
         } catch (IOException e) {
@@ -530,7 +530,7 @@ public class MainMenuMosaicoController {
     }
 
     @FXML
-    private void handleListadoDeAgentes(Event event) {
+    private void handleListadoDeEmpleados(Event event) {
         try {
             // Usa los servicios ya inicializados
             UsuarioService usuarioService = this.usuarioService;
@@ -562,7 +562,7 @@ public class MainMenuMosaicoController {
             controller.setServices(usuarioService, cargoService, servicioService, domicilioService, roleService);
 
             Stage stage = new Stage();
-            stage.setTitle("Listado de Agentes" + " :: " + AppInfo.PRG_LONG_TITLE);
+            stage.setTitle("Listado de Empleados" + " :: " + AppInfo.PRG_LONG_TITLE);
             stage.setScene(new Scene(root));
             stage.initModality(Modality.WINDOW_MODAL);
             stage.setWidth(590.0);
