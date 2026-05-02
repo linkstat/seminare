@@ -21,7 +21,7 @@ public class ServicioRepository implements GenericDAO<Servicio> {
 
     @Override
     public void create(Servicio servicio) throws SQLException {
-        String query = "INSERT INTO Servicio (id, nombre, agrupacion, direccionID) VALUES (UUID_TO_BIN(?), ?, ?, UUID_TO_BIN(?)";
+        String query = "INSERT INTO Servicio (id, nombre, agrupacion, direccionID) VALUES (UUID_TO_BIN(?), ?, ?, UUID_TO_BIN(?))";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
@@ -93,14 +93,14 @@ public class ServicioRepository implements GenericDAO<Servicio> {
 
     @Override
     public void update(Servicio servicio) throws SQLException {
-        String query = "INSERT INTO Servicio (id, nombre, agrupacion, direccionID) VALUES (UUID_TO_BIN(?), ?, ?, UUID_TO_BIN(?))";
+        String query = "UPDATE Servicio SET nombre = ?, agrupacion = ?, direccionID = UUID_TO_BIN(?) WHERE id = UUID_TO_BIN(?)";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
-            stmt.setString(1, servicio.getId().toString());           // UUID del servicio
-            stmt.setString(2, servicio.getNombre());                  // Nombre del servicio
-            stmt.setString(3, servicio.getAgrupacion().name());       // Agrupación como String
-            stmt.setString(4, servicio.getDireccionId().toString());  // UUID de la dirección
+            stmt.setString(1, servicio.getNombre());                  // Nombre del servicio
+            stmt.setString(2, servicio.getAgrupacion().name());       // Agrupación como String
+            stmt.setString(3, servicio.getDireccionId().toString());  // UUID de la dirección
+            stmt.setString(4, servicio.getId().toString());           // UUID del servicio (WHERE)
 
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -110,13 +110,13 @@ public class ServicioRepository implements GenericDAO<Servicio> {
     }
 
     public void updateWithoutDireccionId(Servicio servicio) throws SQLException {
-        String query = "INSERT INTO Servicio (id, nombre, agrupacion, direccionID) VALUES (UUID_TO_BIN(?), ?, ?)";
+        String query = "UPDATE Servicio SET nombre = ?, agrupacion = ? WHERE id = UUID_TO_BIN(?)";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
-            stmt.setString(1, servicio.getId().toString());           // UUID del servicio
-            stmt.setString(2, servicio.getNombre());                  // Nombre del servicio
-            stmt.setString(3, servicio.getAgrupacion().name());       // Agrupación como String
+            stmt.setString(1, servicio.getNombre());                  // Nombre del servicio
+            stmt.setString(2, servicio.getAgrupacion().name());       // Agrupación como String
+            stmt.setString(3, servicio.getId().toString());           // UUID del servicio (WHERE)
 
             stmt.executeUpdate();
         } catch (SQLException e) {
