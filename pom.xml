@@ -42,11 +42,22 @@
             <artifactId>mariadb-java-client</artifactId>
             <version>3.0.6</version>
         </dependency>
-        <!-- Spring Framework Dependencies -->
+        <!-- Spring Security: usado únicamente para verificar hashes BCrypt
+             legacy durante la migración a Argon2id. Una vez que todos los
+             hashes en BD sean Argon2id, esta dependencia puede retirarse. -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
             <version>6.3.2</version>
+        </dependency>
+        <!-- Argon2id (perfil OWASP m=19456 KiB, t=2, p=1).
+             Hashing de contraseñas a partir de la migración post-cátedra.
+             Convive con BCrypt durante la transición; los hashes se
+             distinguen por prefijo ($argon2id$ vs $2a$). -->
+        <dependency>
+            <groupId>de.mkammerer</groupId>
+            <artifactId>argon2-jvm</artifactId>
+            <version>2.12</version>
         </dependency>
         <!-- SnakeYAML Dependencies -->
         <dependency>

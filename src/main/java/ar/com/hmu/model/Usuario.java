@@ -214,11 +214,13 @@ public class Usuario {
 		this.servicio = servicio;
 	}
 
-	// Setter para la contraseña (encriptada con BCrypt)
 	/**
-	 * Establece la contraseña del usuario cifrándola con BCrypt antes de almacenarla.
+	 * Establece la contraseña del usuario cifrándola con Argon2id antes de almacenarla.
+	 * Los hashes BCrypt legacy se siguen aceptando en {@link #validatePassword(char[])}
+	 * y se migran a Argon2id en el flujo de login.
 	 *
 	 * @param rawPasswordArray La contraseña en texto plano proporcionada por el usuario.
+	 *                         Se sobrescribe con ceros tras el hashing.
 	 */
 	public void setPassword(char[] rawPasswordArray) {
 		this.password = PasswordUtils.hashPassword(rawPasswordArray);
@@ -263,7 +265,9 @@ public class Usuario {
 
 	/**
 	 * Verifica si la contraseña actual del usuario es la predeterminada.
-	 * La contraseña predeterminada es la que coincide con el número de CUIL del usuario cifrado con BCrypt.
+	 * La contraseña predeterminada es el número de CUIL del usuario; este método
+	 * la valida contra el hash almacenado independientemente del algoritmo
+	 * (Argon2id o BCrypt legacy).
 	 *
 	 * @return true si la contraseña es la predeterminada, false en caso contrario.
 	 */

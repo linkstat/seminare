@@ -351,6 +351,21 @@ public class UsuarioService {
     }
 
 
+    /**
+     * Persiste un nuevo hash de contraseña ya generado.
+     * <p>
+     * Usado por el flujo de login para la migración silenciosa de hashes
+     * BCrypt legacy a Argon2id: el caller decide si re-hashear y delega
+     * la persistencia acá.
+     */
+    public void updatePasswordHash(long cuil, String hashedPassword) throws ServiceException {
+        try {
+            usuarioRepository.updatePassword(cuil, hashedPassword);
+        } catch (SQLException e) {
+            throw new ServiceException("Error al actualizar el hash de la contraseña", e);
+        }
+    }
+
     public void updateProfileImage(Usuario usuario) {
         try {
             usuarioRepository.updateProfileImage(usuario.getCuil(), usuario.getProfileImage());
