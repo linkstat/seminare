@@ -77,6 +77,14 @@
             <artifactId>snakeyaml</artifactId>
             <version>2.0</version>
         </dependency>
+        <!-- Flexmark-java: parser Markdown → HTML para renderizar el cuerpo
+             de los memorándums (almacenados como Markdown crudo en la BD).
+             El render se muestra en JavaFX WebView. -->
+        <dependency>
+            <groupId>com.vladsch.flexmark</groupId>
+            <artifactId>flexmark-all</artifactId>
+            <version>0.64.8</version>
+        </dependency>
         <!-- Jakarta Mail: envío de notificaciones por email vía SMTP relay.
              API estándar (Jakarta EE) + Angus Mail como implementación de
              referencia post-migración del namespace javax → jakarta.

@@ -58,6 +58,9 @@ public class LoginController {
     private CargoService cargoService;
     private ServicioService servicioService;
     private DomicilioService domicilioService;
+    private MemorandumService memorandumService;
+    private EstadoTramiteRepository estadoTramiteRepository;
+    private UsuarioRepository usuarioRepository;
 
     /**
      * Método para establecer el {@link LoginService} que se utilizará para la autenticación.
@@ -86,6 +89,18 @@ public class LoginController {
 
     public void setDomicilioService(DomicilioService domicilioService) {
         this.domicilioService = domicilioService;
+    }
+
+    public void setMemorandumService(MemorandumService memorandumService) {
+        this.memorandumService = memorandumService;
+    }
+
+    public void setEstadoTramiteRepository(EstadoTramiteRepository estadoTramiteRepository) {
+        this.estadoTramiteRepository = estadoTramiteRepository;
+    }
+
+    public void setUsuarioRepository(UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
     }
 
     /**
@@ -407,6 +422,9 @@ public class LoginController {
 
             // Pass services to the controller
             controller.setServices(usuarioService, cargoService, servicioService, domicilioService, roleService);
+            controller.setMemorandumService(memorandumService);
+            controller.setEstadoTramiteRepository(estadoTramiteRepository);
+            controller.setUsuarioRepository(usuarioRepository);
 
             // Pass databaseConnector to the controller
             controller.setDatabaseConnector(databaseConnector);

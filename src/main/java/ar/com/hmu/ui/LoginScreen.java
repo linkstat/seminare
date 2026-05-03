@@ -104,6 +104,9 @@ public class LoginScreen extends Application {
             controller.setCargoService(cargoService);
             controller.setServicioService(servicioService);
             controller.setDomicilioService(domicilioService);
+            controller.setMemorandumService(memorandumService);
+            controller.setEstadoTramiteRepository(estadoTramiteRepository);
+            controller.setUsuarioRepository(usuarioRepository);
 
             // Llamar al método que depende de las dependencias inicializadas
             controller.postInitialize();

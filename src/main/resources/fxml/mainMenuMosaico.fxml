@@ -319,6 +319,11 @@
                               <Cursor fx:constant="HAND" />
                            </cursor>
                         </Text>
+                        <Label fx:id="memosCountLabel" text="" textAlignment="CENTER" style="-fx-text-fill: #c33; -fx-font-weight: bold; -fx-font-size: 11;">
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </Label>
                      </children>
                   </VBox>
                   <VBox fx:id="partesDiariosVBox" alignment="TOP_CENTER" styleClass="mosaic">

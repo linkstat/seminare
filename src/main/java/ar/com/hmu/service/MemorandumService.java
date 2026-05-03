@@ -334,6 +334,39 @@ public class MemorandumService {
     }
 
     /**
+     * Devuelve el memo con sus listas de destinatarios y autorizaciones
+     * pobladas. Útil para la pantalla de detalle.
+     */
+    public Memorandum findDetalleCompleto(UUID memoId) throws ServiceException {
+        try {
+            Memorandum memo = memorandumRepository.readByUUID(memoId);
+            if (memo == null) return null;
+            memo.setDestinatarios(memorandumRepository.findDestinatariosByMemoId(memoId));
+            memo.setAutorizaciones(memorandumRepository.findAutorizacionesByMemoId(memoId));
+            return memo;
+        } catch (SQLException e) {
+            throw new ServiceException("Error al cargar el detalle del memorándum", e);
+        }
+    }
+
+    /**
+     * Indica si el usuario tiene permiso para resolver la autorización
+     * pendiente del memo (autorizar/rechazar/observar). Es decir, si es el
+     * encargado actual del servicio del remitente del memo.
+     */
+    public boolean puedeResolverAutorizacion(Memorandum memo, Usuario usuario) throws ServiceException {
+        if (memo == null || usuario == null) return false;
+        try {
+            Usuario remitente = usuarioRepository.readByUUID(memo.getRemitenteId());
+            if (remitente == null || remitente.getServicioId() == null) return false;
+            UUID encargadoId = servicioRepository.findEncargadoByServicio(remitente.getServicioId());
+            return encargadoId != null && encargadoId.equals(usuario.getId());
+        } catch (SQLException e) {
+            throw new ServiceException("Error al verificar permisos de autorización", e);
+        }
+    }
+
+    /**
      * Devuelve los usuarios a los que el remitente puede enviar un memo
      * según las reglas de destinatarios:
      * <ul>

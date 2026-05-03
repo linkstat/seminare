@@ -129,6 +129,8 @@ public class MainMenuMosaicoController {
     private ImageView serverStatusIcon;
     @FXML
     private Label serverStatusLabel;
+    @FXML
+    private Label memosCountLabel;
 
     private MainMenuMosaicoService mainMenuMosaicoService;  // Servicio para gestionar la lógica del menú principal
     private DatabaseConnector databaseConnector;  // Necesario para la verificación del estado del servidor.
@@ -148,6 +150,8 @@ public class MainMenuMosaicoController {
     private ServicioService servicioService;
     private DomicilioService domicilioService;
     private RoleService roleService;
+    private MemorandumService memorandumService;
+    private EstadoTramiteRepository estadoTramiteRepository;
 
     private Usuario usuarioActual;
 
@@ -174,6 +178,18 @@ public class MainMenuMosaicoController {
         this.servicioService = servicioService;
         this.domicilioService = domicilioService;
         this.roleService = roleService;
+    }
+
+    public void setMemorandumService(MemorandumService memorandumService) {
+        this.memorandumService = memorandumService;
+    }
+
+    public void setEstadoTramiteRepository(EstadoTramiteRepository estadoTramiteRepository) {
+        this.estadoTramiteRepository = estadoTramiteRepository;
+    }
+
+    public void setUsuarioRepository(UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
     }
 
     public static Stage getPrimaryStage() {
@@ -307,6 +323,8 @@ public class MainMenuMosaicoController {
         aprobacionSolicitudesVBox.setManaged(usuarioActual.hasRole(TipoUsuario.JEFATURADESERVICIO, TipoUsuario.OFICINADEPERSONAL, TipoUsuario.DIRECCION));
         notasMemosVBox.setVisible(usuarioActual.hasAnyRoleData());
         notasMemosVBox.setManaged(usuarioActual.hasAnyRoleData());
+        // Cargar contador de no leídos al entrar al menú principal.
+        refrescarContadorMemos();
         partesDiariosVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL));
         partesDiariosVBox.setManaged(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL));
         consultaDiagramasDeServicioVBox.setVisible(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL, TipoUsuario.DIRECCION));
@@ -382,7 +400,7 @@ public class MainMenuMosaicoController {
 
         // Configura los mosaicos para mostrar una alerta de "Módulo en construcción"
         aprobacionSolicitudesVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
-        notasMemosVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
+        notasMemosVBox.setOnMouseClicked(this::handleNotasMemos);
         partesDiariosVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
         consultaDiagramasDeServicioVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
         diagramacionDeServicioVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
@@ -659,6 +677,69 @@ public class MainMenuMosaicoController {
         }
     }
 
+
+    /**
+     * Abre la bandeja de memorándums (Recibidos / Enviados / Pendientes
+     * de autorizar). Inyecta los services y el usuario actual al
+     * controller. Tras cerrar la ventana, refresca el contador del
+     * mosaico por si cambió el conteo de no leídos.
+     */
+    @FXML
+    private void handleNotasMemos(Event event) {
+        if (memorandumService == null) {
+            AlertUtils.showWarn("Módulo de memorándums no disponible.");
+            return;
+        }
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/bandejaMemorandums.fxml"));
+            loader.setControllerFactory(controllerClass -> {
+                if (controllerClass == BandejaMemorandumsController.class) {
+                    BandejaMemorandumsController c = new BandejaMemorandumsController();
+                    c.setMemorandumService(memorandumService);
+                    c.setUsuarioRepository(usuarioRepository);
+                    c.setEstadoTramiteRepository(estadoTramiteRepository);
+                    c.setUsuarioActual(usuarioActual);
+                    return c;
+                }
+                try {
+                    return controllerClass.getDeclaredConstructor().newInstance();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+            Parent root = loader.load();
+            BandejaMemorandumsController controller = loader.getController();
+            controller.postInitialize();
+
+            Stage stage = new Stage();
+            stage.setTitle("Memorándums :: " + AppInfo.PRG_LONG_TITLE);
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(MainMenuMosaicoController.getPrimaryStage());
+            stage.getIcons().add(new Image(getClass().getResourceAsStream(AppInfo.ICON_IMAGE)));
+            stage.showAndWait();
+
+            refrescarContadorMemos();
+        } catch (IOException e) {
+            AlertUtils.showErr("Error al abrir los memorándums: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Actualiza el badge "Memos (N)" en el mosaico al login y al cerrar
+     * la bandeja. Si no hay no leídos, deja el label vacío.
+     */
+    public void refrescarContadorMemos() {
+        if (memorandumService == null || usuarioActual == null || memosCountLabel == null) {
+            return;
+        }
+        try {
+            int n = memorandumService.contarNoLeidos(usuarioActual);
+            memosCountLabel.setText(n > 0 ? "(" + n + " sin leer)" : "");
+        } catch (ServiceException e) {
+            memosCountLabel.setText("");
+        }
+    }
 
     /**
      * Muestra la ventana de "Licencias de uso".
