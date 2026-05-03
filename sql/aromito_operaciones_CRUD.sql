@@ -256,6 +256,20 @@ INSERT INTO Servicio_JefaturaDeServicio (servicioID, empleadoID) VALUES
 
 
 -- ----------------------------------------------------------------------------
+-- 8.b) Inicialización de Servicio.encargadoUsuarioID
+--
+-- Cada servicio con jefatura asignada arranca con esa misma jefatura como
+-- encargado actual del papeleo (aprobaciones/rechazos/observaciones de
+-- memos). Los servicios sin jefe quedan con encargadoUsuarioID = NULL hasta
+-- que Oficina de Personal o Dirección asignen uno desde el ABM.
+-- ----------------------------------------------------------------------------
+UPDATE Servicio s
+   SET encargadoUsuarioID = sjs.empleadoID
+  FROM Servicio_JefaturaDeServicio sjs
+ WHERE s.id = sjs.servicioID;
+
+
+-- ----------------------------------------------------------------------------
 -- 9) Roles
 -- ----------------------------------------------------------------------------
 INSERT INTO Rol (id, nombre, descripcion) VALUES

@@ -1,5 +1,6 @@
 package ar.com.hmu.controller;
 
+import ar.com.hmu.constants.TipoUsuario;
 import ar.com.hmu.model.Agrupacion;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -9,12 +10,15 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.util.StringConverter;
 
 import ar.com.hmu.model.Servicio;
+import ar.com.hmu.model.Usuario;
 import ar.com.hmu.service.ServicioService;
 import ar.com.hmu.exceptions.ServiceException;
 import ar.com.hmu.util.AlertUtils;
 
+import java.util.List;
 import java.util.UUID;
 
 public class AbmServicioController {
@@ -29,12 +33,24 @@ public class AbmServicioController {
     private TextField nombreTextField;
     @FXML
     private ComboBox<Agrupacion> agrupacionComboBox;
+    @FXML
+    private ComboBox<Usuario> encargadoComboBox;
     private ObservableList<Agrupacion> agrupacionList = FXCollections.observableArrayList(Agrupacion.values());
 
     private ServicioService servicioService;
+    private Usuario usuarioActual;
 
     public void setServices(ServicioService servicioService) {
         this.servicioService = servicioService;
+    }
+
+    /**
+     * Inyecta el usuario logueado. Necesario para decidir si el combobox de
+     * encargado debe estar habilitado o de sólo lectura para el servicio
+     * seleccionado.
+     */
+    public void setUsuarioActual(Usuario usuarioActual) {
+        this.usuarioActual = usuarioActual;
     }
 
     @FXML
@@ -47,6 +63,20 @@ public class AbmServicioController {
         serviciosTableView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> mostrarDetalleServicio(newValue));
         // Inicializar ComboBox
         agrupacionComboBox.setItems(agrupacionList);
+        // ComboBox de encargado: cómo presentar cada Usuario
+        encargadoComboBox.setConverter(new StringConverter<Usuario>() {
+            @Override
+            public String toString(Usuario u) {
+                if (u == null) return "(sin encargado)";
+                return u.getApellidos() + ", " + u.getNombres();
+            }
+
+            @Override
+            public Usuario fromString(String s) {
+                return null;
+            }
+        });
+        encargadoComboBox.setDisable(true);
         cargarServicios();
     }
 
@@ -62,10 +92,59 @@ public class AbmServicioController {
         if (servicio != null) {
             nombreTextField.setText(servicio.getNombre());
             agrupacionComboBox.getSelectionModel().select(servicio.getAgrupacion());
+            cargarEncargadoComboBox(servicio);
         } else {
             nombreTextField.clear();
             agrupacionComboBox.getSelectionModel().clearSelection();
+            encargadoComboBox.getItems().clear();
+            encargadoComboBox.setDisable(true);
         }
+    }
+
+    /**
+     * Carga los usuarios del servicio en el combobox y selecciona al
+     * encargado actual. Habilita o deshabilita el combo según los permisos
+     * del usuario logueado: Oficina de Personal y Dirección pueden cambiar
+     * el encargado de cualquier servicio; un Jefe sólo de su propio servicio.
+     */
+    private void cargarEncargadoComboBox(Servicio servicio) {
+        try {
+            List<Usuario> usuarios = servicioService.findUsuariosByServicio(servicio.getId());
+            encargadoComboBox.getItems().setAll(usuarios);
+
+            // Selección actual
+            UUID encargadoActualId = servicio.getEncargadoUsuarioId();
+            if (encargadoActualId != null) {
+                usuarios.stream()
+                        .filter(u -> encargadoActualId.equals(u.getId()))
+                        .findFirst()
+                        .ifPresent(u -> encargadoComboBox.getSelectionModel().select(u));
+            } else {
+                encargadoComboBox.getSelectionModel().clearSelection();
+            }
+
+            encargadoComboBox.setDisable(!puedeCambiarEncargado(servicio));
+        } catch (ServiceException e) {
+            AlertUtils.showErr("Error al cargar los usuarios del servicio: " + e.getMessage());
+            encargadoComboBox.getItems().clear();
+            encargadoComboBox.setDisable(true);
+        }
+    }
+
+    /**
+     * Reglas: OP y Dirección pueden cambiar cualquier encargado. Un jefe de
+     * servicio sólo el de su propio servicio. Otros roles no.
+     */
+    private boolean puedeCambiarEncargado(Servicio servicio) {
+        if (usuarioActual == null) return false;
+        if (usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL, TipoUsuario.DIRECCION)) {
+            return true;
+        }
+        if (usuarioActual.hasRole(TipoUsuario.JEFATURADESERVICIO)) {
+            UUID servicioDelJefe = usuarioActual.getServicioId();
+            return servicioDelJefe != null && servicioDelJefe.equals(servicio.getId());
+        }
+        return false;
     }
 
     @FXML
@@ -110,11 +189,21 @@ public class AbmServicioController {
         seleccionado.setNombre(nombre);
         seleccionado.setAgrupacion(agrupacion);
 
+        // Encargado: solo se persiste si el usuario tiene permisos sobre este
+        // servicio. La UI ya deshabilita el combo cuando no, pero re-validamos
+        // por defensa en profundidad.
+        if (puedeCambiarEncargado(seleccionado)) {
+            Usuario encargadoSeleccionado = encargadoComboBox.getSelectionModel().getSelectedItem();
+            seleccionado.setEncargadoUsuarioId(encargadoSeleccionado != null ? encargadoSeleccionado.getId() : null);
+        }
+
         try {
             servicioService.update(seleccionado);
             cargarServicios();
             nombreTextField.clear();
             agrupacionComboBox.getSelectionModel().clearSelection();
+            encargadoComboBox.getItems().clear();
+            encargadoComboBox.setDisable(true);
         } catch (ServiceException e) {
             AlertUtils.showErr("Error al modificar el servicio: " + e.getMessage());
         }

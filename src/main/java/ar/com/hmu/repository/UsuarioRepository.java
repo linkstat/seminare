@@ -325,6 +325,31 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
         return 0;
     }
 
+    /**
+     * Devuelve los usuarios activos pertenecientes a un servicio dado.
+     * Usado para poblar selectores como el de "Encargado actual" del servicio
+     * en el ABM.
+     */
+    public List<Usuario> findUsuariosByServicio(UUID servicioId) throws SQLException {
+        List<Usuario> usuarios = new ArrayList<>();
+        String query = "SELECT id, fechaAlta, estado, cuil, apellidos, nombres, sexo, mail, tel, " +
+                "domicilioID, cargoID, servicioID, passwd, profile_image " +
+                "FROM Usuario WHERE servicioID = ? AND estado = TRUE " +
+                "ORDER BY apellidos, nombres";
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setObject(1, servicioId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    usuarios.add(usuarioFactory.createUsuario(rs));
+                }
+            } catch (ServiceException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return usuarios;
+    }
+
     public int countUsuariosByServicio(UUID servicioId) throws SQLException {
         String query = "SELECT COUNT(*) FROM Usuario WHERE servicioID = ? AND estado = TRUE";
         try (Connection connection = databaseConnector.getConnection();

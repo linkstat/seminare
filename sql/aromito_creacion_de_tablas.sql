@@ -211,7 +211,8 @@ CREATE TABLE Servicio (
     id UUID PRIMARY KEY,
     nombre VARCHAR(255) NOT NULL,
     agrupacion agrupacion_servicio NOT NULL,
-    direccionID UUID NOT NULL
+    direccionID UUID NOT NULL,
+    encargadoUsuarioID UUID NULL
 );
 
 
@@ -260,11 +261,17 @@ CREATE TABLE Empleado (
 
 /* ----------------------------------------------------------------------------
  * Cierre del ciclo Servicio.direccionID → Empleado(id)
+ * Cierre de Servicio.encargadoUsuarioID → Usuario(id) (encargado actual del
+ * papeleo del servicio: aprobaciones, rechazos y observaciones de memos)
  * Y tabla intermedia Servicio_JefaturaDeServicio
  * -------------------------------------------------------------------------- */
 ALTER TABLE Servicio
     ADD CONSTRAINT fk_servicio_direccion
     FOREIGN KEY (direccionID) REFERENCES Empleado(id);
+
+ALTER TABLE Servicio
+    ADD CONSTRAINT fk_servicio_encargado
+    FOREIGN KEY (encargadoUsuarioID) REFERENCES Usuario(id);
 
 CREATE TABLE Servicio_JefaturaDeServicio (
     servicioID UUID NOT NULL,

@@ -20,6 +20,15 @@ public class Servicio {
 
 	private UUID direccionId;
 
+	/**
+	 * Usuario actualmente a cargo del papeleo del servicio: aprobaciones,
+	 * rechazos y observaciones de memos. Normalmente coincide con la jefatura
+	 * del servicio; durante una ausencia (licencia, vacaciones) puede ser otro
+	 * empleado del servicio designado por Oficina de Personal, Dirección o el
+	 * propio jefe antes de salir.
+	 */
+	private UUID encargadoUsuarioId;
+
 	private List<Usuario> empleados;
 	private List<DiagramaDeServicio> diagramas;
 
@@ -77,6 +86,10 @@ public class Servicio {
 		this.direccionId = direccionId;
 	}
 
+	public void setEncargadoUsuarioId(UUID encargadoUsuarioId) {
+		this.encargadoUsuarioId = encargadoUsuarioId;
+	}
+
 	public void setEmpleados(List<Usuario> empleados) {
 		this.empleados = empleados;
 	}
@@ -109,6 +122,10 @@ public class Servicio {
 
 	public UUID getDireccionId() {
 		return direccionId;
+	}
+
+	public UUID getEncargadoUsuarioId() {
+		return encargadoUsuarioId;
 	}
 
 	public List<Usuario> getEmpleados(){

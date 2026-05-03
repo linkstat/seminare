@@ -10,9 +10,11 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane prefHeight="540.0" prefWidth="390.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ar.com.hmu.controller.AbmServicioController">
+<?import javafx.scene.control.Label?>
+
+<BorderPane prefHeight="600.0" prefWidth="430.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ar.com.hmu.controller.AbmServicioController">
     <center>
-        <VBox prefHeight="540.0" prefWidth="373.0" spacing="10">
+        <VBox prefHeight="600.0" prefWidth="413.0" spacing="10">
             <TableView fx:id="serviciosTableView" VBox.vgrow="ALWAYS">
                 <columns>
                     <TableColumn fx:id="nombreColumn" minWidth="20.0" prefWidth="200.0" text="NOMBRE DE SERVICIO" />
@@ -23,6 +25,12 @@
             <children>
                    <TextField fx:id="nombreTextField" minWidth="20.0" prefWidth="192.0" promptText="Nombre del Servicio" />
                <ComboBox fx:id="agrupacionComboBox" minWidth="15.0" prefWidth="143.0" />
+            </children>
+         </HBox>
+         <HBox alignment="CENTER_LEFT" spacing="10">
+            <children>
+                <Label text="Encargado actual:" />
+                <ComboBox fx:id="encargadoComboBox" minWidth="15.0" prefWidth="270.0" promptText="(seleccionar un servicio)" />
             </children>
          </HBox>
             <HBox alignment="BOTTOM_RIGHT" spacing="10">

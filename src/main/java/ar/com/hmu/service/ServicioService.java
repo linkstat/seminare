@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import ar.com.hmu.exceptions.ServiceException;
 import ar.com.hmu.model.Servicio;
+import ar.com.hmu.model.Usuario;
 import ar.com.hmu.repository.ServicioRepository;
 import ar.com.hmu.repository.UsuarioRepository;
 
@@ -100,6 +101,59 @@ public class ServicioService {
         }
     }
 
+    /**
+     * Devuelve los usuarios activos del servicio. Usado para poblar el selector
+     * de encargado en el ABM de Servicios.
+     */
+    public List<Usuario> findUsuariosByServicio(UUID servicioId) throws ServiceException {
+        try {
+            return usuarioRepository.findUsuariosByServicio(servicioId);
+        } catch (SQLException e) {
+            throw new ServiceException("Error al obtener los usuarios del servicio", e);
+        }
+    }
+
+    /**
+     * Devuelve el UUID del encargado actual del servicio, o null si el
+     * servicio no tiene encargado designado.
+     */
+    public UUID getEncargado(UUID servicioId) throws ServiceException {
+        try {
+            return servicioRepository.findEncargadoByServicio(servicioId);
+        } catch (SQLException e) {
+            throw new ServiceException("Error al obtener el encargado del servicio", e);
+        }
+    }
+
+    /**
+     * Asigna o reasigna el encargado actual del servicio. El encargado debe
+     * pertenecer al servicio (Usuario.servicioId == servicioId). Pasar null
+     * desasigna al encargado actual.
+     *
+     * @throws ServiceException si el usuario no pertenece al servicio o si el
+     *                          servicio no existe.
+     */
+    public void setEncargado(UUID servicioId, UUID encargadoUsuarioId) throws ServiceException {
+        try {
+            Servicio servicio = servicioRepository.readByUUID(servicioId);
+            if (servicio == null) {
+                throw new ServiceException("El servicio no existe.");
+            }
+            if (encargadoUsuarioId != null) {
+                Usuario candidato = usuarioRepository.readByUUID(encargadoUsuarioId);
+                if (candidato == null) {
+                    throw new ServiceException("El usuario seleccionado como encargado no existe.");
+                }
+                if (candidato.getServicioId() == null || !candidato.getServicioId().equals(servicioId)) {
+                    throw new ServiceException(
+                            "El usuario seleccionado no pertenece al servicio: " + servicio.getNombre());
+                }
+            }
+            servicioRepository.updateEncargado(servicioId, encargadoUsuarioId);
+        } catch (SQLException e) {
+            throw new ServiceException("Error al actualizar el encargado del servicio", e);
+        }
+    }
 
 }
 

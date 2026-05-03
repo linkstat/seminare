@@ -20,7 +20,7 @@ public class ServicioRepository implements GenericDAO<Servicio> {
 
     @Override
     public void create(Servicio servicio) throws SQLException {
-        String query = "INSERT INTO Servicio (id, nombre, agrupacion, direccionID) VALUES (?, ?, ?, ?)";
+        String query = "INSERT INTO Servicio (id, nombre, agrupacion, direccionID, encargadoUsuarioID) VALUES (?, ?, ?, ?, ?)";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
@@ -28,6 +28,7 @@ public class ServicioRepository implements GenericDAO<Servicio> {
             stmt.setString(2, servicio.getNombre());
             stmt.setObject(3, servicio.getAgrupacion().name(), Types.OTHER);
             stmt.setObject(4, servicio.getDireccionId());
+            stmt.setObject(5, servicio.getEncargadoUsuarioId());
 
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -37,13 +38,14 @@ public class ServicioRepository implements GenericDAO<Servicio> {
     }
 
     public void createWithoutDireccionId(Servicio servicio) throws SQLException {
-        String query = "INSERT INTO Servicio (id, nombre, agrupacion) VALUES (?, ?, ?)";
+        String query = "INSERT INTO Servicio (id, nombre, agrupacion, encargadoUsuarioID) VALUES (?, ?, ?, ?)";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
             stmt.setObject(1, servicio.getId());
             stmt.setString(2, servicio.getNombre());
             stmt.setObject(3, servicio.getAgrupacion().name(), Types.OTHER);
+            stmt.setObject(4, servicio.getEncargadoUsuarioId());
 
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -54,7 +56,7 @@ public class ServicioRepository implements GenericDAO<Servicio> {
 
     @Override
     public Servicio readByUUID(UUID id) throws SQLException {
-        String query = "SELECT id, nombre, agrupacion, direccionID FROM Servicio WHERE id = ?";
+        String query = "SELECT id, nombre, agrupacion, direccionID, encargadoUsuarioID FROM Servicio WHERE id = ?";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
@@ -74,7 +76,7 @@ public class ServicioRepository implements GenericDAO<Servicio> {
     @Override
     public List<Servicio> readAll() throws SQLException {
         List<Servicio> servicios = new ArrayList<>();
-        String query = "SELECT id, nombre, agrupacion, direccionID FROM Servicio";
+        String query = "SELECT id, nombre, agrupacion, direccionID, encargadoUsuarioID FROM Servicio";
         try (Connection connection = databaseConnector.getConnection();
              Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
@@ -91,14 +93,15 @@ public class ServicioRepository implements GenericDAO<Servicio> {
 
     @Override
     public void update(Servicio servicio) throws SQLException {
-        String query = "UPDATE Servicio SET nombre = ?, agrupacion = ?, direccionID = ? WHERE id = ?";
+        String query = "UPDATE Servicio SET nombre = ?, agrupacion = ?, direccionID = ?, encargadoUsuarioID = ? WHERE id = ?";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
             stmt.setString(1, servicio.getNombre());
             stmt.setObject(2, servicio.getAgrupacion().name(), Types.OTHER);
             stmt.setObject(3, servicio.getDireccionId());
-            stmt.setObject(4, servicio.getId());
+            stmt.setObject(4, servicio.getEncargadoUsuarioId());
+            stmt.setObject(5, servicio.getId());
 
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -108,19 +111,65 @@ public class ServicioRepository implements GenericDAO<Servicio> {
     }
 
     public void updateWithoutDireccionId(Servicio servicio) throws SQLException {
-        String query = "UPDATE Servicio SET nombre = ?, agrupacion = ? WHERE id = ?";
+        String query = "UPDATE Servicio SET nombre = ?, agrupacion = ?, encargadoUsuarioID = ? WHERE id = ?";
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
 
             stmt.setString(1, servicio.getNombre());
             stmt.setObject(2, servicio.getAgrupacion().name(), Types.OTHER);
-            stmt.setObject(3, servicio.getId());
+            stmt.setObject(3, servicio.getEncargadoUsuarioId());
+            stmt.setObject(4, servicio.getId());
 
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Error al actualizar el servicio", e);
         }
+    }
+
+    /**
+     * Actualiza únicamente el encargado actual del servicio. Útil para el
+     * flujo del ABM cuando solo cambia esta asignación.
+     *
+     * @param servicioId       UUID del servicio.
+     * @param encargadoUsuarioId UUID del nuevo encargado, o null para
+     *                         dejar el servicio sin encargado.
+     */
+    public void updateEncargado(UUID servicioId, UUID encargadoUsuarioId) throws SQLException {
+        String query = "UPDATE Servicio SET encargadoUsuarioID = ? WHERE id = ?";
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+
+            stmt.setObject(1, encargadoUsuarioId);
+            stmt.setObject(2, servicioId);
+
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error al actualizar el encargado del servicio", e);
+        }
+    }
+
+    /**
+     * Devuelve el UUID del encargado actual del servicio, o null si no hay
+     * uno designado.
+     */
+    public UUID findEncargadoByServicio(UUID servicioId) throws SQLException {
+        String query = "SELECT encargadoUsuarioID FROM Servicio WHERE id = ?";
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+
+            stmt.setObject(1, servicioId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getObject("encargadoUsuarioID", UUID.class);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error al buscar el encargado del servicio", e);
+        }
+        return null;
     }
 
     @Override
@@ -138,7 +187,7 @@ public class ServicioRepository implements GenericDAO<Servicio> {
     }
 
     public Servicio findById(UUID id) throws SQLException {
-        String query = "SELECT id, nombre, agrupacion, direccionID FROM Servicio WHERE id = ?";
+        String query = "SELECT id, nombre, agrupacion, direccionID, encargadoUsuarioID FROM Servicio WHERE id = ?";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -152,6 +201,7 @@ public class ServicioRepository implements GenericDAO<Servicio> {
                     servicio.setNombre(rs.getString("nombre"));
                     servicio.setAgrupacion(Agrupacion.valueOf(rs.getString("agrupacion")));
                     servicio.setDireccionId(rs.getObject("direccionID", UUID.class));
+                    servicio.setEncargadoUsuarioId(rs.getObject("encargadoUsuarioID", UUID.class));
                     return servicio;
                 }
             }
@@ -194,12 +244,15 @@ public class ServicioRepository implements GenericDAO<Servicio> {
         String nombre = rs.getString("nombre");
         Agrupacion agrupacion = Agrupacion.valueOf(rs.getString("agrupacion"));
         UUID direccionId = rs.getObject("direccionID", UUID.class);
+        UUID encargadoUsuarioId = rs.getObject("encargadoUsuarioID", UUID.class);
         if (direccionId == null) {
             //TODO: Decidir cómo manejar este caso: lanzar una excepción o establecer como null.
             System.out.println("direccionID es null para ServicioID: " + nombre);
         }
 
-        return new Servicio(id, nombre, agrupacion, direccionId);
+        Servicio servicio = new Servicio(id, nombre, agrupacion, direccionId);
+        servicio.setEncargadoUsuarioId(encargadoUsuarioId);
+        return servicio;
     }
 
 

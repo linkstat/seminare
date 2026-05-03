@@ -632,6 +632,7 @@ public class MainMenuMosaicoController {
                 if (controllerClass == AbmServicioController.class) {
                     AbmServicioController controller = new AbmServicioController();
                     controller.setServices(servicioService);
+                    controller.setUsuarioActual(usuarioActual);
                     return controller;
                 } else {
                     // Manejo predeterminado

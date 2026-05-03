@@ -84,6 +84,7 @@ para evolución futura.
 | RCSF03 | Reportes avanzados con análisis predictivo | Reportes con análisis predictivo de disponibilidad futura de personal y posibles ausencias en base a datos históricos. |
 | RCSF04 | Automatización de asignación horaria / asistencia de IA | Generar automáticamente horarios y guardias según reglas de disponibilidad, optimizando la asignación sin intervención manual. |
 | RCSF05 | Auditoría y seguimiento de cambios | Auditoría detallada de cambios en datos de empleados y de decisiones tomadas por supervisores. |
+| RCSF06 | Integración con Nextcloud / ONLYOFFICE para adjuntos | El HMU dispone de Nextcloud y ONLYOFFICE autoalojados. La idea es habilitar adjuntos en memorándums (y otros documentos) seleccionables sólo desde una carpeta de grupo con plantillas .docx oficiales (membretado del hospital), evitando archivos arbitrarios y manteniendo la formalidad institucional. |
 
 ## Stack
 
