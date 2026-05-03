@@ -9,3 +9,15 @@ db:
   dbName: aromito
   dbUser: aromito
   dbPass: aromitoSuperSecretDBPass
+
+# Configuración SMTP para notificaciones por email (memorándums, etc.)
+# Si "host" queda en blanco, el EmailNotificationService es no-op silencioso
+# (útil en entornos de desarrollo o tests sin acceso al relay).
+smtp:
+  host: ""
+  port: 25
+  from: "Aromito <noreply@hospital.cba.gov.ar>"
+  auth: false
+  tls: false
+  username: ""
+  password: ""

@@ -9,6 +9,7 @@ package ar.com.hmu.config;
 public class AppConfigSettings {
 
     private AppConfig db;
+    private SmtpConfig smtp;
 
     /**
      * Obtiene la configuración de la base de datos.
@@ -27,6 +28,19 @@ public class AppConfigSettings {
      */
     public void setDb(AppConfig db) {
         this.db = db;
+    }
+
+    /**
+     * Obtiene la configuración SMTP. Puede ser {@code null} si la sección no
+     * está definida en {@code config.yaml}; en ese caso el servicio de email
+     * debe interpretarlo como "modo no-op silencioso".
+     */
+    public SmtpConfig getSmtp() {
+        return smtp;
+    }
+
+    public void setSmtp(SmtpConfig smtp) {
+        this.smtp = smtp;
     }
 
 }

@@ -19,6 +19,7 @@ import java.io.InputStream;
 public class AppConfigReader {
 
     private AppConfig appConfig;
+    private SmtpConfig smtpConfig;
 
 
     /**
@@ -50,6 +51,9 @@ public class AppConfigReader {
             }
             AppConfigSettings settings = yaml.load(inputStream);
             this.appConfig = settings.getDb();
+            // smtp: NULL si la sección no está; igual lo seteamos como no-op
+            // por defecto para que el resto del código no haga null-checks.
+            this.smtpConfig = settings.getSmtp() != null ? settings.getSmtp() : new SmtpConfig();
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Error al leer el archivo YAML", e);
@@ -63,6 +67,15 @@ public class AppConfigReader {
      */
     public AppConfig getAppConfig() {
         return appConfig;
+    }
+
+    /**
+     * Obtiene la configuración SMTP. Nunca devuelve {@code null}: si la
+     * sección {@code smtp} no está en el YAML, se devuelve un
+     * {@link SmtpConfig} con valores por defecto (host vacío → no-op).
+     */
+    public SmtpConfig getSmtpConfig() {
+        return smtpConfig;
     }
 
 }

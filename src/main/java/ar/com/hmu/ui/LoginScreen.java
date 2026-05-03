@@ -16,6 +16,8 @@ import javafx.stage.Stage;
 
 import ar.com.hmu.auth.LoginService;
 import ar.com.hmu.config.AppConfigReader;
+import ar.com.hmu.service.notification.EmailNotificationService;
+import ar.com.hmu.service.notification.NotificationService;
 import ar.com.hmu.util.AppInfo;
 
 /**
@@ -53,6 +55,8 @@ public class LoginScreen extends Application {
             ServicioRepository servicioRepository = new ServicioRepository(databaseConnector);
             CargoRepository cargoRepository = new CargoRepository(databaseConnector);
             DomicilioRepository domicilioRepository = new DomicilioRepository(databaseConnector);
+            MemorandumRepository memorandumRepository = new MemorandumRepository(databaseConnector);
+            EstadoTramiteRepository estadoTramiteRepository = new EstadoTramiteRepository(databaseConnector);
 
             // Inicialización de servicios que no dependen de UsuarioRepository
             RoleService roleService = new RoleService(roleRepository);
@@ -73,6 +77,16 @@ public class LoginScreen extends Application {
             ServicioService servicioService = new ServicioService(servicioRepository, usuarioRepository);
             CargoService cargoService = new CargoService(cargoRepository);
             DomicilioService domicilioService = new DomicilioService(domicilioRepository);
+
+            // Servicio de notificaciones por email. Si la sección smtp del
+            // config.yaml está vacía/ausente, opera como no-op silencioso.
+            NotificationService notificationService = new EmailNotificationService(appConfigReader.getSmtpConfig());
+
+            // Inicialización del MemorandumService (depende de varios repos
+            // y del NotificationService).
+            MemorandumService memorandumService = new MemorandumService(
+                    memorandumRepository, estadoTramiteRepository,
+                    servicioRepository, usuarioRepository, notificationService);
 
             // Cargar el archivo FXML
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/loginScreen.fxml"));
