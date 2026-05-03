@@ -60,7 +60,7 @@ CREATE TYPE tipo_rol_memo_autorizacion AS ENUM (
     'JEFATURADESERVICIO', 'OFICINADEPERSONAL', 'DIRECCION', 'USUARIO'
 );
 
-CREATE TYPE estado_memo_autorizacion AS ENUM ('PENDIENTE', 'AUTORIZADO', 'RECHAZADO');
+CREATE TYPE estado_memo_autorizacion AS ENUM ('PENDIENTE', 'AUTORIZADO', 'RECHAZADO', 'OBSERVADO');
 
 CREATE TYPE tipo_marcacion AS ENUM ('INGRESO', 'EGRESO');
 
@@ -442,6 +442,7 @@ CREATE TABLE Memorandum_Autorizacion (
     autorizadoPorID UUID,
     fechaAutorizacion TIMESTAMP,
     estado estado_memo_autorizacion NOT NULL,
+    comentarios TEXT,
     FOREIGN KEY (memorandumID) REFERENCES Memorandum(id),
     FOREIGN KEY (autorizadoPorID) REFERENCES Usuario(id)
 );
