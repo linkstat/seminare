@@ -48,6 +48,7 @@
             <padding>
                 <Insets bottom="10" left="10" right="10" top="10"/>
             </padding>
+            <Button fx:id="editarButton" text="Editar borrador" onAction="#onEditarBorrador"/>
             <Button fx:id="autorizarButton" text="Autorizar" onAction="#onAutorizar"/>
             <Button fx:id="rechazarButton" text="Rechazar" onAction="#onRechazar"/>
             <Button fx:id="observarButton" text="Observar" onAction="#onObservar"/>

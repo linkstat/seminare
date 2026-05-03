@@ -116,6 +116,56 @@ public class MemorandumService {
     }
 
     /**
+     * Actualiza un borrador existente del propio remitente. Sólo permite
+     * cambiar asunto, contenido y destinatarios. El estado debe seguir
+     * siendo BORRADOR; cualquier otra cosa lanza ServiceException.
+     */
+    public Memorandum actualizarBorrador(Memorandum memo, Usuario remitente) throws ServiceException {
+        if (memo == null || memo.getId() == null) {
+            throw new ServiceException("Borrador inválido (sin id).");
+        }
+        if (remitente == null || remitente.getId() == null) {
+            throw new ServiceException("Remitente inválido.");
+        }
+        if (memo.getAsunto() == null || memo.getAsunto().isBlank()) {
+            throw new ServiceException("El asunto del memorándum no puede estar vacío.");
+        }
+        if (memo.getContenido() == null || memo.getContenido().isBlank()) {
+            throw new ServiceException("El contenido del memorándum no puede estar vacío.");
+        }
+        if (memo.getContenido().length() > CONTENIDO_MAX) {
+            throw new ServiceException("El contenido excede el máximo permitido (" + CONTENIDO_MAX + " caracteres).");
+        }
+        if (memo.getDestinatarios() == null || memo.getDestinatarios().isEmpty()) {
+            throw new ServiceException("El memorándum debe tener al menos un destinatario.");
+        }
+
+        try {
+            Memorandum existente = memorandumRepository.readByUUID(memo.getId());
+            if (existente == null) {
+                throw new ServiceException("El borrador no existe.");
+            }
+            if (!remitente.getId().equals(existente.getRemitenteId())) {
+                throw new ServiceException("Sólo el remitente puede modificar el borrador.");
+            }
+            EstadoTramite estadoActual = resolverEstado(existente);
+            if (estadoActual != EstadoTramite.BORRADOR) {
+                throw new ServiceException("Sólo se pueden modificar memos en estado BORRADOR.");
+            }
+
+            // Asegurar que cada destinatario apunta al memo correcto.
+            for (MemorandumDestinatario d : memo.getDestinatarios()) {
+                d.setMemorandumId(memo.getId());
+            }
+
+            memorandumRepository.actualizarBorrador(memo);
+            return memo;
+        } catch (SQLException e) {
+            throw new ServiceException("Error al actualizar el borrador", e);
+        }
+    }
+
+    /**
      * Envía el memorándum: transiciona a ENVIADO si no requiere autorización,
      * o a PENDIENTE_DE_AUTORIZACION si la requiere. Notifica a destinatarios,
      * remitente y eventual encargado autorizador.

@@ -345,6 +345,42 @@ public class MemorandumRepository implements GenericDAO<Memorandum> {
         }
     }
 
+    /**
+     * Actualiza un borrador existente: cabecera + reemplazo total de
+     * destinatarios. Las autorizaciones no se tocan (en BORRADOR no debería
+     * haber). Todo en una transacción.
+     */
+    public void actualizarBorrador(Memorandum memo) throws SQLException {
+        Connection connection = null;
+        try {
+            connection = databaseConnector.getConnection();
+            connection.setAutoCommit(false);
+
+            String updateMemo = "UPDATE Memorandum SET asunto = ?, contenido = ? WHERE id = ?";
+            try (PreparedStatement stmt = connection.prepareStatement(updateMemo)) {
+                stmt.setString(1, memo.getAsunto());
+                stmt.setString(2, memo.getContenido());
+                stmt.setObject(3, memo.getId());
+                stmt.executeUpdate();
+            }
+
+            ejecutarUpdate(connection, "DELETE FROM Memorandum_Destinatario WHERE memorandumID = ?", memo.getId());
+            insertarDestinatarios(connection, memo.getId(), memo.getDestinatarios());
+
+            connection.commit();
+        } catch (SQLException e) {
+            if (connection != null) {
+                try { connection.rollback(); } catch (SQLException ignored) {}
+            }
+            e.printStackTrace();
+            throw new RuntimeException("Error al actualizar el borrador del memorándum", e);
+        } finally {
+            if (connection != null) {
+                try { connection.setAutoCommit(true); connection.close(); } catch (SQLException ignored) {}
+            }
+        }
+    }
+
     // ============================================================
     // Helpers privados
     // ============================================================

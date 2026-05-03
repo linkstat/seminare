@@ -47,6 +47,7 @@ public class DetalleMemorandumController {
     @FXML private Label historialLabel;
     @FXML private WebView contenidoWebView;
 
+    @FXML private Button editarButton;
     @FXML private Button autorizarButton;
     @FXML private Button rechazarButton;
     @FXML private Button observarButton;
@@ -153,6 +154,7 @@ public class DetalleMemorandumController {
         boolean esEncargadoActual = esEncargadoDelServicioDelRemitente();
 
         // Por defecto ocultos.
+        editarButton.setVisible(false);
         autorizarButton.setVisible(false);
         rechazarButton.setVisible(false);
         observarButton.setVisible(false);
@@ -179,10 +181,11 @@ public class DetalleMemorandumController {
             }
         }
         if (estado == EstadoTramite.BORRADOR && esRemitente) {
+            editarButton.setVisible(true);
             eliminarButton.setVisible(true);
         }
 
-        for (Button b : new Button[]{autorizarButton, rechazarButton, observarButton,
+        for (Button b : new Button[]{editarButton, autorizarButton, rechazarButton, observarButton,
                 reenviarButton, marcarLeidoButton, eliminarButton}) {
             b.setManaged(b.isVisible());
         }
@@ -263,6 +266,42 @@ public class DetalleMemorandumController {
             cerrar();
         } catch (ServiceException e) {
             AlertUtils.showErr("Error al eliminar el borrador: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void onEditarBorrador() {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/fxml/redactarMemorandum.fxml"));
+            loader.setControllerFactory(controllerClass -> {
+                if (controllerClass == RedactarMemorandumController.class) {
+                    RedactarMemorandumController c = new RedactarMemorandumController();
+                    c.setMemorandumService(memorandumService);
+                    c.setUsuarioActual(usuarioActual);
+                    c.setMemoEdicion(memo);
+                    return c;
+                }
+                try {
+                    return controllerClass.getDeclaredConstructor().newInstance();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+            javafx.scene.Parent root = loader.load();
+            RedactarMemorandumController controller = loader.getController();
+            controller.postInitialize();
+
+            javafx.stage.Stage stage = new javafx.stage.Stage();
+            stage.setTitle("Editar memorándum :: " + ar.com.hmu.util.AppInfo.PRG_LONG_TITLE);
+            stage.setScene(new javafx.scene.Scene(root));
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            try {
+                stage.getIcons().add(new javafx.scene.image.Image(getClass().getResourceAsStream(ar.com.hmu.util.AppInfo.ICON_IMAGE)));
+            } catch (Exception ignored) {}
+            stage.showAndWait();
+            cerrar();
+        } catch (java.io.IOException e) {
+            AlertUtils.showErr("Error al abrir el editor: " + e.getMessage());
         }
     }
 

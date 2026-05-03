@@ -121,9 +121,46 @@ public class BandejaMemorandumsController {
 
     @FXML
     private void onNuevoMemo() {
-        // La pantalla de redacción se implementa en el siguiente commit;
-        // por ahora avisamos sin abrir nada.
-        AlertUtils.showInfo("Redacción de memorándums: próximo paso del módulo.");
+        abrirRedaccion(null);
+    }
+
+    /** Abre la pantalla de redacción. Si {@code memoEdicion} no es null, se
+     *  abre en modo edición (precarga el borrador). */
+    void abrirRedaccion(Memorandum memoEdicion) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/redactarMemorandum.fxml"));
+            loader.setControllerFactory(controllerClass -> {
+                if (controllerClass == RedactarMemorandumController.class) {
+                    RedactarMemorandumController c = new RedactarMemorandumController();
+                    c.setMemorandumService(memorandumService);
+                    c.setUsuarioActual(usuarioActual);
+                    if (memoEdicion != null) {
+                        c.setMemoEdicion(memoEdicion);
+                    }
+                    return c;
+                }
+                try {
+                    return controllerClass.getDeclaredConstructor().newInstance();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+            Parent root = loader.load();
+            RedactarMemorandumController controller = loader.getController();
+            controller.postInitialize();
+
+            Stage stage = new Stage();
+            stage.setTitle((memoEdicion != null ? "Editar memorándum" : "Nuevo memorándum")
+                    + " :: " + AppInfo.PRG_LONG_TITLE);
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.getIcons().add(new Image(getClass().getResourceAsStream(AppInfo.ICON_IMAGE)));
+            stage.showAndWait();
+
+            cargarBandejas();
+        } catch (IOException e) {
+            AlertUtils.showErr("Error al abrir el editor de memorándums: " + e.getMessage());
+        }
     }
 
     // ============================================================
