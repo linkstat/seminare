@@ -1,10 +1,10 @@
 package ar.com.hmu.repository;
 
+import ar.com.hmu.factory.MemorandumFactory;
 import ar.com.hmu.model.EstadoMemorandumAutorizacion;
 import ar.com.hmu.model.Memorandum;
 import ar.com.hmu.model.MemorandumAutorizacion;
 import ar.com.hmu.model.MemorandumDestinatario;
-import ar.com.hmu.model.TipoRolMemoAutorizacion;
 import ar.com.hmu.repository.dao.GenericDAO;
 
 import java.sql.Connection;
@@ -88,7 +88,7 @@ public class MemorandumRepository implements GenericDAO<Memorandum> {
             stmt.setObject(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return mapResultSetToMemorandum(rs);
+                    return MemorandumFactory.createMemorandum(rs);
                 }
             }
         }
@@ -104,7 +104,7 @@ public class MemorandumRepository implements GenericDAO<Memorandum> {
              PreparedStatement stmt = connection.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
-                memos.add(mapResultSetToMemorandum(rs));
+                memos.add(MemorandumFactory.createMemorandum(rs));
             }
         }
         return memos;
@@ -171,7 +171,7 @@ public class MemorandumRepository implements GenericDAO<Memorandum> {
             stmt.setObject(1, remitenteId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    memos.add(mapResultSetToMemorandum(rs));
+                    memos.add(MemorandumFactory.createMemorandum(rs));
                 }
             }
         }
@@ -194,7 +194,7 @@ public class MemorandumRepository implements GenericDAO<Memorandum> {
             stmt.setObject(1, usuarioId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    memos.add(mapResultSetToMemorandum(rs));
+                    memos.add(MemorandumFactory.createMemorandum(rs));
                 }
             }
         }
@@ -223,7 +223,7 @@ public class MemorandumRepository implements GenericDAO<Memorandum> {
             stmt.setObject(1, autorizadorId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    memos.add(mapResultSetToMemorandum(rs));
+                    memos.add(MemorandumFactory.createMemorandum(rs));
                 }
             }
         }
@@ -255,12 +255,7 @@ public class MemorandumRepository implements GenericDAO<Memorandum> {
             stmt.setObject(1, memoId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    MemorandumDestinatario d = new MemorandumDestinatario();
-                    d.setMemorandumId(rs.getObject("memorandumID", UUID.class));
-                    d.setUsuarioId(rs.getObject("usuarioID", UUID.class));
-                    Timestamp ts = rs.getTimestamp("fechaRecepcion");
-                    d.setFechaRecepcion(ts != null ? ts.toLocalDateTime() : null);
-                    dests.add(d);
+                    dests.add(MemorandumFactory.createDestinatario(rs));
                 }
             }
         }
@@ -277,16 +272,7 @@ public class MemorandumRepository implements GenericDAO<Memorandum> {
             stmt.setObject(1, memoId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    MemorandumAutorizacion a = new MemorandumAutorizacion();
-                    a.setId(rs.getObject("id", UUID.class));
-                    a.setMemorandumId(rs.getObject("memorandumID", UUID.class));
-                    a.setTipoRol(TipoRolMemoAutorizacion.valueOf(rs.getString("tipoRol")));
-                    a.setAutorizadoPorId(rs.getObject("autorizadoPorID", UUID.class));
-                    Timestamp tsAuth = rs.getTimestamp("fechaAutorizacion");
-                    a.setFechaAutorizacion(tsAuth != null ? tsAuth.toLocalDateTime() : null);
-                    a.setEstado(EstadoMemorandumAutorizacion.valueOf(rs.getString("estado")));
-                    a.setComentarios(rs.getString("comentarios"));
-                    auths.add(a);
+                    auths.add(MemorandumFactory.createAutorizacion(rs));
                 }
             }
         }
@@ -409,19 +395,5 @@ public class MemorandumRepository implements GenericDAO<Memorandum> {
             stmt.setObject(1, id);
             stmt.executeUpdate();
         }
-    }
-
-    private Memorandum mapResultSetToMemorandum(ResultSet rs) throws SQLException {
-        Memorandum m = new Memorandum();
-        m.setId(rs.getObject("id", UUID.class));
-        m.setAsunto(rs.getString("asunto"));
-        m.setContenido(rs.getString("contenido"));
-        Timestamp tsEnvio = rs.getTimestamp("fechaEnvio");
-        m.setFechaEnvio(tsEnvio != null ? tsEnvio.toLocalDateTime() : null);
-        Timestamp tsRecep = rs.getTimestamp("fechaRecepcion");
-        m.setFechaRecepcion(tsRecep != null ? tsRecep.toLocalDateTime() : null);
-        m.setEstadoTramiteId(rs.getObject("estadoTramiteID", UUID.class));
-        m.setRemitenteId(rs.getObject("remitenteID", UUID.class));
-        return m;
     }
 }
