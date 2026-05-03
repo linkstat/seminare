@@ -53,6 +53,38 @@ cada uno con su propia tabla, herencia de `Horario`:
 Condicionalidad general: no pueden transcurrir menos de 10 horas corridas
 entre un egreso y un ingreso.
 
+## Requerimientos
+
+Resultado del proceso de elicitación. Los **RFS** son requerimientos
+funcionales validados (alcance comprometido); los **RCSF** son candidatos
+para evolución futura.
+
+### Funcionales validados (RFS)
+
+| ID | Requerimiento |
+| --- | --- |
+| RFS01 | La Oficina de Personal puede gestionar altas, bajas y modificaciones de empleados en la base de datos centralizada. |
+| RFS02 | Las Jefaturas de Servicio generan diagramas de servicio personalizados, asignando empleados a turnos y guardias específicos. |
+| RFS03 | Consultar en tiempo real la disponibilidad del personal, incluyendo horarios programados, licencias y faltas. |
+| RFS04 | Los empleados registran horas extras; el total acumulado de horas extras disponibles se actualiza automáticamente con cada nuevo registro. |
+| RFS05 | Registrar las horas utilizadas en pases de salida y calcular las horas pendientes de devolución. |
+| RFS06 | Registrar omisiones de marcación de ingreso o egreso e incorporarlas al parte diario. |
+| RFS07 | Los empleados envían memorándums a sus jefaturas, a la Oficina de Personal o a la Dirección del Hospital. |
+| RFS08 | Generar reportes personalizados de horas trabajadas, francos compensatorios, licencias y cumplimiento de horarios, según el rol del usuario. |
+| RFS09 | Enviar alertas automáticas para recordar fechas límite de presentación de diagramas de servicio y eventos importantes. |
+| RFS10 | Controlar el acceso a las funcionalidades según el rol del usuario (Empleado, Jefatura de Servicio, Oficina de Personal, Dirección). |
+| RFS11 | Los empleados generan francos compensatorios a partir de sus horas extras disponibles y los solicitan a la jefatura de servicio correspondiente. |
+
+### Candidatos funcionales (RCSF)
+
+| ID | Tema | Detalle |
+| --- | --- | --- |
+| RCSF01 | Gestión de licencias con automatización | Solicitud, aprobación y gestión de licencias (enfermedad, vacaciones, etc.) desde el sistema, con flujo de aprobación que involucra a Jefatura de Servicio y Oficina de Personal. **Nota de alcance**: Aromito gestionaría el flujo interno de solicitud/aprobación; la liquidación oficial sigue en VeDi. |
+| RCSF02 | Integración con sistemas externos (VeDi) | Integrar con sistemas municipales mediante APIs si en el futuro las exponen para consulta o intercambio automático. |
+| RCSF03 | Reportes avanzados con análisis predictivo | Reportes con análisis predictivo de disponibilidad futura de personal y posibles ausencias en base a datos históricos. |
+| RCSF04 | Automatización de asignación horaria / asistencia de IA | Generar automáticamente horarios y guardias según reglas de disponibilidad, optimizando la asignación sin intervención manual. |
+| RCSF05 | Auditoría y seguimiento de cambios | Auditoría detallada de cambios en datos de empleados y de decisiones tomadas por supervisores. |
+
 ## Stack
 
 - **Lenguaje**: Java 25 LTS (release sept 2025, soporte hasta 2033).
@@ -63,14 +95,13 @@ entre un egreso y un ingreso.
   - Main class: `ar.com.hmu.ui.LoginScreen`.
   - Multiplataforma: las natives se resuelven según el OS de build.
     Producción target = Windows; desarrollo posible en Linux.
-- **Persistencia**: PostgreSQL (migración en curso desde MariaDB).
+- **Persistencia**: PostgreSQL (migración desde MariaDB completada en
+  commit `3761f5b`).
   - Driver: `org.postgresql:postgresql:42.7.11`.
   - Razón de la migración: tipo `UUID` nativo (vs. `BINARY(16)` y funciones
     de conversión), mejor soporte JDBC, mejores tipos para rangos de fechas.
-- **Seguridad**: Argon2id para password hashing.
-  - Migración prevista desde BCrypt original (Aromito post-cátedra puede
-    evolucionar libremente). Hashes BCrypt y Argon2 se distinguen por prefijo
-    (`$2a$` vs `$argon2id$`); pueden coexistir durante la transición.
+- **Seguridad**: Argon2id para password hashing (migración desde BCrypt
+  completada).
   - Librería: `de.mkammerer:argon2-jvm:2.12` (LGPL).
   - Parámetros: m=19456 KiB, t=2, p=1 (perfil OWASP recomendado).
 - **Configuración**: SnakeYAML 2.0 (archivo `config.yaml` en resources).
@@ -87,7 +118,7 @@ mvn clean package
 # Ejecutar
 mvn javafx:run
 
-# Tests (TODO: framework aún no configurado, evaluar JUnit 5)
+# Tests (JUnit 5 + Mockito + AssertJ + Testcontainers)
 mvn test
 ```
 
@@ -169,20 +200,29 @@ esquemas completos.
 - Username de login = CUIL del empleado.
 - Atributo `servicio` desnormalizado en clase abstracta `Usuario` (decisión
   consciente de redundancia para uniformidad del modelo OO).
-- BCrypt original → migración a Argon2id en evolución post-cátedra.
+- Argon2id para password hashing (migrado desde BCrypt original).
 
-## Migración en curso: MariaDB → PostgreSQL
+## Estado de migraciones (post-cátedra)
 
-**Estado**: el DDL original está en MariaDB. La migración implica:
+Aromito post-seminario evoluciona libremente sobre las decisiones originales.
+Las migraciones completadas a la fecha son:
 
-1. Reescribir DDL: `BINARY(16)` → `UUID`, `ENUM(...)` → `CREATE TYPE`,
-   `DATETIME` → `TIMESTAMP`, `BOOLEAN` (mismo), ajustar triggers a PL/pgSQL.
-2. Eliminar funciones de conversión `uuidToBin()` / `binToUuid()` en Java
-   (innecesarias con tipo UUID nativo).
-3. Adaptar scripts de inserción (sin `UUID_TO_BIN` / `BIN_TO_UUID`; usar
-   `gen_random_uuid()` de PostgreSQL).
-4. Cambiar driver y URL JDBC.
-5. Mantener compatibilidad con el modelo Java existente (que se simplifica).
+1. **Sync SQL ↔ Java**: modelo y DAOs alineados con el DDL.
+2. **BCrypt → Argon2id** para password hashing.
+3. **MariaDB → PostgreSQL**: reescritura del DDL (`BINARY(16)` → `UUID`,
+   `ENUM(...)` → `CREATE TYPE`, `DATETIME` → `TIMESTAMP`, triggers a
+   PL/pgSQL), eliminación de funciones de conversión `uuidToBin()` /
+   `binToUuid()` en Java, scripts de inserción adaptados a
+   `gen_random_uuid()`, cambio de driver y URL JDBC.
+4. **Java 23 → Java 25 LTS** + **JavaFX 25.0.2**.
+5. **Framework de tests**: JUnit 5 (Jupiter) + Mockito + AssertJ +
+   Testcontainers configurado en `pom.xml`. Surefire 3.5.2.
+   - Mockito usa `mock-maker-subclass` (configurado en
+     `src/test/resources/mockito-extensions/org.mockito.plugins.MockMaker`)
+     porque el inline mock maker tiene problemas con Java 25.
+   - Sólo unit + integration tests; los tests de UI (TestFX) quedan
+     deliberadamente fuera de alcance — la validación visual la hacen los
+     usuarios.
 
 ## Convenciones
 
@@ -196,9 +236,12 @@ esquemas completos.
 ## No contempla (alcance excluido del sistema)
 
 - Liquidación de sueldos (lo hace Capital Humano vía sistema VeDi).
-- Licencias de cualquier tipo (ordinarias, sanitarias, etc. también VeDi).
+- **Liquidación/registro oficial de licencias en VeDi**. Aromito sí gestiona
+  el flujo interno de solicitud y aprobación de licencias (ver RCSF01); la
+  liquidación final permanece en VeDi.
 - Carpetas médicas (gestión externa).
-- Integraciones automatizadas con sistemas municipales (no proveen API).
+- Integraciones automatizadas con sistemas municipales (no proveen API; ver
+  RCSF02 si esto cambiara a futuro).
 
 ## Documentación complementaria
 
