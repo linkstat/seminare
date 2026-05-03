@@ -24,11 +24,16 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
 
     @Override
     public void create(Usuario usuario) throws SQLException {
-        try (Connection connection = databaseConnector.getConnection()) {
-            String query = "INSERT INTO Usuario (id, fechaAlta, estado, cuil, apellidos, nombres, sexo, mail, passwd, domicilioID, cargoID, servicioID) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        // Class Table Inheritance: todo Usuario del HMU es también Empleado
+        // (convención del seed). Se inserta en ambas tablas en una transacción.
+        Connection connection = null;
+        try {
+            connection = databaseConnector.getConnection();
+            connection.setAutoCommit(false);
 
+            String insertUsuario = "INSERT INTO Usuario (id, fechaAlta, estado, cuil, apellidos, nombres, sexo, mail, tel, passwd, domicilioID, cargoID, servicioID) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            try (PreparedStatement stmt = connection.prepareStatement(insertUsuario)) {
                 stmt.setObject(1, usuario.getId());
                 stmt.setDate(2, Date.valueOf(usuario.getFechaAlta()));
                 stmt.setBoolean(3, usuario.getEstado());
@@ -37,16 +42,31 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
                 stmt.setString(6, usuario.getNombres());
                 stmt.setObject(7, usuario.getSexo().name(), Types.OTHER);
                 stmt.setString(8, usuario.getMail());
-                stmt.setString(9, usuario.getEncryptedPassword());
-                stmt.setObject(10, usuario.getDomicilioId());
-                stmt.setObject(11, usuario.getCargoId());
-                stmt.setObject(12, usuario.getServicioId());
+                stmt.setObject(9, usuario.getTel() != 0 ? usuario.getTel() : null, Types.BIGINT);
+                stmt.setString(10, usuario.getEncryptedPassword());
+                stmt.setObject(11, usuario.getDomicilioId());
+                stmt.setObject(12, usuario.getCargoId());
+                stmt.setObject(13, usuario.getServicioId());
                 stmt.executeUpdate();
-
             }
+
+            String insertEmpleado = "INSERT INTO Empleado (id, francosCompensatoriosUtilizados, horarioActualID) VALUES (?, NULL, NULL)";
+            try (PreparedStatement stmt = connection.prepareStatement(insertEmpleado)) {
+                stmt.setObject(1, usuario.getId());
+                stmt.executeUpdate();
+            }
+
+            connection.commit();
         } catch (SQLException e) {
+            if (connection != null) {
+                try { connection.rollback(); } catch (SQLException ignored) {}
+            }
             e.printStackTrace();
             throw new RuntimeException("Error al crear el usuario", e);
+        } finally {
+            if (connection != null) {
+                try { connection.setAutoCommit(true); connection.close(); } catch (SQLException ignored) {}
+            }
         }
     }
 

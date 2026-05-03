@@ -159,7 +159,7 @@
                   <VBox spacing="2.0">
                      <children>
                         <CheckBox fx:id="rolEmpleadoCheckBox" mnemonicParsing="false" text="Empleado" />
-                        <CheckBox fx:id="rolJefeServicioCheckBox" mnemonicParsing="false" text="Jefe de Servicio" />
+                        <CheckBox fx:id="rolJefaturaServicioCheckBox" mnemonicParsing="false" text="Jefatura de Servicio" />
                         <CheckBox fx:id="rolDireccionCheckBox" mnemonicParsing="false" text="Directivo" />
                         <CheckBox fx:id="rolOficinaPersonalCheckBox" mnemonicParsing="false" text="Oficina de Personal" />
                      </children>

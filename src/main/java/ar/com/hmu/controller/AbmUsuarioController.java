@@ -1046,6 +1046,31 @@ public class AbmUsuarioController implements Initializable {
         // Cargar imagen de perfil
         ImageUtils.setProfileImage(imagenPerfilImageView, usuario.getProfileImage(), imagenPerfilOriginal);
 
+        // Cargar Cargo y Servicio buscándolos por ID en las listas ya cargadas
+        // (el factory popula sólo los IDs, no los objetos completos).
+        if (usuario.getCargoId() != null) {
+            cargosList.stream()
+                    .filter(c -> usuario.getCargoId().equals(c.getId()))
+                    .findFirst()
+                    .ifPresent(c -> {
+                        cargoComboBox.getSelectionModel().select(c);
+                        usuario.setCargo(c);
+                    });
+        } else {
+            cargoComboBox.getSelectionModel().clearSelection();
+        }
+        if (usuario.getServicioId() != null) {
+            serviciosList.stream()
+                    .filter(s -> usuario.getServicioId().equals(s.getId()))
+                    .findFirst()
+                    .ifPresent(s -> {
+                        servicioComboBox.getSelectionModel().select(s);
+                        usuario.setServicio(s);
+                    });
+        } else {
+            servicioComboBox.getSelectionModel().clearSelection();
+        }
+
         //Cargar roles en los CheckBoxes
         rolEmpleadoCheckBox.setSelected(usuario.hasRoleBehavior(EmpleadoRoleImpl.class));
         rolJefaturaServicioCheckBox.setSelected(usuario.hasRoleBehavior(JefaturaDeServicioRoleImpl.class));
@@ -1188,14 +1213,12 @@ public class AbmUsuarioController implements Initializable {
         // Asignar domicilio
         String numeracionInput = domNumeracionField.getText().trim();
         int numeracion;
-        if (domSinNumeroCheckBox.isSelected()) {
+        if (domSinNumeroCheckBox.isSelected() || numeracionInput.isEmpty()) {
+            // Domicilio es opcional: numeración vacía equivale a 0 ("sin número").
             numeracion = 0;
-            domNumeracionField.setText("0");
-            domNumeracionField.setDisable(true);
         } else {
             try {
                 numeracion = Integer.parseInt(numeracionInput);
-                domNumeracionField.setDisable(false);
             } catch (NumberFormatException e) {
                 mostrarError("La numeración debe ser un número válido.");
                 return null;
@@ -1257,18 +1280,17 @@ public class AbmUsuarioController implements Initializable {
     }
 
     private Role createRoleBehaviorFromRoleData(RoleData roleData, Usuario usuario) {
-        switch (roleData.getNombre()) {
-            case "AGENTE":
-                return new EmpleadoRoleImpl(usuario);
-            case "JEFEDESERVICIO":
-                return new JefaturaDeServicioRoleImpl(usuario);
-            case "OFICINADEPERSONAL":
-                return new OficinaDePersonalRoleImpl(usuario);
-            case "DIRECCION":
-                return new DireccionRoleImpl(usuario);
-            default:
-                throw new IllegalArgumentException("Rol desconocido: " + roleData.getNombre());
+        TipoUsuario tipo = roleData.getTipoUsuario();
+        if (tipo == null) {
+            // Fallback por si el RoleData fue cargado sin enriquecer el enum.
+            tipo = TipoUsuario.fromInternalName(roleData.getNombre());
         }
+        return switch (tipo) {
+            case EMPLEADO -> new EmpleadoRoleImpl(usuario);
+            case JEFATURADESERVICIO -> new JefaturaDeServicioRoleImpl(usuario);
+            case OFICINADEPERSONAL -> new OficinaDePersonalRoleImpl(usuario);
+            case DIRECCION -> new DireccionRoleImpl(usuario);
+        };
     }
 
 
@@ -1283,15 +1305,15 @@ public class AbmUsuarioController implements Initializable {
             mostrarError("Debe completar todos los campos obligatorios.");
             return false;
         }
-
-        // Validar campos del domicilio
-//        if (domCalleComboBox.getEditor().getText().isEmpty() || domNumeracionField.getText().isEmpty()
-//                || domCiudadComboBox.getEditor().getText().isEmpty() || domProvinciaComboBox.getEditor().getText().isEmpty()) {
-//            mostrarError("Debe completar todos los campos de domicilio obligatorios.");
-//            return false;
-//        }
-
-        // Validar formatos, email válido, etc.
+        if (cargoComboBox.getSelectionModel().isEmpty()) {
+            mostrarError("Debe seleccionar un Cargo.");
+            return false;
+        }
+        if (servicioComboBox.getSelectionModel().isEmpty()) {
+            mostrarError("Debe seleccionar un Servicio.");
+            return false;
+        }
+        // Domicilio es opcional. La validación de email queda pendiente.
         return true;
     }
 
