@@ -106,6 +106,16 @@ para evolución futura.
   - Librería: `de.mkammerer:argon2-jvm:2.12` (LGPL).
   - Parámetros: m=19456 KiB, t=2, p=1 (perfil OWASP recomendado).
 - **Configuración**: SnakeYAML 2.0 (archivo `config.yaml` en resources).
+  Secciones: `db:` (PostgreSQL) y `smtp:` (relay para notificaciones por
+  email; si `smtp.host` está vacío, el `EmailNotificationService` opera
+  en modo no-op silencioso).
+- **Markdown**: `com.vladsch.flexmark:flexmark-all:0.64.8` para parsear
+  el contenido de los memorándums (almacenado como Markdown crudo) y
+  renderizarlo a HTML para mostrar en `WebView`.
+- **Email**: `jakarta.mail:jakarta.mail-api:2.1.3` +
+  `org.eclipse.angus:angus-mail:2.0.3` (implementación de referencia
+  post-migración Jakarta). Envío async fire-and-forget vía
+  `ExecutorService` de 2 threads daemon.
 
 ## Comandos frecuentes
 
@@ -136,16 +146,20 @@ src/main/java/ar/com/hmu/
 ├── model/        # entidades del dominio (Usuario, Empleado, Novedad, etc.)
 ├── repository/
 │   └── dao/      # DAOs (UsuarioDAO, etc.) + DatabaseConnector
-├── service/      # lógica de negocio (LoginService, etc.)
+├── service/
+│   ├── *.java    # lógica de negocio (LoginService, MemorandumService, etc.)
+│   └── notification/  # NotificationService + EmailNotificationService
 ├── ui/           # JavaFX (pantallas, controllers FXML)
-└── util/         # utilidades generales
+└── util/         # utilidades generales (MarkdownRenderer, AlertUtils, etc.)
 
 src/main/resources/
 ├── config/
 │   └── config.yaml
-├── css/
+├── css/         # MainMenuMosaicoStd.css, bandejaMemorandums.css, etc.
 ├── fonts/
-├── fxml/
+├── fxml/        # pantallas (loginScreen, mainMenuMosaico, abmServicio,
+│              #            bandejaMemorandums, detalleMemorandum,
+│              #            redactarMemorandum, etc.)
 └── images/
 ```
 
@@ -176,6 +190,11 @@ conversiones manuales bytes ↔ string).
 
 - **Usuarios y servicios**: `Usuario`, `Empleado`, `JefaturaDeServicio`,
   `OficinaDePersonal`, `Direccion`, `Servicio`, `Cargo`, `Domicilio`.
+  - `Servicio` tiene `encargadoUsuarioID` (FK a `Usuario`): apunta al
+    encargado actual del papeleo (autorizaciones de memos, etc.).
+    Normalmente coincide con la jefatura del servicio; en ausencia
+    puede asignarse a otro empleado del servicio. Editable desde el
+    ABM de Servicios por OP, Dirección y el propio jefe.
 - **Horarios**: jerarquía descrita arriba.
 - **Roles y autorizaciones**: `Rol`, `Usuario_Rol`, `Autorizacion`,
   `EstadoTramite`.
@@ -183,7 +202,12 @@ conversiones manuales bytes ↔ string).
   `ParteDiario_Empleado`.
 - **Diagramación**: `JornadaLaboral`, `DiagramaDeServicio`, `Planificacion`.
 - **Memorandos**: `Memorandum`, `Memorandum_Destinatario`,
-  `Memorandum_Firmante`, `Memorandum_Autorizacion`.
+  `Memorandum_Firmante` (no usada en pase 1), `Memorandum_Autorizacion`.
+  - `Memorandum_Autorizacion.estado` es ENUM PG `estado_memo_autorizacion`
+    con valores `PENDIENTE / AUTORIZADO / RECHAZADO / OBSERVADO`. La
+    columna `comentarios TEXT` acompaña a RECHAZADO y OBSERVADO.
+  - `Memorandum_Destinatario.fechaRecepcion` se reinterpretó como
+    "fecha de lectura" (NULL = no leído) sin cambio de DDL.
 - **Compensaciones**: `FrancoCompensatorio`, `HoraExtra`.
 - **Marcaciones**: `MarcacionEmpleado`, `RegistroJornadaLaboral`.
 
@@ -202,6 +226,72 @@ esquemas completos.
 - Atributo `servicio` desnormalizado en clase abstracta `Usuario` (decisión
   consciente de redundancia para uniformidad del modelo OO).
 - Argon2id para password hashing (migrado desde BCrypt original).
+- **Workflows con state machine concreta por dominio**: cada flujo
+  (memorándums, futuras licencias, novedades) tiene su propia state
+  machine en `service/<X>StateMachine.java` (package-private). YAGNI
+  estricto: no hay abstracción genérica todavía. Cuando llegue una
+  segunda implementación, evaluar extraer las primitivas comunes que
+  el DDL ya separa (estado, destinatarios, autorizaciones,
+  comentarios).
+- **Encargado por servicio para autorizaciones**: `Servicio.encargadoUsuarioID`
+  es la fuente de verdad de "quién autoriza el papeleo de este servicio".
+  Editable manualmente; Aromito no detecta licencias automáticamente
+  (VeDi gestiona licencias, fuera de alcance).
+- **Notificaciones por email**: abstracción `NotificationService` con
+  impl `EmailNotificationService` (Jakarta Mail + Angus Mail). Async
+  fire-and-forget. Si SMTP no está configurado (`smtp.host` vacío),
+  el servicio es no-op silencioso (útil para dev/tests).
+- **Markdown en contenido de memorándums**: storage as-is en TEXT,
+  render Markdown→HTML con flexmark, mostrado en JavaFX `WebView`. La
+  pantalla de redacción tiene SplitPane con editor + vista previa
+  live (debounce 200ms).
+- **ESC cierra ventanas modales** del módulo de memorándums (bandeja,
+  detalle, redacción). En redacción respeta el flag `dirty` y dispara
+  diálogo de confirmación si hay cambios sin guardar.
+
+## Módulos funcionales implementados
+
+Snapshot al 2026-05-03. Refleja qué RFS están cubiertos end-to-end:
+
+- **Autenticación + login** (precondición): CUIL + password Argon2id, con
+  flujo de cambio obligatorio en el primer login si la contraseña es la
+  por defecto. Re-hash silencioso BCrypt → Argon2id en el primer login
+  exitoso.
+- **RFS01 — ABM de empleados**: alta / baja lógica / modificación
+  funcional desde la pantalla de Oficina de Personal. Roles asignables
+  por checkboxes.
+- **ABM de Servicios** (apoyo de RFS02 y del módulo de memorándums):
+  alta / modificación / eliminación + selector "Encargado actual"
+  visible para OP, Dirección y el jefe del propio servicio.
+- **RFS07 — Memorándums digitales**: completo end-to-end.
+  - Bandejas: Recibidos / Enviados y borradores / Pendientes de
+    autorizar (esta última visible sólo para roles autorizadores).
+  - Redacción con Markdown + toolbar (B / I / H / • / 1.) + vista
+    previa live en SplitPane.
+  - Selector de destinatarios con ComboBox filtrable (apellido o
+    nombre) + botones toggle "+ Jefaturas" / "+ Dirección" para
+    grupos institucionales.
+  - State machine: `BORRADOR → ENVIADO / PEND_AUTORIZACION →
+    AUTORIZADO / RECHAZADO / OBSERVADO / LEIDO`.
+  - Empleado escribiendo a OP o Dirección requiere autorización del
+    encargado de su servicio. Jefatura, OP y Dirección envían directo.
+  - Ciclo OBSERVADO: el autorizador devuelve con comentarios; el
+    remitente corrige y reenvía generando una nueva fila en
+    `Memorandum_Autorizacion` (audit trail completo).
+  - Notificaciones por email para los 6 eventos del ciclo (memo
+    recibido, confirmación de envío, autorización requerida,
+    autorizado / rechazado / observado).
+  - Adjuntos: placeholder visible deshabilitado (RCSF06 — Nextcloud
+    + ONLYOFFICE).
+- **RFS10 — Control de acceso por rol**: implementado a nivel UI
+  (visibilidad de mosaicos / pestañas) y a nivel Service (validación
+  de autorización). Cuatro roles: EMPLEADO, JEFATURADESERVICIO,
+  OFICINADEPERSONAL, DIRECCION.
+
+Otros RFS (RFS02 diagramas, RFS03 disponibilidad, RFS04 horas extras,
+RFS05 pases de salida, RFS06 omisiones, RFS08 reportes, RFS09 alertas,
+RFS11 francos compensatorios) — pendientes; los mosaicos correspondientes
+del menú principal muestran "Módulo en construcción" al hacer click.
 
 ## Estado de migraciones (post-cátedra)
 
