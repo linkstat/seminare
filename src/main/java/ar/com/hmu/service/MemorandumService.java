@@ -90,9 +90,8 @@ public class MemorandumService {
         if (borrador.getContenido().length() > CONTENIDO_MAX) {
             throw new ServiceException("El contenido excede el máximo permitido (" + CONTENIDO_MAX + " caracteres).");
         }
-        if (borrador.getDestinatarios() == null || borrador.getDestinatarios().isEmpty()) {
-            throw new ServiceException("El memorándum debe tener al menos un destinatario.");
-        }
+        // Borradores admiten lista de destinatarios vacía: la validación de
+        // "al menos uno" se aplica recién al enviar.
 
         try {
             if (borrador.getId() == null) {
@@ -101,6 +100,9 @@ public class MemorandumService {
             borrador.setRemitenteId(remitente.getId());
             borrador.setEstadoTramiteId(estadoTramiteRepository.getId(EstadoTramite.BORRADOR));
 
+            if (borrador.getDestinatarios() == null) {
+                borrador.setDestinatarios(new java.util.ArrayList<>());
+            }
             // Cada destinatario apunta al memo recién generado.
             for (MemorandumDestinatario d : borrador.getDestinatarios()) {
                 d.setMemorandumId(borrador.getId());
@@ -136,8 +138,9 @@ public class MemorandumService {
         if (memo.getContenido().length() > CONTENIDO_MAX) {
             throw new ServiceException("El contenido excede el máximo permitido (" + CONTENIDO_MAX + " caracteres).");
         }
-        if (memo.getDestinatarios() == null || memo.getDestinatarios().isEmpty()) {
-            throw new ServiceException("El memorándum debe tener al menos un destinatario.");
+        // Borradores admiten destinatarios vacíos en pase 1.
+        if (memo.getDestinatarios() == null) {
+            memo.setDestinatarios(new java.util.ArrayList<>());
         }
 
         try {
@@ -185,6 +188,13 @@ public class MemorandumService {
             }
             if (!remitente.getId().equals(memo.getRemitenteId())) {
                 throw new ServiceException("Sólo el remitente puede enviar el memorándum.");
+            }
+
+            // Para enviar es obligatorio tener al menos 1 destinatario.
+            List<MemorandumDestinatario> destsPersistidos =
+                    memorandumRepository.findDestinatariosByMemoId(memoId);
+            if (destsPersistidos.isEmpty()) {
+                throw new ServiceException("El memorándum debe tener al menos un destinatario para ser enviado.");
             }
 
             EstadoTramite estadoActual = resolverEstado(memo);

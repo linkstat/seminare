@@ -82,11 +82,29 @@ class MemorandumServiceTest {
     }
 
     @Test
-    void guardarBorrador_sinDestinatarios_lanza() {
+    void guardarBorrador_sinDestinatarios_seGuardaIgual() throws Exception {
+        // Borradores admiten lista vacía: la validación se aplica al enviar.
         Usuario remitente = usuarioConRoles(TipoUsuario.EMPLEADO);
         Memorandum borrador = memoBasico("Asunto", "Contenido");
 
-        assertThatThrownBy(() -> service.guardarBorrador(borrador, remitente))
+        when(estadoRepo.getId(EstadoTramite.BORRADOR)).thenReturn(idBorrador);
+
+        Memorandum guardado = service.guardarBorrador(borrador, remitente);
+
+        assertThat(guardado.getEstadoTramiteId()).isEqualTo(idBorrador);
+        verify(memoRepo).create(guardado);
+    }
+
+    @Test
+    void enviar_sinDestinatarios_lanza() throws Exception {
+        UUID memoId = UUID.randomUUID();
+        Usuario remitente = usuarioConRoles(TipoUsuario.EMPLEADO);
+        Memorandum memo = memoEnEstado(memoId, remitente.getId(), idBorrador);
+
+        when(memoRepo.readByUUID(memoId)).thenReturn(memo);
+        when(memoRepo.findDestinatariosByMemoId(memoId)).thenReturn(List.of());
+
+        assertThatThrownBy(() -> service.enviar(memoId, remitente))
                 .isInstanceOf(ServiceException.class)
                 .hasMessageContaining("destinatario");
     }
@@ -133,11 +151,12 @@ class MemorandumServiceTest {
         UUID memoId = UUID.randomUUID();
         Usuario jefe = usuarioConRoles(TipoUsuario.EMPLEADO, TipoUsuario.JEFATURADESERVICIO);
         Memorandum memo = memoEnEstado(memoId, jefe.getId(), idBorrador);
+        MemorandumDestinatario unDest = new MemorandumDestinatario(memoId, UUID.randomUUID());
 
         when(memoRepo.readByUUID(memoId)).thenReturn(memo);
         when(estadoRepo.getEstadoTramite(idBorrador)).thenReturn(EstadoTramite.BORRADOR);
         when(estadoRepo.getId(EstadoTramite.ENVIADO)).thenReturn(idEnviado);
-        when(memoRepo.findDestinatariosByMemoId(memoId)).thenReturn(List.of());
+        when(memoRepo.findDestinatariosByMemoId(memoId)).thenReturn(List.of(unDest));
 
         service.enviar(memoId, jefe);
 

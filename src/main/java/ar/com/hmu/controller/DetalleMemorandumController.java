@@ -91,6 +91,14 @@ public class DetalleMemorandumController {
         renderContenido();
         renderHistorial();
         ajustarBotones();
+        // ESC cierra la ventana de detalle.
+        asuntoLabel.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                newScene.getAccelerators().put(
+                        new javafx.scene.input.KeyCodeCombination(javafx.scene.input.KeyCode.ESCAPE),
+                        this::cerrar);
+            }
+        });
     }
 
     // ============================================================

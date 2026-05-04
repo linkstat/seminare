@@ -13,7 +13,8 @@
 
 <BorderPane prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/23"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="ar.com.hmu.controller.BandejaMemorandumsController">
+            fx:controller="ar.com.hmu.controller.BandejaMemorandumsController"
+            stylesheets="@../css/bandejaMemorandums.css">
     <top>
         <HBox alignment="CENTER_LEFT" spacing="10">
             <padding>
@@ -24,6 +25,7 @@
             <HBox HBox.hgrow="ALWAYS"/>
             <Button fx:id="nuevoMemoButton" text="Nuevo memorándum" onAction="#onNuevoMemo"/>
             <Button text="Refrescar" onAction="#onRefrescar"/>
+            <Button text="Cerrar" onAction="#onCerrar"/>
         </HBox>
     </top>
     <center>
@@ -43,16 +45,17 @@
                     </TableView>
                 </VBox>
             </Tab>
-            <Tab fx:id="tabEnviados" text="Enviados">
+            <Tab fx:id="tabEnviados" text="Enviados y borradores">
                 <VBox spacing="6">
                     <padding>
                         <Insets bottom="10" left="10" right="10" top="10"/>
                     </padding>
                     <TableView fx:id="enviadosTable" VBox.vgrow="ALWAYS">
                         <columns>
-                            <TableColumn fx:id="enviadosFechaCol" prefWidth="140" text="FECHA"/>
-                            <TableColumn fx:id="enviadosAsuntoCol" prefWidth="380" text="ASUNTO"/>
-                            <TableColumn fx:id="enviadosEstadoCol" prefWidth="160" text="ESTADO"/>
+                            <TableColumn fx:id="enviadosFechaCol" prefWidth="130" text="FECHA"/>
+                            <TableColumn fx:id="enviadosAsuntoCol" prefWidth="280" text="ASUNTO"/>
+                            <TableColumn fx:id="enviadosDestinatariosCol" prefWidth="240" text="DESTINATARIO/S"/>
+                            <TableColumn fx:id="enviadosEstadoCol" prefWidth="140" text="ESTADO"/>
                         </columns>
                     </TableView>
                 </VBox>
