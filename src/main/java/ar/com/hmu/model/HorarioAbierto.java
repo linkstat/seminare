@@ -17,7 +17,34 @@ public class HorarioAbierto extends Horario {
 
 	}
 
-	
+
+	// Getters / Setters
+
+	public boolean isFlexibilidadHoraria() {
+		return flexibilidadHoraria;
+	}
+
+	public void setFlexibilidadHoraria(boolean flexibilidadHoraria) {
+		this.flexibilidadHoraria = flexibilidadHoraria;
+	}
+
+	public int getHorasSemanales() {
+		return horasSemanales;
+	}
+
+	public void setHorasSemanales(int horasSemanales) {
+		this.horasSemanales = horasSemanales;
+	}
+
+	public List<JornadaLaboral> getPreferenciasHorarias() {
+		return preferenciasHorarias;
+	}
+
+	public void setPreferenciasHorarias(List<JornadaLaboral> preferenciasHorarias) {
+		this.preferenciasHorarias = preferenciasHorarias;
+	}
+
+
 	public List<JornadaLaboral> calcularJornadas(){
 		return null;
 	}

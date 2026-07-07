@@ -22,7 +22,34 @@ public class HorarioDXI extends Horario {
 
 	}
 
-	
+
+	// Getters / Setters
+
+	public Map<DiaSemana, Integer> getDistribucionHoraria() {
+		return distribucionHoraria;
+	}
+
+	public void setDistribucionHoraria(Map<DiaSemana, Integer> distribucionHoraria) {
+		this.distribucionHoraria = distribucionHoraria;
+	}
+
+	public Map<DiaSemana, LocalDateTime> getHoraInicioPorDia() {
+		return horaInicioPorDia;
+	}
+
+	public void setHoraInicioPorDia(Map<DiaSemana, LocalDateTime> horaInicioPorDia) {
+		this.horaInicioPorDia = horaInicioPorDia;
+	}
+
+	public int getHorasSemanales() {
+		return horasSemanales;
+	}
+
+	public void setHorasSemanales(int horasSemanales) {
+		this.horasSemanales = horasSemanales;
+	}
+
+
 	public List<JornadaLaboral> calcularJornadas(){
 		return null;
 	}

@@ -19,7 +19,42 @@ public class HorarioConFranquicia implements HorarioBase {
 
 	}
 
-	
+
+	// Getters / Setters
+
+	public LocalDateTime getFechaEgreso() {
+		return fechaEgreso;
+	}
+
+	public void setFechaEgreso(LocalDateTime fechaEgreso) {
+		this.fechaEgreso = fechaEgreso;
+	}
+
+	public LocalDateTime getFechaIngreso() {
+		return fechaIngreso;
+	}
+
+	public void setFechaIngreso(LocalDateTime fechaIngreso) {
+		this.fechaIngreso = fechaIngreso;
+	}
+
+	public HorarioBase getHorarioDecorado() {
+		return horarioDecorado;
+	}
+
+	public void setHorarioDecorado(HorarioBase horarioDecorado) {
+		this.horarioDecorado = horarioDecorado;
+	}
+
+	public int getHorasFranquicia() {
+		return horasFranquicia;
+	}
+
+	public void setHorasFranquicia(int horasFranquicia) {
+		this.horasFranquicia = horasFranquicia;
+	}
+
+
 	public int calcularHorasMensuales(){
 		return 0;
 	}

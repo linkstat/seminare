@@ -20,7 +20,50 @@ public class HorarioGuardiaMedica extends Horario {
 
 	}
 
-	
+
+	// Getters / Setters
+
+	public int getDuracionGuardiaHoras() {
+		return duracionGuardiaHoras;
+	}
+
+	public void setDuracionGuardiaHoras(int duracionGuardiaHoras) {
+		this.duracionGuardiaHoras = duracionGuardiaHoras;
+	}
+
+	public List<LocalDateTime> getFechasGuardias() {
+		return fechasGuardias;
+	}
+
+	public void setFechasGuardias(List<LocalDateTime> fechasGuardias) {
+		this.fechasGuardias = fechasGuardias;
+	}
+
+	public int getNumeroGuardiasSemanal() {
+		return numeroGuardiasSemanal;
+	}
+
+	public void setNumeroGuardiasSemanal(int numeroGuardiasSemanal) {
+		this.numeroGuardiasSemanal = numeroGuardiasSemanal;
+	}
+
+	public boolean isPermitirGuardiasContinuas() {
+		return permitirGuardiasContinuas;
+	}
+
+	public void setPermitirGuardiasContinuas(boolean permitirGuardiasContinuas) {
+		this.permitirGuardiasContinuas = permitirGuardiasContinuas;
+	}
+
+	public int getTiempoDescansoMinimoHoras() {
+		return tiempoDescansoMinimoHoras;
+	}
+
+	public void setTiempoDescansoMinimoHoras(int tiempoDescansoMinimoHoras) {
+		this.tiempoDescansoMinimoHoras = tiempoDescansoMinimoHoras;
+	}
+
+
 	public List<JornadaLaboral> calcularJornadas(){
 		return null;
 	}

@@ -18,7 +18,34 @@ public class HorarioNocturno extends Horario {
 
 	}
 
-	
+
+	// Getters / Setters
+
+	public List<LocalDateTime> getDiasProgramados() {
+		return diasProgramados;
+	}
+
+	public void setDiasProgramados(List<LocalDateTime> diasProgramados) {
+		this.diasProgramados = diasProgramados;
+	}
+
+	public int getDuracionJornadaHoras() {
+		return duracionJornadaHoras;
+	}
+
+	public void setDuracionJornadaHoras(int duracionJornadaHoras) {
+		this.duracionJornadaHoras = duracionJornadaHoras;
+	}
+
+	public int getNumeroJornadasMensuales() {
+		return numeroJornadasMensuales;
+	}
+
+	public void setNumeroJornadasMensuales(int numeroJornadasMensuales) {
+		this.numeroJornadasMensuales = numeroJornadasMensuales;
+	}
+
+
 	public List<JornadaLaboral> calcularJornadas(){
 		return null;
 	}

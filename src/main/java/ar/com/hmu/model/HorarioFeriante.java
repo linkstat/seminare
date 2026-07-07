@@ -19,7 +19,42 @@ public class HorarioFeriante extends Horario {
 
 	}
 
-	
+
+	// Getters / Setters
+
+	public List<LocalDateTime> getDiasNoLaborables() {
+		return diasNoLaborables;
+	}
+
+	public void setDiasNoLaborables(List<LocalDateTime> diasNoLaborables) {
+		this.diasNoLaborables = diasNoLaborables;
+	}
+
+	public int getDuracionGuardiaHoras() {
+		return duracionGuardiaHoras;
+	}
+
+	public void setDuracionGuardiaHoras(int duracionGuardiaHoras) {
+		this.duracionGuardiaHoras = duracionGuardiaHoras;
+	}
+
+	public List<JornadaLaboral> getGuardiasProgramadas() {
+		return guardiasProgramadas;
+	}
+
+	public void setGuardiasProgramadas(List<JornadaLaboral> guardiasProgramadas) {
+		this.guardiasProgramadas = guardiasProgramadas;
+	}
+
+	public int getHorasMinimasMensuales() {
+		return horasMinimasMensuales;
+	}
+
+	public void setHorasMinimasMensuales(int horasMinimasMensuales) {
+		this.horasMinimasMensuales = horasMinimasMensuales;
+	}
+
+
 	public List<JornadaLaboral> calcularJornadas(){
 		return null;
 	}

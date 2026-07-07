@@ -20,7 +20,26 @@ public class HorarioSemanal extends Horario {
 
 	}
 
-	
+
+	// Getters / Setters
+
+	public Map<DiaSemana, Integer> getDistribucionSemanal() {
+		return distribucionSemanal;
+	}
+
+	public void setDistribucionSemanal(Map<DiaSemana, Integer> distribucionSemanal) {
+		this.distribucionSemanal = distribucionSemanal;
+	}
+
+	public Map<DiaSemana, LocalDateTime> getHoraInicioPorDia() {
+		return horaInicioPorDia;
+	}
+
+	public void setHoraInicioPorDia(Map<DiaSemana, LocalDateTime> horaInicioPorDia) {
+		this.horaInicioPorDia = horaInicioPorDia;
+	}
+
+
 	public List<JornadaLaboral> calcularJornadas(){
 		return null;
 	}

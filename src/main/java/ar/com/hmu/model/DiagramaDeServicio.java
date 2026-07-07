@@ -1,107 +1,193 @@
 package ar.com.hmu.model;
 
-import java.util.UUID;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
- * Diagrama de Servicio
- * Representa una planificación horaria de un servicio
-  */
+ * Diagrama de servicio: la planificación mensual de un servicio, con las
+ * jornadas de cada empleado para el rango {@code [fechaInicio, fechaFin]}.
+ *
+ * <p>Modelo POJO. Las transiciones de estado (state machine), la generación
+ * de jornadas desde los horarios y las validaciones viven en los servicios
+ * del módulo; esta clase sólo expone datos.</p>
+ *
+ * <p>Las relaciones se referencian por UUID (mismo criterio que
+ * {@link Memorandum}): {@code servicioId}, {@code creadoPorId},
+ * {@code aprobadoPorId}. El {@code estado} usa el ENUM {@link EstadoDiagrama}
+ * (columna {@code estado_diagrama}).</p>
+ *
+ * <p>{@code aprobadoPorId}, {@code fechaAprobacion} y
+ * {@code comentariosObservacion} se completan en la transición a
+ * {@code APROBADO} / {@code OBSERVADO}. {@code version} soporta control de
+ * concurrencia optimista.</p>
+ */
 public class DiagramaDeServicio {
 
 	private UUID id;
-	private LocalDateTime fechaInicio;
-	private LocalDateTime fechaFin;
-	private JornadaLaboral jornadaLaboral;
-	private Map<Usuario, List<JornadaLaboral>> planificaciones;
-	private Servicio servicio;
-	private EstadoTramite estado;
+	private UUID servicioId;
+	private EstadoDiagrama estado;
+	private LocalDate fechaInicio;
+	private LocalDate fechaFin;
+	private int version;
+	private UUID creadoPorId;
+	private LocalDateTime createdAt;
+	private LocalDateTime updatedAt;
+	private UUID aprobadoPorId;               // null hasta APROBADO/OBSERVADO
+	private LocalDateTime fechaAprobacion;    // null hasta APROBADO/OBSERVADO
+	private String comentariosObservacion;    // motivo de OBSERVADO
 
-	public DiagramaDeServicio(UUID id, LocalDateTime fechaInicio, LocalDateTime fechaFin, JornadaLaboral jornadaLaboral, Map<Usuario, List<JornadaLaboral>> planificaciones, Servicio servicio, EstadoTramite estado) {
+	private List<JornadaLaboral> jornadas = new ArrayList<>();
+
+	public DiagramaDeServicio() {
+	}
+
+	public DiagramaDeServicio(UUID id, UUID servicioId, EstadoDiagrama estado,
+	                          LocalDate fechaInicio, LocalDate fechaFin,
+	                          UUID creadoPorId) {
 		this.id = id;
+		this.servicioId = servicioId;
+		this.estado = estado;
 		this.fechaInicio = fechaInicio;
 		this.fechaFin = fechaFin;
-		this.jornadaLaboral = jornadaLaboral;
-		this.planificaciones = planificaciones;
-		this.servicio = servicio;
-		this.estado = estado;
-	}
-
-	// Setters
-
-	public void setId(UUID id) {
-		this.id = id;
-	}
-
-	public void setFechaInicio(LocalDateTime fechaInicio) {
-		this.fechaInicio = fechaInicio;
-	}
-
-	public void setFechaFin(LocalDateTime fechaFin) {
-		this.fechaFin = fechaFin;
-	}
-
-	public void setJornadaLaboral(JornadaLaboral jornadaLaboral) {
-		this.jornadaLaboral = jornadaLaboral;
-	}
-
-	public void setPlanificaciones(Map<Usuario, List<JornadaLaboral>> planificaciones) {
-		this.planificaciones = planificaciones;
-	}
-
-	public void setServicio(Servicio servicio) {
-		this.servicio = servicio;
-	}
-
-	public void setEstado(EstadoTramite estado) {
-		this.estado = estado;
+		this.creadoPorId = creadoPorId;
 	}
 
 
-	// Getters
+	// Getters / Setters
 
 	public UUID getId() {
 		return id;
 	}
 
-	public LocalDateTime getFechaInicio() {
-		return fechaInicio;
+	public void setId(UUID id) {
+		this.id = id;
 	}
 
-	public LocalDateTime getFechaFin() {
-		return fechaFin;
+	public UUID getServicioId() {
+		return servicioId;
 	}
 
-	public JornadaLaboral getJornadaLaboral() {
-		return jornadaLaboral;
+	public void setServicioId(UUID servicioId) {
+		this.servicioId = servicioId;
 	}
 
-	public Map<Usuario, List<JornadaLaboral>> getPlanificaciones() {
-		return planificaciones;
-	}
-
-	public Servicio getServicio() {
-		return servicio;
-	}
-
-	public EstadoTramite getEstado() {
+	public EstadoDiagrama getEstado() {
 		return estado;
 	}
 
+	public void setEstado(EstadoDiagrama estado) {
+		this.estado = estado;
+	}
+
+	public LocalDate getFechaInicio() {
+		return fechaInicio;
+	}
+
+	public void setFechaInicio(LocalDate fechaInicio) {
+		this.fechaInicio = fechaInicio;
+	}
+
+	public LocalDate getFechaFin() {
+		return fechaFin;
+	}
+
+	public void setFechaFin(LocalDate fechaFin) {
+		this.fechaFin = fechaFin;
+	}
+
+	public int getVersion() {
+		return version;
+	}
+
+	public void setVersion(int version) {
+		this.version = version;
+	}
+
+	public UUID getCreadoPorId() {
+		return creadoPorId;
+	}
+
+	public void setCreadoPorId(UUID creadoPorId) {
+		this.creadoPorId = creadoPorId;
+	}
+
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public LocalDateTime getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(LocalDateTime updatedAt) {
+		this.updatedAt = updatedAt;
+	}
+
+	public UUID getAprobadoPorId() {
+		return aprobadoPorId;
+	}
+
+	public void setAprobadoPorId(UUID aprobadoPorId) {
+		this.aprobadoPorId = aprobadoPorId;
+	}
+
+	public LocalDateTime getFechaAprobacion() {
+		return fechaAprobacion;
+	}
+
+	public void setFechaAprobacion(LocalDateTime fechaAprobacion) {
+		this.fechaAprobacion = fechaAprobacion;
+	}
+
+	public String getComentariosObservacion() {
+		return comentariosObservacion;
+	}
+
+	public void setComentariosObservacion(String comentariosObservacion) {
+		this.comentariosObservacion = comentariosObservacion;
+	}
+
+	public List<JornadaLaboral> getJornadas() {
+		return jornadas;
+	}
+
+	public void setJornadas(List<JornadaLaboral> jornadas) {
+		this.jornadas = (jornadas != null) ? jornadas : new ArrayList<>();
+	}
+
+
 	// Otros métodos
 
-	public void addPlanificacion(Usuario empleado, JornadaLaboral jornada){
-
+	/**
+	 * Agrega una jornada a la planificación del diagrama.
+	 *
+	 * @param jornada la jornada a agregar.
+	 */
+	public void addJornada(JornadaLaboral jornada) {
+		this.jornadas.add(jornada);
 	}
 
-	public List<JornadaLaboral> getPlanificacionEmpleado(Usuario empleado){
-		return null;
-	}
-
-	public Map<Usuario, List<JornadaLaboral>> getPlanificacionServicio(){
-		return null;
+	/**
+	 * Devuelve las jornadas planificadas para un empleado dado.
+	 *
+	 * @param empleadoId el UUID del empleado.
+	 * @return lista de jornadas del empleado (posiblemente vacía).
+	 */
+	public List<JornadaLaboral> getJornadasDeEmpleado(UUID empleadoId) {
+		List<JornadaLaboral> resultado = new ArrayList<>();
+		for (JornadaLaboral j : jornadas) {
+			if (empleadoId != null && empleadoId.equals(j.getEmpleadoId())) {
+				resultado.add(j);
+			}
+		}
+		return resultado;
 	}
 
 }
