@@ -5,10 +5,14 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane prefHeight="700.0" prefWidth="1250.0" xmlns="http://javafx.com/javafx/23"
@@ -43,7 +47,17 @@
     </top>
     <center>
         <SplitPane dividerPositions="0.78">
-            <TableView fx:id="grillaTable"/>
+            <StackPane>
+                <TableView fx:id="grillaTable"/>
+                <ScrollPane fx:id="calendarioScroll" fitToWidth="true" visible="false"
+                            styleClass="calendario-scroll">
+                    <GridPane fx:id="calendarioGrid" hgap="4" vgap="4">
+                        <padding>
+                            <Insets bottom="8" left="8" right="8" top="8"/>
+                        </padding>
+                    </GridPane>
+                </ScrollPane>
+            </StackPane>
             <VBox spacing="6" minWidth="220">
                 <padding>
                     <Insets bottom="10" left="10" right="10" top="10"/>
@@ -59,6 +73,9 @@
             <padding>
                 <Insets bottom="10" left="10" right="10" top="6"/>
             </padding>
+            <Label text="Vista:" styleClass="ayuda"/>
+            <ToggleButton fx:id="vistaTablaToggle" text="Tabla" selected="true"/>
+            <ToggleButton fx:id="vistaCalendarioToggle" text="Calendario"/>
             <Label fx:id="ayudaLabel" text="Doble click en una celda para editar la jornada."
                    styleClass="ayuda"/>
             <HBox HBox.hgrow="ALWAYS"/>

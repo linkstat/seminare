@@ -20,17 +20,25 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+
+import java.time.DayOfWeek;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -54,8 +62,10 @@ import java.util.UUID;
  * el detalle en tooltip. Doble click abre el editor de jornada (sólo en
  * BORRADOR/OBSERVADO y si el usuario puede gestionar el servicio).</p>
  *
- * <p>La vista calendario mensual (toggle) llega en el próximo pase de la
- * Fase 3.</p>
+ * <p>Vista calendario mensual (toggle "Tabla / Calendario"): semanas como
+ * filas, una celda por día con las jornadas activas de todos los empleados
+ * (los francos no se listan). Misma edición por doble click sobre una
+ * entrada; mismo modelo en memoria y mismo flujo dirty/guardar.</p>
  *
  * <p>Los cambios se acumulan en memoria ({@code dirty}) y se persisten con
  * "Guardar" (reemplazo total de jornadas con control optimista). "Validar"
@@ -69,12 +79,16 @@ public class DiagramacionServicioController {
     @FXML private ComboBox<Servicio> servicioCombo;
     @FXML private ComboBox<DiagramaDeServicio> diagramaCombo;
     @FXML private Button nuevoDiagramaButton;
+    @FXML private ToggleButton vistaTablaToggle;
+    @FXML private ToggleButton vistaCalendarioToggle;
     @FXML private Label estadoChip;
     @FXML private HBox observacionBanner;
     @FXML private Label observacionLabel;
 
     // --- Center ---
     @FXML private TableView<Usuario> grillaTable;
+    @FXML private ScrollPane calendarioScroll;
+    @FXML private GridPane calendarioGrid;
     @FXML private ListView<String> validacionList;
     @FXML private Label validacionResumenLabel;
 
@@ -120,9 +134,38 @@ public class DiagramacionServicioController {
     /** Llamar después de inyectar dependencias. */
     public void postInitialize() {
         configurarCombos();
+        configurarToggleVistas();
         cargarServicios();
         configurarEscCierra();
         actualizarControles();
+    }
+
+    /** Toggle Tabla / Calendario: misma información, dos representaciones.
+     *  Siempre hay exactamente una vista seleccionada. */
+    private void configurarToggleVistas() {
+        ToggleGroup grupo = new ToggleGroup();
+        vistaTablaToggle.setToggleGroup(grupo);
+        vistaCalendarioToggle.setToggleGroup(grupo);
+        grupo.selectedToggleProperty().addListener((obs, viejo, nuevo) -> {
+            if (nuevo == null) {
+                grupo.selectToggle(viejo); // no permitir des-seleccionar ambas
+                return;
+            }
+            mostrarVistaActiva();
+        });
+    }
+
+    private boolean vistaCalendarioActiva() {
+        return vistaCalendarioToggle.isSelected();
+    }
+
+    private void mostrarVistaActiva() {
+        boolean calendario = vistaCalendarioActiva();
+        grillaTable.setVisible(!calendario);
+        calendarioScroll.setVisible(calendario);
+        if (calendario) {
+            construirCalendario();
+        }
     }
 
     private void configurarCombos() {
@@ -231,6 +274,9 @@ public class DiagramacionServicioController {
             dirty = false;
 
             construirGrilla();
+            if (vistaCalendarioActiva()) {
+                construirCalendario();
+            }
             actualizarControles();
         } catch (ServiceException e) {
             AlertUtils.showErr("Error al cargar el diagrama: " + e.getMessage());
@@ -240,6 +286,7 @@ public class DiagramacionServicioController {
     private void limpiarGrilla() {
         grillaTable.getColumns().clear();
         grillaTable.getItems().clear();
+        calendarioGrid.getChildren().clear();
         jornadasPorEmpleado.clear();
         celdasConViolacion.clear();
         validacionList.getItems().clear();
@@ -317,6 +364,116 @@ public class DiagramacionServicioController {
             }
         });
         return col;
+    }
+
+    // ============================================================
+    // Vista calendario mensual
+    // ============================================================
+
+    /**
+     * Reconstruye la grilla calendario: semanas como filas (lunes a
+     * domingo), una celda por día del rango del diagrama. Cada celda lista
+     * las jornadas "activas" del día (turnos, guardias, FC, LIC) — los
+     * francos no se muestran para no tapizar el mes. Doble click en una
+     * entrada abre el mismo editor de jornada que la vista tabla.
+     */
+    private void construirCalendario() {
+        calendarioGrid.getChildren().clear();
+        calendarioGrid.getColumnConstraints().clear();
+        if (diagramaActual == null) {
+            return;
+        }
+
+        for (int i = 0; i < 7; i++) {
+            ColumnConstraints cc = new ColumnConstraints();
+            cc.setPercentWidth(100.0 / 7);
+            cc.setHgrow(Priority.ALWAYS);
+            calendarioGrid.getColumnConstraints().add(cc);
+        }
+
+        String[] encabezados = {"Lunes", "Martes", "Miércoles", "Jueves",
+                "Viernes", "Sábado", "Domingo"};
+        for (int i = 0; i < 7; i++) {
+            Label h = new Label(encabezados[i]);
+            h.getStyleClass().add("cal-header");
+            h.setMaxWidth(Double.MAX_VALUE);
+            calendarioGrid.add(h, i, 0);
+        }
+
+        LocalDate desde = diagramaActual.getFechaInicio();
+        LocalDate hasta = diagramaActual.getFechaFin();
+        LocalDate cursor = desde.with(java.time.temporal.TemporalAdjusters
+                .previousOrSame(DayOfWeek.MONDAY));
+        LocalDate fin = hasta.with(java.time.temporal.TemporalAdjusters
+                .nextOrSame(DayOfWeek.SUNDAY));
+
+        int fila = 1;
+        while (!cursor.isAfter(fin)) {
+            int columna = cursor.getDayOfWeek().getValue() - 1; // MONDAY=0
+            calendarioGrid.add(celdaCalendario(cursor, desde, hasta), columna, fila);
+            if (cursor.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                fila++;
+            }
+            cursor = cursor.plusDays(1);
+        }
+    }
+
+    private VBox celdaCalendario(LocalDate fecha, LocalDate desde, LocalDate hasta) {
+        VBox celda = new VBox();
+        celda.getStyleClass().add("cal-dia");
+
+        boolean fueraDeRango = fecha.isBefore(desde) || fecha.isAfter(hasta);
+        if (fueraDeRango) {
+            celda.getStyleClass().add("cal-dia-fuera");
+            return celda; // vacía: día fuera del diagrama
+        }
+        DayOfWeek dia = fecha.getDayOfWeek();
+        if (dia == DayOfWeek.SATURDAY || dia == DayOfWeek.SUNDAY) {
+            celda.getStyleClass().add("cal-dia-finde");
+        }
+
+        Label num = new Label(String.format("%02d", fecha.getDayOfMonth()));
+        num.getStyleClass().add("cal-num");
+        celda.getChildren().add(num);
+
+        boolean diaConViolacion = false;
+        for (Usuario empleado : grillaTable.getItems()) {
+            JornadaLaboral j = jornadaDe(empleado.getId(), fecha);
+            if (j == null || j.getTipo() == null || j.getTipo() == TipoJornada.FRANCO) {
+                continue; // los francos no se listan en el calendario
+            }
+            Label entry = new Label(apellidoDe(empleado) + "  " + textoCelda(j));
+            entry.getStyleClass().addAll("cal-entry", estiloDe(j.getTipo()));
+            entry.setMaxWidth(Double.MAX_VALUE);
+            entry.setTooltip(new Tooltip(nombreDe(empleado) + "\n" + tooltipDe(j)));
+            final Usuario emp = empleado;
+            final LocalDate f = fecha;
+            entry.setOnMouseClicked(e -> {
+                if (e.getClickCount() == 2 && esEditable()) {
+                    editarCelda(emp, f);
+                }
+            });
+            if (celdasConViolacion.contains(claveCelda(empleado.getId(), fecha))) {
+                diaConViolacion = true;
+            }
+            celda.getChildren().add(entry);
+        }
+        if (diaConViolacion) {
+            celda.getStyleClass().add("celda-violacion");
+        }
+        return celda;
+    }
+
+    private String apellidoDe(Usuario u) {
+        return u.getApellidos() != null ? u.getApellidos() : "";
+    }
+
+    /** Refresca la vista activa tras un cambio en el modelo en memoria. */
+    private void refrescarVistaActiva() {
+        grillaTable.refresh();
+        if (vistaCalendarioActiva()) {
+            construirCalendario();
+        }
     }
 
     // ============================================================
@@ -512,7 +669,7 @@ public class DiagramacionServicioController {
 
         jornadasPorEmpleado.computeIfAbsent(empleado.getId(), k -> new HashMap<>()).put(fecha, j);
         dirty = true;
-        grillaTable.refresh();
+        refrescarVistaActiva();
         actualizarControles();
     }
 
@@ -619,7 +776,7 @@ public class DiagramacionServicioController {
                 validacionResumenLabel.setText(violaciones.size() + " violación(es) que bloquean el envío, "
                         + advertencias.size() + " advertencia(s).");
             }
-            grillaTable.refresh();
+            refrescarVistaActiva();
         } catch (ServiceException e) {
             AlertUtils.showErr("Error al validar el diagrama:\n" + e.getMessage());
         }
