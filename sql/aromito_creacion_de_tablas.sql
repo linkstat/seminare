@@ -64,6 +64,13 @@ CREATE TYPE estado_memo_autorizacion AS ENUM ('PENDIENTE', 'AUTORIZADO', 'RECHAZ
 
 CREATE TYPE tipo_marcacion AS ENUM ('INGRESO', 'EGRESO');
 
+CREATE TYPE estado_diagrama AS ENUM
+    ('BORRADOR', 'PENDIENTE_APROBACION', 'APROBADO', 'OBSERVADO');
+
+CREATE TYPE tipo_jornada AS ENUM
+    ('TURNO_NORMAL', 'GUARDIA_ACTIVA', 'GUARDIA_PASIVA',
+     'FRANCO', 'FRANCO_COMPENSATORIO', 'LICENCIA');
+
 
 /* ----------------------------------------------------------------------------
  * Jerarquía de Horarios (Class Table Inheritance)
@@ -212,7 +219,8 @@ CREATE TABLE Servicio (
     nombre VARCHAR(255) NOT NULL,
     agrupacion agrupacion_servicio NOT NULL,
     direccionID UUID NOT NULL,
-    encargadoUsuarioID UUID NULL
+    encargadoUsuarioID UUID NULL,
+    dotacionMinima INTEGER NULL      -- cobertura mínima (placeholder RFS02; sin uso en pase 1)
 );
 
 
@@ -369,31 +377,44 @@ CREATE TABLE Empleado_Novedad (
 /* ----------------------------------------------------------------------------
  * Diagramación de servicios
  * -------------------------------------------------------------------------- */
-CREATE TABLE JornadaLaboral (
-    id UUID PRIMARY KEY,
-    fechaIngreso TIMESTAMP NOT NULL,
-    fechaEgreso TIMESTAMP NOT NULL
-);
-
+-- El diagrama mensual de un servicio. Estado tipado (state machine
+-- BORRADOR → PENDIENTE_APROBACION → APROBADO / OBSERVADO), rango de
+-- vigencia [fechaInicio, fechaFin], auditoría y version optimista.
 CREATE TABLE DiagramaDeServicio (
     id UUID PRIMARY KEY,
-    estado VARCHAR(50) NOT NULL,
+    servicioID UUID NOT NULL,
+    estado estado_diagrama NOT NULL DEFAULT 'BORRADOR',
     fechaInicio DATE NOT NULL,
     fechaFin DATE NOT NULL,
-    servicioID UUID NOT NULL,
-    FOREIGN KEY (servicioID) REFERENCES Servicio(id)
+    version INTEGER NOT NULL DEFAULT 0,
+    creadoPorID UUID NOT NULL,
+    createdAt TIMESTAMP NOT NULL DEFAULT now(),
+    updatedAt TIMESTAMP NOT NULL DEFAULT now(),
+    aprobadoPorID UUID NULL,               -- se llena en APROBADO/OBSERVADO
+    fechaAprobacion TIMESTAMP NULL,
+    comentariosObservacion TEXT NULL,      -- motivo de OBSERVADO (espeja Memorandum_Autorizacion)
+    FOREIGN KEY (servicioID) REFERENCES Servicio(id),
+    FOREIGN KEY (creadoPorID) REFERENCES Usuario(id),
+    FOREIGN KEY (aprobadoPorID) REFERENCES Usuario(id),
+    CHECK (fechaFin >= fechaInicio)
 );
 
--- Para el atributo 'planificaciones' de DiagramaDeServicio.
--- Relaciona DiagramaDeServicio, Empleado y JornadaLaboral.
-CREATE TABLE Planificacion (
+-- Una fila por empleado por día del diagrama. Absorbe la ex-tabla puente
+-- Planificacion: la jornada referencia directamente su diagrama y empleado.
+-- fechaIngreso/Egreso son NULL para FRANCO / FRANCO_COMPENSATORIO / LICENCIA
+-- (no tienen horario). La no-superposición se valida a nivel aplicación
+-- (el nocturno cruza medianoche: no hay unicidad por empleado+fecha).
+CREATE TABLE JornadaLaboral (
+    id UUID PRIMARY KEY,
     diagramaID UUID NOT NULL,
     empleadoID UUID NOT NULL,
-    jornadaID UUID NOT NULL,
-    PRIMARY KEY (diagramaID, empleadoID, jornadaID),
-    FOREIGN KEY (diagramaID) REFERENCES DiagramaDeServicio(id),
-    FOREIGN KEY (empleadoID) REFERENCES Empleado(id),
-    FOREIGN KEY (jornadaID) REFERENCES JornadaLaboral(id)
+    fecha DATE NOT NULL,
+    tipo tipo_jornada NOT NULL,
+    fechaIngreso TIMESTAMP NULL,
+    fechaEgreso TIMESTAMP NULL,
+    observaciones TEXT NULL,
+    FOREIGN KEY (diagramaID) REFERENCES DiagramaDeServicio(id) ON DELETE CASCADE,
+    FOREIGN KEY (empleadoID) REFERENCES Empleado(id)
 );
 
 
@@ -556,3 +577,7 @@ CREATE UNIQUE INDEX idx_usuario_mail ON Usuario(mail);
 CREATE UNIQUE INDEX idx_usuario_tel ON Usuario(tel);
 
 CREATE UNIQUE INDEX idx_servicio_nombre ON Servicio(nombre);
+
+CREATE INDEX idx_diagrama_servicio ON DiagramaDeServicio(servicioID);
+CREATE INDEX idx_jornada_diagrama ON JornadaLaboral(diagramaID);
+CREATE INDEX idx_jornada_empleado_fecha ON JornadaLaboral(empleadoID, fecha);

@@ -42,7 +42,7 @@ TRUNCATE TABLE
     RegistroJornadaLaboral, MarcacionEmpleado, ParteDiario_Empleado, ParteDiario,
     HoraExtra, FrancoCompensatorio,
     Memorandum_Autorizacion, Memorandum_Firmante, Memorandum_Destinatario, Memorandum,
-    Planificacion, DiagramaDeServicio, JornadaLaboral,
+    JornadaLaboral, DiagramaDeServicio,
     Empleado_Novedad, Novedad, Autorizacion,
     Usuario_Rol, Rol,
     Servicio_JefaturaDeServicio,
