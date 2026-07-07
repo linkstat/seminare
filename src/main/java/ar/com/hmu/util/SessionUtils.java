@@ -5,8 +5,15 @@ import ar.com.hmu.config.AppConfigReader;
 import ar.com.hmu.factory.UsuarioFactory;
 import ar.com.hmu.repository.*;
 import ar.com.hmu.controller.LoginController;
+import ar.com.hmu.service.CargoService;
+import ar.com.hmu.service.DomicilioService;
+import ar.com.hmu.service.MemorandumService;
 import ar.com.hmu.service.RoleService;
+import ar.com.hmu.service.ServicioService;
 import ar.com.hmu.service.UsuarioService;
+import ar.com.hmu.service.diagramacion.DiagramaService;
+import ar.com.hmu.service.notification.EmailNotificationService;
+import ar.com.hmu.service.notification.NotificationService;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -41,6 +48,10 @@ public class SessionUtils {
             ServicioRepository servicioRepository = new ServicioRepository(databaseConnector);
             CargoRepository cargoRepository = new CargoRepository(databaseConnector);
             DomicilioRepository domicilioRepository = new DomicilioRepository(databaseConnector);
+            MemorandumRepository memorandumRepository = new MemorandumRepository(databaseConnector);
+            EstadoTramiteRepository estadoTramiteRepository = new EstadoTramiteRepository(databaseConnector);
+            DiagramaRepository diagramaRepository = new DiagramaRepository(databaseConnector);
+            HorarioRepository horarioRepository = new HorarioRepository(databaseConnector);
 
             // Inicialización de servicios que no dependen de UsuarioRepository
             RoleService roleService = new RoleService(roleRepository);
@@ -56,14 +67,34 @@ public class SessionUtils {
                     usuarioRepository, servicioRepository, cargoRepository, domicilioRepository, roleService
             );
 
-            // Inicialización de otros servicios
+            // Inicialización de otros servicios (espejo del wiring de
+            // LoginScreen: el re-login post-logout debe dejar los módulos
+            // en el mismo estado que el arranque en frío).
             LoginService loginService = new LoginService(usuarioService);
+            ServicioService servicioService = new ServicioService(servicioRepository, usuarioRepository);
+            CargoService cargoService = new CargoService(cargoRepository);
+            DomicilioService domicilioService = new DomicilioService(domicilioRepository);
+            NotificationService notificationService =
+                    new EmailNotificationService(appConfigReader.getSmtpConfig());
+            MemorandumService memorandumService = new MemorandumService(
+                    memorandumRepository, estadoTramiteRepository,
+                    servicioRepository, usuarioRepository, notificationService);
+            DiagramaService diagramaService = new DiagramaService(
+                    diagramaRepository, horarioRepository,
+                    servicioRepository, usuarioRepository, notificationService);
 
             // Pasar los servicios al controlador
             controller.setLoginService(loginService);
             controller.setDatabaseConnector(databaseConnector);
             controller.setRolService(roleService);
             controller.setUsuarioService(usuarioService);
+            controller.setCargoService(cargoService);
+            controller.setServicioService(servicioService);
+            controller.setDomicilioService(domicilioService);
+            controller.setMemorandumService(memorandumService);
+            controller.setDiagramaService(diagramaService);
+            controller.setEstadoTramiteRepository(estadoTramiteRepository);
+            controller.setUsuarioRepository(usuarioRepository);
             controller.postInitialize();
 
             // Configurar la nueva ventana

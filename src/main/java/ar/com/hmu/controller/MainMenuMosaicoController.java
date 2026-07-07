@@ -151,6 +151,7 @@ public class MainMenuMosaicoController {
     private DomicilioService domicilioService;
     private RoleService roleService;
     private MemorandumService memorandumService;
+    private ar.com.hmu.service.diagramacion.DiagramaService diagramaService;
     private EstadoTramiteRepository estadoTramiteRepository;
 
     private Usuario usuarioActual;
@@ -182,6 +183,10 @@ public class MainMenuMosaicoController {
 
     public void setMemorandumService(MemorandumService memorandumService) {
         this.memorandumService = memorandumService;
+    }
+
+    public void setDiagramaService(ar.com.hmu.service.diagramacion.DiagramaService diagramaService) {
+        this.diagramaService = diagramaService;
     }
 
     public void setEstadoTramiteRepository(EstadoTramiteRepository estadoTramiteRepository) {
@@ -403,7 +408,7 @@ public class MainMenuMosaicoController {
         notasMemosVBox.setOnMouseClicked(this::handleNotasMemos);
         partesDiariosVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
         consultaDiagramasDeServicioVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
-        diagramacionDeServicioVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
+        diagramacionDeServicioVBox.setOnMouseClicked(this::handleDiagramacionServicio);
         controlMarcacionesVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
         pasesDeSalidaVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
         omisionesIngresEgresoVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
@@ -722,6 +727,49 @@ public class MainMenuMosaicoController {
             refrescarContadorMemos();
         } catch (IOException e) {
             AlertUtils.showErr("Error al abrir los memorándums: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Abre la pantalla de diagramación de servicio (RFS02): grilla
+     * empleado × día del diagrama mensual, con edición, validación y
+     * envío a aprobación. Inyecta los services y el usuario actual.
+     */
+    @FXML
+    private void handleDiagramacionServicio(Event event) {
+        if (diagramaService == null) {
+            AlertUtils.showWarn("Módulo de diagramación no disponible.");
+            return;
+        }
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/diagramacionServicio.fxml"));
+            loader.setControllerFactory(controllerClass -> {
+                if (controllerClass == DiagramacionServicioController.class) {
+                    DiagramacionServicioController c = new DiagramacionServicioController();
+                    c.setDiagramaService(diagramaService);
+                    c.setServicioService(servicioService);
+                    c.setUsuarioActual(usuarioActual);
+                    return c;
+                }
+                try {
+                    return controllerClass.getDeclaredConstructor().newInstance();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+            Parent root = loader.load();
+            DiagramacionServicioController controller = loader.getController();
+            controller.postInitialize();
+
+            Stage stage = new Stage();
+            stage.setTitle("Diagramación de servicio :: " + AppInfo.PRG_LONG_TITLE);
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(MainMenuMosaicoController.getPrimaryStage());
+            stage.getIcons().add(new Image(getClass().getResourceAsStream(AppInfo.ICON_IMAGE)));
+            stage.showAndWait();
+        } catch (IOException e) {
+            AlertUtils.showErr("Error al abrir la diagramación de servicio: " + e.getMessage());
         }
     }
 

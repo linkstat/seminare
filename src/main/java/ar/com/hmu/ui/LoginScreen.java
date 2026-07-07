@@ -16,6 +16,7 @@ import javafx.stage.Stage;
 
 import ar.com.hmu.auth.LoginService;
 import ar.com.hmu.config.AppConfigReader;
+import ar.com.hmu.service.diagramacion.DiagramaService;
 import ar.com.hmu.service.notification.EmailNotificationService;
 import ar.com.hmu.service.notification.NotificationService;
 import ar.com.hmu.util.AppInfo;
@@ -57,6 +58,8 @@ public class LoginScreen extends Application {
             DomicilioRepository domicilioRepository = new DomicilioRepository(databaseConnector);
             MemorandumRepository memorandumRepository = new MemorandumRepository(databaseConnector);
             EstadoTramiteRepository estadoTramiteRepository = new EstadoTramiteRepository(databaseConnector);
+            DiagramaRepository diagramaRepository = new DiagramaRepository(databaseConnector);
+            HorarioRepository horarioRepository = new HorarioRepository(databaseConnector);
 
             // Inicialización de servicios que no dependen de UsuarioRepository
             RoleService roleService = new RoleService(roleRepository);
@@ -88,6 +91,12 @@ public class LoginScreen extends Application {
                     memorandumRepository, estadoTramiteRepository,
                     servicioRepository, usuarioRepository, notificationService);
 
+            // Inicialización del DiagramaService (módulo de diagramación
+            // de servicios, RFS02).
+            DiagramaService diagramaService = new DiagramaService(
+                    diagramaRepository, horarioRepository,
+                    servicioRepository, usuarioRepository, notificationService);
+
             // Cargar el archivo FXML
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/loginScreen.fxml"));
             Parent root = loader.load();
@@ -105,6 +114,7 @@ public class LoginScreen extends Application {
             controller.setServicioService(servicioService);
             controller.setDomicilioService(domicilioService);
             controller.setMemorandumService(memorandumService);
+            controller.setDiagramaService(diagramaService);
             controller.setEstadoTramiteRepository(estadoTramiteRepository);
             controller.setUsuarioRepository(usuarioRepository);
 

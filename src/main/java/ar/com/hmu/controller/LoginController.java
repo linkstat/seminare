@@ -59,6 +59,7 @@ public class LoginController {
     private ServicioService servicioService;
     private DomicilioService domicilioService;
     private MemorandumService memorandumService;
+    private ar.com.hmu.service.diagramacion.DiagramaService diagramaService;
     private EstadoTramiteRepository estadoTramiteRepository;
     private UsuarioRepository usuarioRepository;
 
@@ -93,6 +94,10 @@ public class LoginController {
 
     public void setMemorandumService(MemorandumService memorandumService) {
         this.memorandumService = memorandumService;
+    }
+
+    public void setDiagramaService(ar.com.hmu.service.diagramacion.DiagramaService diagramaService) {
+        this.diagramaService = diagramaService;
     }
 
     public void setEstadoTramiteRepository(EstadoTramiteRepository estadoTramiteRepository) {
@@ -423,6 +428,7 @@ public class LoginController {
             // Pass services to the controller
             controller.setServices(usuarioService, cargoService, servicioService, domicilioService, roleService);
             controller.setMemorandumService(memorandumService);
+            controller.setDiagramaService(diagramaService);
             controller.setEstadoTramiteRepository(estadoTramiteRepository);
             controller.setUsuarioRepository(usuarioRepository);
 
