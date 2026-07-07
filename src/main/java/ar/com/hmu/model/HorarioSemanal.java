@@ -1,7 +1,7 @@
 package ar.com.hmu.model;
 
 
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +14,7 @@ import ar.com.hmu.util.DiaSemana;
 public class HorarioSemanal extends Horario {
 
 	private Map<DiaSemana, Integer> distribucionSemanal;
-	private Map<DiaSemana, LocalDateTime> horaInicioPorDia;
+	private Map<DiaSemana, LocalTime> horaInicioPorDia;   // hora recurrente del día, no fecha
 
 	public HorarioSemanal(){
 
@@ -31,11 +31,11 @@ public class HorarioSemanal extends Horario {
 		this.distribucionSemanal = distribucionSemanal;
 	}
 
-	public Map<DiaSemana, LocalDateTime> getHoraInicioPorDia() {
+	public Map<DiaSemana, LocalTime> getHoraInicioPorDia() {
 		return horaInicioPorDia;
 	}
 
-	public void setHoraInicioPorDia(Map<DiaSemana, LocalDateTime> horaInicioPorDia) {
+	public void setHoraInicioPorDia(Map<DiaSemana, LocalTime> horaInicioPorDia) {
 		this.horaInicioPorDia = horaInicioPorDia;
 	}
 

@@ -125,7 +125,7 @@ CREATE TABLE HorarioSemanal (
 
 CREATE TABLE HorarioNocturno (
     id UUID PRIMARY KEY,
-    diasProgramados VARCHAR(255) NOT NULL,
+    diasProgramados TEXT NOT NULL,
     duracionJornadaHoras INTEGER NOT NULL,
     numeroJornadasMensuales INTEGER NOT NULL,
     FOREIGN KEY (id) REFERENCES Horario(id)
@@ -133,9 +133,9 @@ CREATE TABLE HorarioNocturno (
 
 CREATE TABLE HorarioFeriante (
     id UUID PRIMARY KEY,
-    diasNoLaborables VARCHAR(255) NOT NULL,
+    diasNoLaborables TEXT NOT NULL,
     duracionGuardiaHoras INTEGER NOT NULL,
-    guardiasProgramadas VARCHAR(255) NOT NULL,
+    guardiasProgramadas TEXT NOT NULL,
     horasMinimasMensuales INTEGER NOT NULL,
     FOREIGN KEY (id) REFERENCES Horario(id)
 );
@@ -151,7 +151,7 @@ CREATE TABLE HorarioDXI (
 CREATE TABLE HorarioGuardiaMedica (
     id UUID PRIMARY KEY,
     duracionGuardiaHoras INTEGER NOT NULL,
-    fechasGuardias VARCHAR(255) NOT NULL,
+    fechasGuardias TEXT NOT NULL,
     numeroGuardiasSemanal INTEGER NOT NULL,
     permitirGuardiasContinuas BOOLEAN NOT NULL,
     tiempoDescansoMinimoHoras INTEGER NOT NULL,
@@ -162,7 +162,7 @@ CREATE TABLE HorarioGuardiaEnfermeria (
     id UUID PRIMARY KEY,
     duracionGuardia10Horas INTEGER NOT NULL,
     duracionGuardia12Horas INTEGER NOT NULL,
-    fechasGuardias VARCHAR(255) NOT NULL,
+    fechasGuardias TEXT NOT NULL,
     numeroGuardias10Horas INTEGER NOT NULL,
     numeroGuardias12Horas INTEGER NOT NULL,
     FOREIGN KEY (id) REFERENCES Horario(id)

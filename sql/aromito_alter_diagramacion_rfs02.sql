@@ -94,3 +94,12 @@ CREATE INDEX IF NOT EXISTS idx_diagrama_servicio ON DiagramaDeServicio(servicioI
 -- 5. Servicio: placeholder de cobertura mínima -------------------------------
 ALTER TABLE Servicio
     ADD COLUMN IF NOT EXISTS dotacionMinima INTEGER NULL;
+
+-- 6. Columnas de serialización de horarios: VARCHAR(255) -> TEXT -------------
+-- Las listas de fechas ISO-8601 (p.ej. 14 jornadas nocturnas) pueden superar
+-- los 255 caracteres. Se ensanchan antes de escribir el primer dato real.
+ALTER TABLE HorarioNocturno          ALTER COLUMN diasProgramados     TYPE TEXT;
+ALTER TABLE HorarioFeriante          ALTER COLUMN diasNoLaborables    TYPE TEXT;
+ALTER TABLE HorarioFeriante          ALTER COLUMN guardiasProgramadas TYPE TEXT;
+ALTER TABLE HorarioGuardiaMedica     ALTER COLUMN fechasGuardias      TYPE TEXT;
+ALTER TABLE HorarioGuardiaEnfermeria ALTER COLUMN fechasGuardias      TYPE TEXT;

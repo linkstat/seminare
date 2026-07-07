@@ -3,6 +3,7 @@ package ar.com.hmu.model;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Pablo Alejandro Hamann
@@ -10,6 +11,7 @@ import java.util.List;
   */
 public abstract class Horario implements HorarioBase {
 
+	private UUID id;
 	private LocalDateTime fechaEgreso;
 	private LocalDateTime fechaIngreso;
 	private List<JornadaLaboral> jornadasPlanificadas;
@@ -21,6 +23,16 @@ public abstract class Horario implements HorarioBase {
 
 
 	// Getters / Setters
+
+	@Override
+	public UUID getId() {
+		return id;
+	}
+
+	@Override
+	public void setId(UUID id) {
+		this.id = id;
+	}
 
 	public LocalDateTime getFechaEgreso() {
 		return fechaEgreso;
