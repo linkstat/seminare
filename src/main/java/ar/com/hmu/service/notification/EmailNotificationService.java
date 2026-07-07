@@ -1,6 +1,7 @@
 package ar.com.hmu.service.notification;
 
 import ar.com.hmu.config.SmtpConfig;
+import ar.com.hmu.model.DiagramaDeServicio;
 import ar.com.hmu.model.Memorandum;
 import ar.com.hmu.model.Usuario;
 import jakarta.mail.Message;
@@ -11,6 +12,7 @@ import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -67,6 +69,33 @@ public class EmailNotificationService implements NotificationService {
         });
     }
 
+    @Override
+    public void notify(Usuario destinatario, TipoEventoDiagrama evento, DiagramaDeServicio diagrama,
+                       String nombreServicio, String comentarios) {
+        if (config.isNoop()) {
+            return;
+        }
+        if (destinatario == null || destinatario.getMail() == null || destinatario.getMail().isBlank()) {
+            System.err.println("EmailNotificationService: destinatario sin mail, salteando notificación de " + evento);
+            return;
+        }
+        if (diagrama == null) {
+            System.err.println("EmailNotificationService: diagrama null, salteando notificación de " + evento);
+            return;
+        }
+
+        executor.submit(() -> {
+            try {
+                enviarMail(destinatario.getMail(),
+                        asuntoPara(evento, diagrama, nombreServicio),
+                        cuerpoPara(evento, diagrama, nombreServicio, comentarios));
+            } catch (Exception e) {
+                System.err.println("EmailNotificationService: falla enviando mail (" + evento
+                        + ") a " + destinatario.getMail() + ": " + e.getMessage());
+            }
+        });
+    }
+
     /** Cierra el pool de envío. Llamar al apagar la app. */
     public void shutdown() {
         executor.shutdown();
@@ -78,6 +107,11 @@ public class EmailNotificationService implements NotificationService {
 
     private void enviar(String mailTo, TipoEventoMemorandum evento, Memorandum memo, String comentarios)
             throws MessagingException {
+        enviarMail(mailTo, asuntoPara(evento, memo), cuerpoPara(evento, memo, comentarios));
+    }
+
+    /** Transporte común: arma la sesión SMTP y despacha un mail de texto plano. */
+    private void enviarMail(String mailTo, String asunto, String cuerpo) throws MessagingException {
         Properties props = buildProps();
 
         Session session;
@@ -95,8 +129,8 @@ public class EmailNotificationService implements NotificationService {
         MimeMessage msg = new MimeMessage(session);
         msg.setFrom(parseFrom());
         msg.setRecipient(Message.RecipientType.TO, new InternetAddress(mailTo));
-        msg.setSubject(asuntoPara(evento, memo));
-        msg.setText(cuerpoPara(evento, memo, comentarios), "UTF-8");
+        msg.setSubject(asunto);
+        msg.setText(cuerpo, "UTF-8");
 
         Transport.send(msg);
     }
@@ -184,6 +218,71 @@ public class EmailNotificationService implements NotificationService {
         sb.append("Asunto: ").append(memo.getAsunto() != null ? memo.getAsunto() : "(sin asunto)").append("\n");
         sb.append("\n");
         sb.append("Para gestionar este memorándum, ingresá a Aromito.\n");
+        sb.append("\n");
+        sb.append("---\n");
+        sb.append("Este es un mensaje automático. Por favor no respondas a esta dirección.\n");
+        return sb.toString();
+    }
+
+    // ============================================================
+    // Plantillas de diagramas de servicio
+    // ============================================================
+
+    private static final DateTimeFormatter FECHA_CORTA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    private String periodoDe(DiagramaDeServicio diagrama) {
+        String desde = diagrama.getFechaInicio() != null
+                ? diagrama.getFechaInicio().format(FECHA_CORTA) : "?";
+        String hasta = diagrama.getFechaFin() != null
+                ? diagrama.getFechaFin().format(FECHA_CORTA) : "?";
+        return desde + " al " + hasta;
+    }
+
+    private String asuntoPara(TipoEventoDiagrama evento, DiagramaDeServicio diagrama, String nombreServicio) {
+        String servicio = (nombreServicio != null && !nombreServicio.isBlank())
+                ? nombreServicio : "(servicio)";
+        switch (evento) {
+            case DIAGRAMA_PENDIENTE_APROBACION:
+                return "Diagrama pendiente de aprobación: " + servicio + " (" + periodoDe(diagrama) + ")";
+            case DIAGRAMA_APROBADO:
+                return "Diagrama aprobado: " + servicio + " (" + periodoDe(diagrama) + ")";
+            case DIAGRAMA_OBSERVADO:
+                return "Diagrama observado: " + servicio + " (" + periodoDe(diagrama) + ")";
+            default:
+                return "Diagrama de servicio: " + servicio;
+        }
+    }
+
+    private String cuerpoPara(TipoEventoDiagrama evento, DiagramaDeServicio diagrama,
+                              String nombreServicio, String comentarios) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Aromito :: Sistema de Gestión de Ausentismo Hospitalario\n");
+        sb.append("Hospital Municipal de Urgencias - Córdoba\n");
+        sb.append("=========================================================\n\n");
+
+        switch (evento) {
+            case DIAGRAMA_PENDIENTE_APROBACION:
+                sb.append("Hay un diagrama de servicio esperando aprobación de la Oficina de Personal.\n\n");
+                break;
+            case DIAGRAMA_APROBADO:
+                sb.append("El diagrama de servicio fue aprobado. A partir de ahora es inmutable:\n");
+                sb.append("los cambios se gestionan como novedades (CH/CG) de cada agente.\n\n");
+                break;
+            case DIAGRAMA_OBSERVADO:
+                sb.append("El diagrama de servicio fue observado y requiere correcciones\n");
+                sb.append("antes de poder ser aprobado.\n");
+                if (comentarios != null && !comentarios.isBlank()) {
+                    sb.append("Observaciones: ").append(comentarios).append("\n");
+                }
+                sb.append("\n");
+                break;
+        }
+
+        sb.append("Servicio: ").append(nombreServicio != null && !nombreServicio.isBlank()
+                ? nombreServicio : "(sin nombre)").append("\n");
+        sb.append("Período: ").append(periodoDe(diagrama)).append("\n");
+        sb.append("\n");
+        sb.append("Para gestionar este diagrama, ingresá a Aromito.\n");
         sb.append("\n");
         sb.append("---\n");
         sb.append("Este es un mensaje automático. Por favor no respondas a esta dirección.\n");

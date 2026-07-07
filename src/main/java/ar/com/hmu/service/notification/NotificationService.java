@@ -1,13 +1,14 @@
 package ar.com.hmu.service.notification;
 
+import ar.com.hmu.model.DiagramaDeServicio;
 import ar.com.hmu.model.Memorandum;
 import ar.com.hmu.model.Usuario;
 
 /**
- * Abstracción para notificaciones disparadas por eventos del módulo de
- * memorándums. La implementación concreta del pase 1 es por email
- * ({@code EmailNotificationService}); a futuro pueden sumarse otras
- * (in-app, push, etc.) sin tocar al {@code MemorandumService}.
+ * Abstracción para notificaciones disparadas por eventos de los módulos
+ * con workflow (memorándums, diagramación de servicios). La implementación
+ * concreta es por email ({@code EmailNotificationService}); a futuro pueden
+ * sumarse otras (in-app, push, etc.) sin tocar a los services de dominio.
  */
 public interface NotificationService {
 
@@ -24,4 +25,20 @@ public interface NotificationService {
      *                      puede ser null si el evento no aplica.
      */
     void notify(Usuario destinatario, TipoEventoMemorandum evento, Memorandum memo, String comentarios);
+
+    /**
+     * Envía una notificación por un evento del ciclo de vida de un diagrama
+     * de servicio. Mismo contrato fire-and-forget que la sobrecarga de
+     * memorándums.
+     *
+     * @param destinatario    usuario al que se le notifica.
+     * @param evento          tipo de evento que disparó la notificación.
+     * @param diagrama        diagrama asociado al evento (no debe ser null).
+     * @param nombreServicio  nombre del servicio del diagrama, para que el
+     *                        mensaje sea legible sin otra consulta.
+     * @param comentarios     contexto adicional (motivo de la observación);
+     *                        puede ser null si el evento no aplica.
+     */
+    void notify(Usuario destinatario, TipoEventoDiagrama evento, DiagramaDeServicio diagrama,
+                String nombreServicio, String comentarios);
 }
