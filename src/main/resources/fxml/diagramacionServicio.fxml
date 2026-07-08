@@ -83,6 +83,10 @@
             <Button fx:id="validarButton" text="Validar" onAction="#onValidar"/>
             <Button fx:id="guardarButton" text="Guardar" onAction="#onGuardar"/>
             <Button fx:id="enviarButton" text="Enviar a aprobación" onAction="#onEnviar"/>
+            <Button fx:id="observarButton" text="Observar…" onAction="#onObservar"
+                    visible="false" managed="false"/>
+            <Button fx:id="aprobarButton" text="Aprobar" onAction="#onAprobar"
+                    visible="false" managed="false"/>
         </HBox>
     </bottom>
 </BorderPane>

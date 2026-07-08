@@ -351,6 +351,16 @@ public class DiagramaService {
         }
     }
 
+    /** Consulta histórica: todos los diagramas de todos los servicios
+     *  (el filtrado por estado/servicio lo hace la bandeja en memoria). */
+    public List<DiagramaDeServicio> todos() throws ServiceException {
+        try {
+            return diagramaRepository.readAll();
+        } catch (SQLException e) {
+            throw new ServiceException("Error al consultar los diagramas", e);
+        }
+    }
+
     /** Jornadas persistidas de un diagrama (para poblar la grilla). */
     public List<JornadaLaboral> jornadasDe(UUID diagramaId) throws ServiceException {
         try {

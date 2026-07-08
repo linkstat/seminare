@@ -98,6 +98,8 @@ public class DiagramacionServicioController {
     @FXML private Button validarButton;
     @FXML private Button guardarButton;
     @FXML private Button enviarButton;
+    @FXML private Button observarButton;
+    @FXML private Button aprobarButton;
 
     // --- Dependencias (inyectadas por el caller) ---
     private DiagramaService diagramaService;
@@ -138,6 +140,22 @@ public class DiagramacionServicioController {
         cargarServicios();
         configurarEscCierra();
         actualizarControles();
+    }
+
+    /**
+     * Navega a un diagrama concreto (usado por la bandeja de consulta de
+     * OP/Dirección). Llamar después de {@link #postInitialize()}.
+     */
+    public void seleccionarDiagrama(UUID servicioId, UUID diagramaId) {
+        servicioCombo.getItems().stream()
+                .filter(s -> s.getId().equals(servicioId))
+                .findFirst()
+                .ifPresent(s -> servicioCombo.getSelectionModel().select(s));
+        // El listener del servicio ya cargó sus diagramas; ubicamos el pedido.
+        diagramaCombo.getItems().stream()
+                .filter(d -> d.getId().equals(diagramaId))
+                .findFirst()
+                .ifPresent(d -> diagramaCombo.getSelectionModel().select(d));
     }
 
     /** Toggle Tabla / Calendario: misma información, dos representaciones.
@@ -826,6 +844,73 @@ public class DiagramacionServicioController {
         }
     }
 
+    /**
+     * Aprobación final de la Oficina de Personal: el diagrama queda
+     * inmutable. (El acto de aprobación del jefe a nivel servicio es el
+     * "Enviar a aprobación"; esto es el visto bueno administrativo.)
+     */
+    @FXML
+    private void onAprobar() {
+        if (diagramaActual == null) {
+            return;
+        }
+        if (!AlertUtils.showConfirm("¿Aprobar el diagrama de servicio?\n"
+                + "A partir de la aprobación es inmutable: los cambios posteriores\n"
+                + "se gestionan como novedades (CH/CG) de cada agente.")) {
+            return;
+        }
+        try {
+            diagramaService.aprobar(diagramaActual, usuarioActual);
+            AlertUtils.showInfo("Diagrama aprobado.");
+            refrescarComboDiagrama();
+            actualizarControles();
+        } catch (ServiceException e) {
+            AlertUtils.showErr("No se pudo aprobar el diagrama:\n" + e.getMessage());
+        }
+    }
+
+    /** Observación de OP: vuelve a la jefatura con comentarios obligatorios. */
+    @FXML
+    private void onObservar() {
+        if (diagramaActual == null) {
+            return;
+        }
+
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Observar diagrama");
+        dialog.setHeaderText("El diagrama vuelve a la jefatura para corrección.");
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        javafx.scene.control.TextArea comentariosArea = new javafx.scene.control.TextArea();
+        comentariosArea.setPromptText("Comentarios para la jefatura (obligatorio)");
+        comentariosArea.setPrefRowCount(4);
+        comentariosArea.setWrapText(true);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(8);
+        grid.setVgap(8);
+        grid.addRow(0, new Label("Observaciones:"), comentariosArea);
+        dialog.getDialogPane().setContent(grid);
+
+        if (dialog.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
+            return;
+        }
+        String comentarios = comentariosArea.getText();
+        if (comentarios == null || comentarios.isBlank()) {
+            AlertUtils.showWarn("La observación requiere comentarios para la jefatura.");
+            return;
+        }
+
+        try {
+            diagramaService.observar(diagramaActual, comentarios.trim(), usuarioActual);
+            AlertUtils.showInfo("Diagrama observado. Se notificó a la jefatura.");
+            refrescarComboDiagrama();
+            actualizarControles();
+        } catch (ServiceException e) {
+            AlertUtils.showErr("No se pudo observar el diagrama:\n" + e.getMessage());
+        }
+    }
+
     @FXML
     private void onCerrar() {
         if (!confirmarDescarteSiDirty()) {
@@ -890,6 +975,15 @@ public class DiagramacionServicioController {
         enviarButton.setDisable(!editable);
         nuevoDiagramaButton.setDisable(servicioCombo.getValue() == null || !puedeCrear());
         ayudaLabel.setVisible(editable);
+
+        // Aprobación final: sólo OP y sólo con el diagrama pendiente.
+        boolean puedeAprobar = hayDiagrama
+                && diagramaActual.getEstado() == EstadoDiagrama.PENDIENTE_APROBACION
+                && usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL);
+        aprobarButton.setVisible(puedeAprobar);
+        aprobarButton.setManaged(puedeAprobar);
+        observarButton.setVisible(puedeAprobar);
+        observarButton.setManaged(puedeAprobar);
 
         // Chip de estado.
         estadoChip.getStyleClass().removeAll("estado-borrador", "estado-pendiente",

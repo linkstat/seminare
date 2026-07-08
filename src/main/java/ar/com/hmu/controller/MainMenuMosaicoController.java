@@ -407,7 +407,7 @@ public class MainMenuMosaicoController {
         aprobacionSolicitudesVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
         notasMemosVBox.setOnMouseClicked(this::handleNotasMemos);
         partesDiariosVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
-        consultaDiagramasDeServicioVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
+        consultaDiagramasDeServicioVBox.setOnMouseClicked(this::handleConsultaDiagramas);
         diagramacionDeServicioVBox.setOnMouseClicked(this::handleDiagramacionServicio);
         controlMarcacionesVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
         pasesDeSalidaVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
@@ -770,6 +770,50 @@ public class MainMenuMosaicoController {
             stage.showAndWait();
         } catch (IOException e) {
             AlertUtils.showErr("Error al abrir la diagramación de servicio: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Abre la bandeja "Consulta de Diagramas de Servicios" (OP/Dirección):
+     * lista con filtros por estado y servicio; desde ahí se abre cada
+     * diagrama y OP dispone de Aprobar / Observar.
+     */
+    @FXML
+    private void handleConsultaDiagramas(Event event) {
+        if (diagramaService == null) {
+            AlertUtils.showWarn("Módulo de diagramación no disponible.");
+            return;
+        }
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/bandejaDiagramas.fxml"));
+            loader.setControllerFactory(controllerClass -> {
+                if (controllerClass == BandejaDiagramasController.class) {
+                    BandejaDiagramasController c = new BandejaDiagramasController();
+                    c.setDiagramaService(diagramaService);
+                    c.setServicioService(servicioService);
+                    c.setUsuarioRepository(usuarioRepository);
+                    c.setUsuarioActual(usuarioActual);
+                    return c;
+                }
+                try {
+                    return controllerClass.getDeclaredConstructor().newInstance();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+            Parent root = loader.load();
+            BandejaDiagramasController controller = loader.getController();
+            controller.postInitialize();
+
+            Stage stage = new Stage();
+            stage.setTitle("Consulta de Diagramas :: " + AppInfo.PRG_LONG_TITLE);
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(MainMenuMosaicoController.getPrimaryStage());
+            stage.getIcons().add(new Image(getClass().getResourceAsStream(AppInfo.ICON_IMAGE)));
+            stage.showAndWait();
+        } catch (IOException e) {
+            AlertUtils.showErr("Error al abrir la consulta de diagramas: " + e.getMessage());
         }
     }
 
