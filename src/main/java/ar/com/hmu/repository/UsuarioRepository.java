@@ -381,6 +381,22 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
         }
     }
 
+    /** Cantidad de usuarios activos por servicio, en una sola consulta
+     *  (para el chequeo de alertas de diagramación al login). */
+    public java.util.Map<UUID, Integer> countUsuariosActivosPorServicio() throws SQLException {
+        java.util.Map<UUID, Integer> conteos = new java.util.HashMap<>();
+        String query = "SELECT servicioID, COUNT(*) FROM Usuario " +
+                "WHERE estado = TRUE AND servicioID IS NOT NULL GROUP BY servicioID";
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                conteos.put(rs.getObject(1, UUID.class), rs.getInt(2));
+            }
+        }
+        return conteos;
+    }
+
     public int countUsuariosByServicio(UUID servicioId) throws SQLException {
         String query = "SELECT COUNT(*) FROM Usuario WHERE servicioID = ? AND estado = TRUE";
         try (Connection connection = databaseConnector.getConnection();

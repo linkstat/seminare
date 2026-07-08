@@ -347,6 +347,74 @@ class DiagramaServiceTest {
     }
 
     // ============================================================
+    // Alertas de presentación (RFS09)
+    // ============================================================
+
+    private static final java.time.YearMonth AGOSTO = java.time.YearMonth.of(2026, 8);
+
+    @Test
+    void estadoPresentacion_sinDiagramas_esSinDiagrama() throws Exception {
+        when(diagramaRepo.findSolapados(servicioId, AGOSTO.atDay(1), AGOSTO.atEndOfMonth()))
+                .thenReturn(List.of());
+
+        assertThat(service.estadoPresentacion(servicioId, AGOSTO))
+                .isEqualTo(EstadoPresentacion.SIN_DIAGRAMA);
+    }
+
+    @Test
+    void estadoPresentacion_conBorrador_esBorradorSinEnviar() throws Exception {
+        when(diagramaRepo.findSolapados(any(), any(), any()))
+                .thenReturn(List.of(diagramaEn(EstadoDiagrama.BORRADOR, 0)));
+
+        assertThat(service.estadoPresentacion(servicioId, AGOSTO))
+                .isEqualTo(EstadoPresentacion.BORRADOR_SIN_ENVIAR);
+    }
+
+    @Test
+    void estadoPresentacion_observadoPesaMasQueBorrador() throws Exception {
+        when(diagramaRepo.findSolapados(any(), any(), any()))
+                .thenReturn(List.of(diagramaEn(EstadoDiagrama.BORRADOR, 0),
+                        diagramaEn(EstadoDiagrama.OBSERVADO, 2)));
+
+        assertThat(service.estadoPresentacion(servicioId, AGOSTO))
+                .isEqualTo(EstadoPresentacion.OBSERVADO_SIN_CORREGIR);
+    }
+
+    @Test
+    void estadoPresentacion_pendienteOAprobado_esPresentado() throws Exception {
+        when(diagramaRepo.findSolapados(any(), any(), any()))
+                .thenReturn(List.of(diagramaEn(EstadoDiagrama.APROBADO, 3)));
+
+        assertThat(service.estadoPresentacion(servicioId, AGOSTO))
+                .isEqualTo(EstadoPresentacion.PRESENTADO);
+    }
+
+    @Test
+    void serviciosSinPresentar_salteaPresentadosYServiciosSinEmpleados() throws Exception {
+        Servicio conDiagrama = servicio("Biomédica");
+        Servicio sinDiagrama = new Servicio();
+        sinDiagrama.setId(UUID.randomUUID());
+        sinDiagrama.setNombre("Personal");
+        Servicio vacio = new Servicio();
+        vacio.setId(UUID.randomUUID());
+        vacio.setNombre("Anestesia"); // sin empleados: no requiere diagrama
+
+        when(servicioRepo.readAll()).thenReturn(List.of(conDiagrama, sinDiagrama, vacio));
+        when(usuarioRepo.countUsuariosActivosPorServicio()).thenReturn(java.util.Map.of(
+                conDiagrama.getId(), 3, sinDiagrama.getId(), 4));
+        when(diagramaRepo.findSolapados(eq(conDiagrama.getId()), any(), any()))
+                .thenReturn(List.of(diagramaEn(EstadoDiagrama.APROBADO, 3)));
+        when(diagramaRepo.findSolapados(eq(sinDiagrama.getId()), any(), any()))
+                .thenReturn(List.of());
+
+        List<AlertaPresentacion> alertas = service.serviciosSinPresentar(AGOSTO);
+
+        assertThat(alertas).hasSize(1);
+        assertThat(alertas.get(0).servicio().getNombre()).isEqualTo("Personal");
+        assertThat(alertas.get(0).estado()).isEqualTo(EstadoPresentacion.SIN_DIAGRAMA);
+    }
+
+    // ============================================================
     // Permiso de vista del diagrama (veDiagramaCompleto)
     // ============================================================
 

@@ -265,6 +265,70 @@ public class MainMenuMosaicoController {
         // Cargar preferencias de la ventana en este punto
         loadWindowPreferences();
 
+        // Alertas de diagramación (RFS09): recordatorio al login. Se corre
+        // diferido (runLater) para no bloquear el armado de la ventana.
+        javafx.application.Platform.runLater(this::verificarAlertasDiagramacion);
+    }
+
+    /**
+     * RFS09 — recordatorio de presentación de diagramas, chequeado al login:
+     * a la jefatura le avisa si el diagrama del MES SIGUIENTE de su servicio
+     * no está presentado (sin crear / borrador sin enviar / observado sin
+     * corregir); a la Oficina de Personal le muestra el resumen de servicios
+     * incumplidos (sólo servicios con empleados activos).
+     *
+     * <p>Pase 1: alerta in-app al login, sin umbral de día (la fecha límite
+     * real de presentación del HMU no está modelada — cuando se conozca,
+     * agregar umbral/configuración). Alertas por email requerirían un
+     * proceso servidor (la app es de escritorio) — deuda documentada.</p>
+     */
+    private void verificarAlertasDiagramacion() {
+        if (diagramaService == null || usuarioActual == null) {
+            return;
+        }
+        java.time.YearMonth mesSiguiente = java.time.YearMonth.now().plusMonths(1);
+        String nombreMes = mesSiguiente.format(java.time.format.DateTimeFormatter
+                .ofPattern("MMMM yyyy", java.util.Locale.of("es", "AR")));
+        StringBuilder aviso = new StringBuilder();
+
+        try {
+            if (usuarioActual.hasRole(TipoUsuario.JEFATURADESERVICIO)
+                    && usuarioActual.getServicioId() != null) {
+                switch (diagramaService.estadoPresentacion(usuarioActual.getServicioId(), mesSiguiente)) {
+                    case SIN_DIAGRAMA -> aviso.append("Recordatorio: aún no se creó el diagrama de ")
+                            .append(nombreMes).append(" de tu servicio.");
+                    case BORRADOR_SIN_ENVIAR -> aviso.append("Recordatorio: el diagrama de ")
+                            .append(nombreMes).append(" de tu servicio está en borrador. ")
+                            .append("Recordá enviarlo a aprobación.");
+                    case OBSERVADO_SIN_CORREGIR -> aviso.append("El diagrama de ").append(nombreMes)
+                            .append(" de tu servicio fue observado por la Oficina de Personal. ")
+                            .append("Corregilo y reenvialo.");
+                    case PRESENTADO -> { /* sin alerta */ }
+                }
+            }
+
+            if (usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL)) {
+                var alertas = diagramaService.serviciosSinPresentar(mesSiguiente);
+                if (!alertas.isEmpty()) {
+                    if (aviso.length() > 0) {
+                        aviso.append("\n\n");
+                    }
+                    aviso.append("Servicios que aún no presentaron el diagrama de ")
+                            .append(nombreMes).append(" (").append(alertas.size()).append("):\n");
+                    aviso.append(alertas.stream()
+                            .map(a -> a.servicio().getNombre())
+                            .collect(java.util.stream.Collectors.joining(", ")));
+                }
+            }
+        } catch (ServiceException e) {
+            // Las alertas son un recordatorio: nunca deben romper el login.
+            System.err.println("Alertas de diagramación no disponibles: " + e.getMessage());
+            return;
+        }
+
+        if (aviso.length() > 0) {
+            AlertUtils.showWarn(aviso.toString());
+        }
     }
 
     /**

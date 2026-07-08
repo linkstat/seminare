@@ -371,6 +371,67 @@ public class DiagramaService {
     }
 
     // ============================================================
+    // Alertas de presentación (RFS09)
+    // ============================================================
+
+    /**
+     * Estado de presentación del diagrama de un servicio para un mes:
+     * mira todos los diagramas que solapan el mes y devuelve el mejor
+     * estado alcanzado (PRESENTADO > OBSERVADO > BORRADOR > nada).
+     */
+    public EstadoPresentacion estadoPresentacion(UUID servicioId, java.time.YearMonth mes)
+            throws ServiceException {
+        try {
+            LocalDate desde = mes.atDay(1);
+            LocalDate hasta = mes.atEndOfMonth();
+            EstadoPresentacion resultado = EstadoPresentacion.SIN_DIAGRAMA;
+            for (DiagramaDeServicio d : diagramaRepository.findSolapados(servicioId, desde, hasta)) {
+                switch (d.getEstado()) {
+                    case PENDIENTE_APROBACION, APROBADO -> {
+                        return EstadoPresentacion.PRESENTADO;
+                    }
+                    case OBSERVADO -> resultado = EstadoPresentacion.OBSERVADO_SIN_CORREGIR;
+                    case BORRADOR -> {
+                        if (resultado == EstadoPresentacion.SIN_DIAGRAMA) {
+                            resultado = EstadoPresentacion.BORRADOR_SIN_ENVIAR;
+                        }
+                    }
+                }
+            }
+            return resultado;
+        } catch (SQLException e) {
+            throw new ServiceException("Error al consultar el estado de presentación del diagrama", e);
+        }
+    }
+
+    /**
+     * Servicios con empleados activos cuyo diagrama del mes indicado NO
+     * está presentado (para el resumen de OP al login). Los servicios sin
+     * empleados no requieren diagrama y se saltean.
+     */
+    public List<AlertaPresentacion> serviciosSinPresentar(java.time.YearMonth mes)
+            throws ServiceException {
+        try {
+            Map<UUID, Integer> empleadosPorServicio = usuarioRepository.countUsuariosActivosPorServicio();
+            List<AlertaPresentacion> alertas = new java.util.ArrayList<>();
+            for (Servicio s : servicioRepository.readAll()) {
+                if (empleadosPorServicio.getOrDefault(s.getId(), 0) == 0) {
+                    continue;
+                }
+                EstadoPresentacion estado = estadoPresentacion(s.getId(), mes);
+                if (estado != EstadoPresentacion.PRESENTADO) {
+                    alertas.add(new AlertaPresentacion(s, estado));
+                }
+            }
+            alertas.sort(java.util.Comparator.comparing(a -> a.servicio().getNombre(),
+                    String.CASE_INSENSITIVE_ORDER));
+            return alertas;
+        } catch (SQLException e) {
+            throw new ServiceException("Error al consultar los servicios sin diagrama presentado", e);
+        }
+    }
+
+    // ============================================================
     // Permiso de vista del diagrama por empleado
     // ============================================================
 
