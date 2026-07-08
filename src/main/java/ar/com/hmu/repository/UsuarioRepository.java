@@ -350,6 +350,37 @@ public class UsuarioRepository implements GenericDAO<Usuario> {
         return usuarios;
     }
 
+    /**
+     * Permiso de vista del diagrama del empleado: {@code true} = ve la
+     * grilla completa de su servicio en "Mi Diagrama"; {@code false} =
+     * sólo sus propias jornadas. Si el empleado no existe devuelve
+     * {@code true} (el default del esquema).
+     */
+    public boolean findVeDiagramaCompleto(UUID empleadoId) throws SQLException {
+        String query = "SELECT veDiagramaCompleto FROM Empleado WHERE id = ?";
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setObject(1, empleadoId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBoolean(1);
+                }
+            }
+        }
+        return true;
+    }
+
+    /** Setea el permiso de vista del diagrama del empleado. */
+    public void setVeDiagramaCompleto(UUID empleadoId, boolean valor) throws SQLException {
+        String query = "UPDATE Empleado SET veDiagramaCompleto = ? WHERE id = ?";
+        try (Connection connection = databaseConnector.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setBoolean(1, valor);
+            stmt.setObject(2, empleadoId);
+            stmt.executeUpdate();
+        }
+    }
+
     public int countUsuariosByServicio(UUID servicioId) throws SQLException {
         String query = "SELECT COUNT(*) FROM Usuario WHERE servicioID = ? AND estado = TRUE";
         try (Connection connection = databaseConnector.getConnection();

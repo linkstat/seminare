@@ -262,6 +262,9 @@ CREATE TABLE Empleado (
     id UUID PRIMARY KEY,
     francosCompensatoriosUtilizados INTEGER,
     horarioActualID UUID,
+    -- TRUE: en "Mi Diagrama" ve la grilla completa de su servicio (cartelera);
+    -- FALSE: sólo sus propias jornadas. Lo administra su jefatura.
+    veDiagramaCompleto BOOLEAN NOT NULL DEFAULT TRUE,
     FOREIGN KEY (id) REFERENCES Usuario(id) ON DELETE CASCADE,
     FOREIGN KEY (horarioActualID) REFERENCES HorarioBase(id)
 );

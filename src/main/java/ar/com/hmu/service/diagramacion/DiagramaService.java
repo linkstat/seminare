@@ -371,6 +371,43 @@ public class DiagramaService {
     }
 
     // ============================================================
+    // Permiso de vista del diagrama por empleado
+    // ============================================================
+
+    /**
+     * ¿El empleado ve la grilla completa de su servicio en "Mi Diagrama"
+     * (true, la "cartelera") o sólo sus propias jornadas (false)?
+     */
+    public boolean puedeVerContexto(UUID empleadoId) throws ServiceException {
+        try {
+            return usuarioRepository.findVeDiagramaCompleto(empleadoId);
+        } catch (SQLException e) {
+            throw new ServiceException("Error al consultar el permiso de vista del diagrama", e);
+        }
+    }
+
+    /**
+     * Setea el permiso de vista del diagrama de un empleado. Pueden hacerlo
+     * la jefatura del servicio del empleado, OP y Dirección.
+     */
+    public void setPermisoVistaCompleta(UUID empleadoId, boolean valor, Usuario actor)
+            throws ServiceException {
+        if (empleadoId == null) {
+            throw new ServiceException("Empleado inválido.");
+        }
+        try {
+            Usuario empleado = usuarioRepository.readByUUID(empleadoId);
+            if (empleado == null) {
+                throw new ServiceException("El empleado no existe.");
+            }
+            validarPuedeGestionar(actor, empleado.getServicioId());
+            usuarioRepository.setVeDiagramaCompleto(empleadoId, valor);
+        } catch (SQLException e) {
+            throw new ServiceException("Error al actualizar el permiso de vista del diagrama", e);
+        }
+    }
+
+    // ============================================================
     // Helpers privados
     // ============================================================
 

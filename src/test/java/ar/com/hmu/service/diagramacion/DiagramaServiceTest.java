@@ -347,6 +347,63 @@ class DiagramaServiceTest {
     }
 
     // ============================================================
+    // Permiso de vista del diagrama (veDiagramaCompleto)
+    // ============================================================
+
+    @Test
+    void setPermisoVista_porJefeDeSuServicio_actualiza() throws Exception {
+        Usuario empleado = usuarioConRoles(TipoUsuario.EMPLEADO);
+        empleado.setServicioId(servicioId);
+        when(usuarioRepo.readByUUID(empleado.getId())).thenReturn(empleado);
+
+        service.setPermisoVistaCompleta(empleado.getId(), false, jefeDelServicio());
+
+        verify(usuarioRepo).setVeDiagramaCompleto(empleado.getId(), false);
+    }
+
+    @Test
+    void setPermisoVista_porJefeDeOtroServicio_lanza() throws Exception {
+        Usuario empleado = usuarioConRoles(TipoUsuario.EMPLEADO);
+        empleado.setServicioId(UUID.randomUUID()); // servicio ajeno al jefe
+        when(usuarioRepo.readByUUID(empleado.getId())).thenReturn(empleado);
+
+        assertThatThrownBy(() -> service.setPermisoVistaCompleta(empleado.getId(), false, jefeDelServicio()))
+                .isInstanceOf(ServiceException.class)
+                .hasMessageContaining("permisos");
+        verify(usuarioRepo, never()).setVeDiagramaCompleto(any(), org.mockito.ArgumentMatchers.anyBoolean());
+    }
+
+    @Test
+    void setPermisoVista_porOficinaDePersonal_actualizaCualquierServicio() throws Exception {
+        Usuario empleado = usuarioConRoles(TipoUsuario.EMPLEADO);
+        empleado.setServicioId(UUID.randomUUID());
+        when(usuarioRepo.readByUUID(empleado.getId())).thenReturn(empleado);
+        Usuario op = usuarioConRoles(TipoUsuario.OFICINADEPERSONAL);
+
+        service.setPermisoVistaCompleta(empleado.getId(), true, op);
+
+        verify(usuarioRepo).setVeDiagramaCompleto(empleado.getId(), true);
+    }
+
+    @Test
+    void setPermisoVista_empleadoInexistente_lanza() throws Exception {
+        UUID inexistente = UUID.randomUUID();
+        when(usuarioRepo.readByUUID(inexistente)).thenReturn(null);
+
+        assertThatThrownBy(() -> service.setPermisoVistaCompleta(inexistente, false, jefeDelServicio()))
+                .isInstanceOf(ServiceException.class)
+                .hasMessageContaining("no existe");
+    }
+
+    @Test
+    void puedeVerContexto_delegaEnElRepositorio() throws Exception {
+        UUID empleadoId = UUID.randomUUID();
+        when(usuarioRepo.findVeDiagramaCompleto(empleadoId)).thenReturn(false);
+
+        assertThat(service.puedeVerContexto(empleadoId)).isFalse();
+    }
+
+    // ============================================================
     // Helpers
     // ============================================================
 
