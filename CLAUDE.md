@@ -200,7 +200,12 @@ conversiones manuales bytes ↔ string).
   `EstadoTramite`.
 - **Novedades y partes**: `Novedad`, `Empleado_Novedad`, `ParteDiario`,
   `ParteDiario_Empleado`.
-- **Diagramación**: `JornadaLaboral`, `DiagramaDeServicio`, `Planificacion`.
+- **Diagramación**: `DiagramaDeServicio` (estado ENUM PG `estado_diagrama`,
+  auditoría, `version` optimista) y `JornadaLaboral` (una fila por empleado
+  por día, tipo ENUM PG `tipo_jornada`, FK directa a diagrama y empleado).
+  La tabla puente ternaria `Planificacion` del diseño original fue
+  RETIRADA (la jornada absorbe sus FKs). `Empleado.veDiagramaCompleto`
+  controla la vista del empleado en "Mi Diagrama".
 - **Memorandos**: `Memorandum`, `Memorandum_Destinatario`,
   `Memorandum_Firmante` (no usada en pase 1), `Memorandum_Autorizacion`.
   - `Memorandum_Autorizacion.estado` es ENUM PG `estado_memo_autorizacion`
@@ -247,11 +252,25 @@ esquemas completos.
   live (debounce 200ms).
 - **ESC cierra ventanas modales** del módulo de memorándums (bandeja,
   detalle, redacción). En redacción respeta el flag `dirty` y dispara
-  diálogo de confirmación si hay cambios sin guardar.
+  diálogo de confirmación si hay cambios sin guardar. Misma convención
+  en el módulo de diagramación.
+- **Generación de jornadas con Strategy por modalidad** (no método
+  polimórfico en las entidades `Horario*`): las modalidades divergen en
+  la forma de sus datos, no en comportamiento heredable, y la expansión
+  necesita colaboradores externos (`ContextoDiagramacion`, feriados).
+  `GeneradorFranquiciaDecorator` envuelve la estrategia del horario
+  decorado. Feriados aún sin modelar (deuda: tabla `Feriado`).
+- **Aprobación de diagramas en dos niveles**: el "Enviar a aprobación"
+  de la jefatura es su aprobación a nivel servicio (incluye su propio
+  horario: el jefe es una fila más de su grilla); la OP da el visto
+  final. APROBADO es terminal e inmutable.
+- **Concurrencia optimista por `version`** en el agregado diagrama:
+  toda escritura exige la versión esperada y la incrementa; conflicto →
+  el usuario recarga y reintenta.
 
 ## Módulos funcionales implementados
 
-Snapshot al 2026-05-03. Refleja qué RFS están cubiertos end-to-end:
+Snapshot al 2026-07-08. Refleja qué RFS están cubiertos end-to-end:
 
 - **Autenticación + login** (precondición): CUIL + password Argon2id, con
   flujo de cambio obligatorio en el primer login si la contraseña es la
@@ -287,11 +306,47 @@ Snapshot al 2026-05-03. Refleja qué RFS están cubiertos end-to-end:
   (visibilidad de mosaicos / pestañas) y a nivel Service (validación
   de autorización). Cuatro roles: EMPLEADO, JEFATURADESERVICIO,
   OFICINADEPERSONAL, DIRECCION.
+- **RFS02 — Diagramación de servicios**: completo end-to-end
+  (commits `a3bb6f6`..`4048c58`, 2026-07-07/08).
+  - El diagrama es DEL SERVICIO (rango `[fechaInicio, fechaFin]`, no
+    mes fijo): una jornada por empleado por día; el jefe es una fila
+    más de su propia grilla (avala también su propio horario).
+  - Generación de la grilla inicial desde el `Horario` de cada empleado:
+    Strategy por modalidad (`service/diagramacion/Generador*`) +
+    decorator para franquicia. Invariante: una jornada por día, FRANCO
+    materializado. Empleados sin horario asignado: grilla toda FRANCO.
+  - Flujo de dos niveles: el "Enviar a aprobación" del jefe ES su
+    aprobación a nivel servicio; la OP da el visto final. State machine
+    `BORRADOR → PENDIENTE_APROBACION → APROBADO (terminal, inmutable) /
+    OBSERVADO → (corrección) → PENDIENTE_APROBACION`. Cambios post-
+    aprobación: sólo vía novedades (CH/CG, módulo futuro).
+  - `DiagramaValidator`: reglas estructurales que bloquean el envío
+    (horario faltante/invertido, superposición por empleado, descanso
+    mínimo 10 hs) + advertencias de carga mensual no bloqueantes
+    (Nocturno/Feriante/GuardiaEnfermería; modalidades semanales diferidas).
+  - UI dual con toggle Tabla (empleado×día, celdas compactas coloreadas,
+    editor por doble click con cruce de medianoche) / Calendario mensual.
+    Concurrencia optimista por `version` en todo el agregado.
+  - Bandeja "Consulta de Diagramas de Servicios" (OP/Dirección) con
+    filtros por estado/servicio + botones Aprobar / Observar (con
+    comentarios) en la pantalla del diagrama.
+  - "Mi Diagrama" (empleado): sólo diagramas APROBADOS de su servicio;
+    según `Empleado.veDiagramaCompleto` (default TRUE, administrado por
+    la jefatura vía "Vista de empleados…") ve la grilla completa
+    ("cartelera") o sólo su fila.
+  - Notificaciones email de las transiciones (pendiente → OP; aprobado/
+    observado → jefatura creadora).
+- **RFS09 — Alertas (parcial: diagramas)**: recordatorio al login.
+  Jefatura: diagrama del mes siguiente sin presentar (sin crear /
+  borrador / observado). OP: resumen de servicios incumplidos. Sin
+  umbral de día (la fecha límite real del HMU no está modelada) y sin
+  email (requeriría proceso servidor) — deudas documentadas.
 
-Otros RFS (RFS02 diagramas, RFS03 disponibilidad, RFS04 horas extras,
-RFS05 pases de salida, RFS06 omisiones, RFS08 reportes, RFS09 alertas,
-RFS11 francos compensatorios) — pendientes; los mosaicos correspondientes
-del menú principal muestran "Módulo en construcción" al hacer click.
+Otros RFS (RFS03 disponibilidad, RFS04 horas extras, RFS05 pases de
+salida, RFS06 omisiones, RFS08 reportes, RFS11 francos compensatorios) —
+pendientes; los mosaicos correspondientes del menú principal muestran
+"Módulo en construcción" al hacer click. Nota: RFS03 tiene la base lista
+(`DiagramaRepository.findJornadasDeEmpleadoEnRango` cruza diagramas).
 
 ## Estado de migraciones (post-cátedra)
 
