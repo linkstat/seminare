@@ -76,6 +76,8 @@
             <Label text="Vista:" styleClass="ayuda"/>
             <ToggleButton fx:id="vistaTablaToggle" text="Tabla" selected="true"/>
             <ToggleButton fx:id="vistaCalendarioToggle" text="Calendario"/>
+            <Button fx:id="vistaEmpleadosButton" text="Vista de empleados…" onAction="#onVistaEmpleados"
+                    visible="false" managed="false"/>
             <Label fx:id="ayudaLabel" text="Doble click en una celda para editar la jornada."
                    styleClass="ayuda"/>
             <HBox HBox.hgrow="ALWAYS"/>

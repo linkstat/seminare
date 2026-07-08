@@ -100,6 +100,7 @@ public class DiagramacionServicioController {
     @FXML private Button enviarButton;
     @FXML private Button observarButton;
     @FXML private Button aprobarButton;
+    @FXML private Button vistaEmpleadosButton;
 
     // --- Dependencias (inyectadas por el caller) ---
     private DiagramaService diagramaService;
@@ -113,6 +114,12 @@ public class DiagramacionServicioController {
     /** Celdas a resaltar tras la última validación: clave "empleadoId|fecha". */
     private final Set<String> celdasConViolacion = new HashSet<>();
     private boolean dirty;
+
+    /** Modo "Mi Diagrama" (empleado): sólo diagramas APROBADOS, sin acciones,
+     *  y la grilla se limita a la propia fila si el permiso lo indica. */
+    private boolean modoEmpleado = false;
+    /** En modo empleado: ¿ve la grilla completa del servicio? */
+    private boolean veContexto = true;
 
     private static final DateTimeFormatter FECHA_CORTA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter HORA_MIN = DateTimeFormatter.ofPattern("HH:mm");
@@ -133,13 +140,35 @@ public class DiagramacionServicioController {
         this.usuarioActual = usuarioActual;
     }
 
+    /**
+     * Activa el modo "Mi Diagrama" (vista del empleado). Llamar ANTES de
+     * {@link #postInitialize()}.
+     */
+    public void activarModoEmpleado() {
+        this.modoEmpleado = true;
+    }
+
     /** Llamar después de inyectar dependencias. */
     public void postInitialize() {
         configurarCombos();
         configurarToggleVistas();
+        if (modoEmpleado) {
+            ocultarAccionesDeGestion();
+        }
         cargarServicios();
         configurarEscCierra();
         actualizarControles();
+    }
+
+    /** En modo empleado la pantalla es de sólo consulta: sin acciones. */
+    private void ocultarAccionesDeGestion() {
+        for (Button b : new Button[]{nuevoDiagramaButton, eliminarButton, validarButton,
+                guardarButton, enviarButton}) {
+            b.setVisible(false);
+            b.setManaged(false);
+        }
+        ayudaLabel.setVisible(false);
+        ayudaLabel.setManaged(false);
     }
 
     /**
@@ -262,6 +291,12 @@ public class DiagramacionServicioController {
     private void cargarDiagramasDe(UUID servicioId) {
         try {
             List<DiagramaDeServicio> diagramas = diagramaService.diagramasDeServicio(servicioId);
+            if (modoEmpleado) {
+                // El empleado sólo ve lo oficial: diagramas aprobados.
+                diagramas = diagramas.stream()
+                        .filter(d -> d.getEstado() == EstadoDiagrama.APROBADO)
+                        .toList();
+            }
             diagramaCombo.getItems().setAll(diagramas);
             if (!diagramas.isEmpty()) {
                 diagramaCombo.getSelectionModel().selectFirst();
@@ -278,6 +313,9 @@ public class DiagramacionServicioController {
     private void cargarDiagrama(DiagramaDeServicio diagrama) {
         try {
             this.diagramaActual = diagrama;
+            if (modoEmpleado) {
+                veContexto = diagramaService.puedeVerContexto(usuarioActual.getId());
+            }
             List<JornadaLaboral> jornadas = diagramaService.jornadasDe(diagrama.getId());
 
             jornadasPorEmpleado.clear();
@@ -334,9 +372,14 @@ public class DiagramacionServicioController {
             grillaTable.getColumns().add(columnaDelDia(fecha));
         }
 
-        // Filas: los empleados del servicio.
+        // Filas: los empleados del servicio (o sólo el propio, según permiso).
         try {
             List<Usuario> empleados = servicioService.findUsuariosByServicio(diagramaActual.getServicioId());
+            if (modoEmpleado && !veContexto) {
+                empleados = empleados.stream()
+                        .filter(u -> u.getId().equals(usuarioActual.getId()))
+                        .toList();
+            }
             grillaTable.getItems().setAll(empleados);
         } catch (ServiceException e) {
             AlertUtils.showErr("Error al cargar los empleados del servicio: " + e.getMessage());
@@ -911,6 +954,62 @@ public class DiagramacionServicioController {
         }
     }
 
+    /**
+     * Diálogo de permisos de vista: un checkbox por empleado del servicio.
+     * Tildado = en "Mi Diagrama" ve la grilla completa del servicio (la
+     * cartelera); destildado = sólo sus propias jornadas.
+     */
+    @FXML
+    private void onVistaEmpleados() {
+        List<Usuario> empleados = new ArrayList<>(grillaTable.getItems());
+        if (empleados.isEmpty()) {
+            AlertUtils.showWarn("El servicio no tiene empleados activos.");
+            return;
+        }
+
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Vista de empleados");
+        dialog.setHeaderText("Tildado: el empleado ve el diagrama completo del servicio.\n"
+                + "Destildado: sólo ve sus propias jornadas.");
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        Map<UUID, javafx.scene.control.CheckBox> checks = new HashMap<>();
+        Map<UUID, Boolean> valoresOriginales = new HashMap<>();
+        VBox lista = new VBox(6);
+        try {
+            for (Usuario emp : empleados) {
+                boolean actual = diagramaService.puedeVerContexto(emp.getId());
+                javafx.scene.control.CheckBox cb = new javafx.scene.control.CheckBox(nombreDe(emp));
+                cb.setSelected(actual);
+                checks.put(emp.getId(), cb);
+                valoresOriginales.put(emp.getId(), actual);
+                lista.getChildren().add(cb);
+            }
+        } catch (ServiceException e) {
+            AlertUtils.showErr("Error al leer los permisos de vista:\n" + e.getMessage());
+            return;
+        }
+        javafx.scene.control.ScrollPane scroll = new javafx.scene.control.ScrollPane(lista);
+        scroll.setFitToWidth(true);
+        scroll.setPrefViewportHeight(Math.min(260, empleados.size() * 30 + 10));
+        dialog.getDialogPane().setContent(scroll);
+
+        if (dialog.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
+            return;
+        }
+
+        try {
+            for (Usuario emp : empleados) {
+                boolean nuevo = checks.get(emp.getId()).isSelected();
+                if (nuevo != valoresOriginales.get(emp.getId())) {
+                    diagramaService.setPermisoVistaCompleta(emp.getId(), nuevo, usuarioActual);
+                }
+            }
+        } catch (ServiceException e) {
+            AlertUtils.showErr("Error al guardar los permisos de vista:\n" + e.getMessage());
+        }
+    }
+
     @FXML
     private void onCerrar() {
         if (!confirmarDescarteSiDirty()) {
@@ -937,7 +1036,8 @@ public class DiagramacionServicioController {
     }
 
     private boolean esEditable() {
-        return diagramaActual != null
+        return !modoEmpleado
+                && diagramaActual != null
                 && (diagramaActual.getEstado() == EstadoDiagrama.BORRADOR
                     || diagramaActual.getEstado() == EstadoDiagrama.OBSERVADO)
                 && puedeGestionar();
@@ -977,13 +1077,19 @@ public class DiagramacionServicioController {
         ayudaLabel.setVisible(editable);
 
         // Aprobación final: sólo OP y sólo con el diagrama pendiente.
-        boolean puedeAprobar = hayDiagrama
+        boolean puedeAprobar = !modoEmpleado
+                && hayDiagrama
                 && diagramaActual.getEstado() == EstadoDiagrama.PENDIENTE_APROBACION
                 && usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL);
         aprobarButton.setVisible(puedeAprobar);
         aprobarButton.setManaged(puedeAprobar);
         observarButton.setVisible(puedeAprobar);
         observarButton.setManaged(puedeAprobar);
+
+        // Permisos de vista por empleado: administra quien gestiona el servicio.
+        boolean puedeAdministrarVista = !modoEmpleado && hayDiagrama && puedeGestionar();
+        vistaEmpleadosButton.setVisible(puedeAdministrarVista);
+        vistaEmpleadosButton.setManaged(puedeAdministrarVista);
 
         // Chip de estado.
         estadoChip.getStyleClass().removeAll("estado-borrador", "estado-pendiente",

@@ -94,6 +94,8 @@ public class MainMenuMosaicoController {
     @FXML
     private VBox diagramacionDeServicioVBox;
     @FXML
+    private VBox miDiagramaVBox;
+    @FXML
     private VBox controlMarcacionesVBox;
     @FXML
     private VBox pasesDeSalidaVBox;
@@ -336,6 +338,8 @@ public class MainMenuMosaicoController {
         consultaDiagramasDeServicioVBox.setManaged(usuarioActual.hasRole(TipoUsuario.OFICINADEPERSONAL, TipoUsuario.DIRECCION));
         diagramacionDeServicioVBox.setVisible(usuarioActual.hasRole(TipoUsuario.JEFATURADESERVICIO));
         diagramacionDeServicioVBox.setManaged(usuarioActual.hasRole(TipoUsuario.JEFATURADESERVICIO));
+        miDiagramaVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
+        miDiagramaVBox.setManaged(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
         controlMarcacionesVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
         controlMarcacionesVBox.setManaged(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
         pasesDeSalidaVBox.setVisible(usuarioActual.hasRole(TipoUsuario.EMPLEADO));
@@ -409,6 +413,7 @@ public class MainMenuMosaicoController {
         partesDiariosVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
         consultaDiagramasDeServicioVBox.setOnMouseClicked(this::handleConsultaDiagramas);
         diagramacionDeServicioVBox.setOnMouseClicked(this::handleDiagramacionServicio);
+        miDiagramaVBox.setOnMouseClicked(this::handleMiDiagrama);
         controlMarcacionesVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
         pasesDeSalidaVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
         omisionesIngresEgresoVBox.setOnMouseClicked(event -> showModuleUnderConstructionAlert());
@@ -770,6 +775,51 @@ public class MainMenuMosaicoController {
             stage.showAndWait();
         } catch (IOException e) {
             AlertUtils.showErr("Error al abrir la diagramación de servicio: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Abre "Mi Diagrama" (empleado): la pantalla de diagramación en modo
+     * sólo consulta — únicamente diagramas APROBADOS de su servicio, y la
+     * grilla completa o sólo su fila según el permiso que administre su
+     * jefatura (veDiagramaCompleto).
+     */
+    @FXML
+    private void handleMiDiagrama(Event event) {
+        if (diagramaService == null) {
+            AlertUtils.showWarn("Módulo de diagramación no disponible.");
+            return;
+        }
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/diagramacionServicio.fxml"));
+            loader.setControllerFactory(controllerClass -> {
+                if (controllerClass == DiagramacionServicioController.class) {
+                    DiagramacionServicioController c = new DiagramacionServicioController();
+                    c.setDiagramaService(diagramaService);
+                    c.setServicioService(servicioService);
+                    c.setUsuarioActual(usuarioActual);
+                    return c;
+                }
+                try {
+                    return controllerClass.getDeclaredConstructor().newInstance();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+            Parent root = loader.load();
+            DiagramacionServicioController controller = loader.getController();
+            controller.activarModoEmpleado();
+            controller.postInitialize();
+
+            Stage stage = new Stage();
+            stage.setTitle("Mi Diagrama :: " + AppInfo.PRG_LONG_TITLE);
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(MainMenuMosaicoController.getPrimaryStage());
+            stage.getIcons().add(new Image(getClass().getResourceAsStream(AppInfo.ICON_IMAGE)));
+            stage.showAndWait();
+        } catch (IOException e) {
+            AlertUtils.showErr("Error al abrir Mi Diagrama: " + e.getMessage());
         }
     }
 

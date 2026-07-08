@@ -402,6 +402,29 @@
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                      </TilePane.margin>
                   </VBox>
+                  <VBox fx:id="miDiagramaVBox" alignment="TOP_CENTER" styleClass="mosaic">
+                     <children>
+                        <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
+                           <image>
+                              <Image url="@../images/mosaic_consulta_diagramas_de_servicios.png" />
+                           </image>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </ImageView>
+                        <Text stroke="GREY" strokeWidth="0.2" text="Mi Diagrama" textAlignment="CENTER" wrappingWidth="112.0">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </Text>
+                     </children>
+                     <TilePane.margin>
+                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                     </TilePane.margin>
+                  </VBox>
                   <VBox fx:id="controlMarcacionesVBox" alignment="TOP_CENTER" styleClass="mosaic">
                      <children>
                         <ImageView fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" styleClass="mosaicImage">
