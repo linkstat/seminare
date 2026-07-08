@@ -5,6 +5,7 @@ import ar.com.hmu.model.HorarioFeriante;
 import ar.com.hmu.model.HorarioGuardiaEnfermeria;
 import ar.com.hmu.model.HorarioNocturno;
 import ar.com.hmu.model.JornadaLaboral;
+import ar.com.hmu.model.TipoJornada;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -45,6 +46,15 @@ import java.util.UUID;
 public final class DiagramaValidator {
 
     static final int DESCANSO_MINIMO_HORAS = 10;
+
+    /** Duración mínima de toda jornada con horario (caso "viene 1 hora a
+     *  completar la semana"). */
+    public static final int DURACION_MINIMA_HORAS = 1;
+    /** Máximo de un turno normal (definición del usuario 2026-07-08). */
+    public static final int MAX_TURNO_HORAS = 12;
+    /** Máximo PLANIFICADO de una guardia: 24 h exactas — la extensión del
+     *  egreso real pertenece al registro de marcaciones, no al diagrama. */
+    public static final int MAX_GUARDIA_HORAS = 24;
 
     private DiagramaValidator() {
         // Sólo métodos estáticos.
@@ -151,6 +161,30 @@ public final class DiagramaValidator {
         return advertencias;
     }
 
+    /**
+     * Límites de duración por tipo de jornada (regla estructural): mínimo
+     * {@value #DURACION_MINIMA_HORAS} h para todas; máximo
+     * {@value #MAX_TURNO_HORAS} h para turno normal y
+     * {@value #MAX_GUARDIA_HORAS} h para guardias (activa o pasiva).
+     *
+     * @return la violación, o {@code null} si la duración es válida.
+     */
+    public static Violacion validarDuracion(JornadaLaboral j) {
+        Duration d = Duration.between(j.getFechaIngreso(), j.getFechaEgreso());
+        if (d.toMinutes() < DURACION_MINIMA_HORAS * 60L) {
+            return new Violacion(j.getEmpleadoId(), j.getFecha(),
+                    "Duración insuficiente: toda jornada debe durar al menos "
+                            + DURACION_MINIMA_HORAS + " h.");
+        }
+        int maximo = (j.getTipo() == TipoJornada.TURNO_NORMAL) ? MAX_TURNO_HORAS : MAX_GUARDIA_HORAS;
+        if (d.toMinutes() > maximo * 60L) {
+            return new Violacion(j.getEmpleadoId(), j.getFecha(),
+                    "Duración excesiva: " + (d.toMinutes() / 60.0) + " h supera el máximo de "
+                            + maximo + " h para " + j.getTipo() + ".");
+        }
+        return null;
+    }
+
     // ============================================================
     // Helpers privados
     // ============================================================
@@ -173,6 +207,11 @@ public final class DiagramaValidator {
                 if (!j.getFechaEgreso().isAfter(j.getFechaIngreso())) {
                     violaciones.add(new Violacion(j.getEmpleadoId(), j.getFecha(),
                             "Horario inválido: el egreso debe ser posterior al ingreso."));
+                    continue;
+                }
+                Violacion duracion = validarDuracion(j);
+                if (duracion != null) {
+                    violaciones.add(duracion);
                     continue;
                 }
                 porEmpleado.computeIfAbsent(j.getEmpleadoId(), k -> new ArrayList<>()).add(j);

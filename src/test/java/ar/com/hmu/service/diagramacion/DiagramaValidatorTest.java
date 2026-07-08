@@ -145,6 +145,60 @@ class DiagramaValidatorTest {
     }
 
     // ============================================================
+    // Límites de duración por tipo (definición del usuario 2026-07-08)
+    // ============================================================
+
+    @Test
+    void validar_turnoDeMenosDeUnaHora_esViolacion() {
+        // 30 minutos: por debajo del mínimo de 1 h.
+        LocalDateTime ingreso = LocalDateTime.of(2026, 7, 6, 7, 0);
+        JornadaLaboral corta = jornada(LocalDate.of(2026, 7, 6),
+                TipoJornada.TURNO_NORMAL, ingreso, ingreso.plusMinutes(30));
+
+        List<Violacion> violaciones = DiagramaValidator.validar(List.of(corta));
+
+        assertThat(violaciones).hasSize(1);
+        assertThat(violaciones.get(0).mensaje()).contains("al menos 1 h");
+    }
+
+    @Test
+    void validar_turnoDeUnaHora_esValido() {
+        assertThat(DiagramaValidator.validar(List.of(
+                turno(LocalDate.of(2026, 7, 6), 7, 1)))).isEmpty();
+    }
+
+    @Test
+    void validar_turnoDeMasDe12Horas_esViolacion() {
+        List<Violacion> violaciones = DiagramaValidator.validar(List.of(
+                turno(LocalDate.of(2026, 7, 6), 7, 13)));
+
+        assertThat(violaciones).hasSize(1);
+        assertThat(violaciones.get(0).mensaje()).contains("máximo de 12 h");
+    }
+
+    @Test
+    void validar_guardiaDe24Horas_esValida() {
+        LocalDateTime ingreso = LocalDateTime.of(2026, 7, 6, 8, 0);
+        JornadaLaboral guardia24 = jornada(LocalDate.of(2026, 7, 6),
+                TipoJornada.GUARDIA_ACTIVA, ingreso, ingreso.plusHours(24));
+
+        assertThat(DiagramaValidator.validar(List.of(guardia24))).isEmpty();
+    }
+
+    @Test
+    void validar_guardiaDeMasDe24Horas_esViolacion() {
+        // La extensión del egreso real pertenece a marcaciones, no al diagrama.
+        LocalDateTime ingreso = LocalDateTime.of(2026, 7, 6, 8, 0);
+        JornadaLaboral guardia25 = jornada(LocalDate.of(2026, 7, 6),
+                TipoJornada.GUARDIA_ACTIVA, ingreso, ingreso.plusHours(25));
+
+        List<Violacion> violaciones = DiagramaValidator.validar(List.of(guardia25));
+
+        assertThat(violaciones).hasSize(1);
+        assertThat(violaciones.get(0).mensaje()).contains("máximo de 24 h");
+    }
+
+    // ============================================================
     // Advertencias de carga mensual
     // ============================================================
 

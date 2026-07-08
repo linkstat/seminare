@@ -725,6 +725,17 @@ public class DiagramacionServicioController {
         j.setTipo(tipo);
         j.setFechaIngreso(ingreso);
         j.setFechaEgreso(egreso);
+
+        // Límites de duración (misma regla estructural del validador):
+        // rechazar acá evita descubrirlo recién al validar/enviar.
+        if (j.tieneHorario()) {
+            ar.com.hmu.service.diagramacion.Violacion v =
+                    ar.com.hmu.service.diagramacion.DiagramaValidator.validarDuracion(j);
+            if (v != null) {
+                AlertUtils.showWarn(v.mensaje());
+                return;
+            }
+        }
         String obs = obsField.getText();
         j.setObservaciones(obs != null && !obs.isBlank() ? obs.trim() : null);
 
