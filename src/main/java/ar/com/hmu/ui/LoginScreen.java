@@ -60,6 +60,7 @@ public class LoginScreen extends Application {
             EstadoTramiteRepository estadoTramiteRepository = new EstadoTramiteRepository(databaseConnector);
             DiagramaRepository diagramaRepository = new DiagramaRepository(databaseConnector);
             HorarioRepository horarioRepository = new HorarioRepository(databaseConnector);
+            FeriadoRepository feriadoRepository = new FeriadoRepository(databaseConnector);
 
             // Inicialización de servicios que no dependen de UsuarioRepository
             RoleService roleService = new RoleService(roleRepository);
@@ -94,8 +95,8 @@ public class LoginScreen extends Application {
             // Inicialización del DiagramaService (módulo de diagramación
             // de servicios, RFS02).
             DiagramaService diagramaService = new DiagramaService(
-                    diagramaRepository, horarioRepository,
-                    servicioRepository, usuarioRepository, notificationService);
+                    diagramaRepository, horarioRepository, servicioRepository,
+                    usuarioRepository, feriadoRepository, notificationService);
 
             // Cargar el archivo FXML
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/loginScreen.fxml"));

@@ -52,6 +52,7 @@ public class SessionUtils {
             EstadoTramiteRepository estadoTramiteRepository = new EstadoTramiteRepository(databaseConnector);
             DiagramaRepository diagramaRepository = new DiagramaRepository(databaseConnector);
             HorarioRepository horarioRepository = new HorarioRepository(databaseConnector);
+            FeriadoRepository feriadoRepository = new FeriadoRepository(databaseConnector);
 
             // Inicialización de servicios que no dependen de UsuarioRepository
             RoleService roleService = new RoleService(roleRepository);
@@ -80,8 +81,8 @@ public class SessionUtils {
                     memorandumRepository, estadoTramiteRepository,
                     servicioRepository, usuarioRepository, notificationService);
             DiagramaService diagramaService = new DiagramaService(
-                    diagramaRepository, horarioRepository,
-                    servicioRepository, usuarioRepository, notificationService);
+                    diagramaRepository, horarioRepository, servicioRepository,
+                    usuarioRepository, feriadoRepository, notificationService);
 
             // Pasar los servicios al controlador
             controller.setLoginService(loginService);

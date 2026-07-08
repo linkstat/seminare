@@ -45,6 +45,7 @@ class DiagramaServiceTest {
     @Mock private HorarioRepository horarioRepo;
     @Mock private ServicioRepository servicioRepo;
     @Mock private UsuarioRepository usuarioRepo;
+    @Mock private ar.com.hmu.repository.FeriadoRepository feriadoRepo;
     @Mock private NotificationService notif;
 
     private DiagramaService service;
@@ -55,7 +56,8 @@ class DiagramaServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new DiagramaService(diagramaRepo, horarioRepo, servicioRepo, usuarioRepo, notif);
+        service = new DiagramaService(diagramaRepo, horarioRepo, servicioRepo,
+                usuarioRepo, feriadoRepo, notif);
     }
 
     // ============================================================

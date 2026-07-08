@@ -67,6 +67,9 @@ CREATE TYPE tipo_marcacion AS ENUM ('INGRESO', 'EGRESO');
 CREATE TYPE estado_diagrama AS ENUM
     ('BORRADOR', 'PENDIENTE_APROBACION', 'APROBADO', 'OBSERVADO');
 
+CREATE TYPE estado_feriado AS ENUM
+    ('VIGENTE', 'ALTA_PENDIENTE', 'BAJA_PENDIENTE', 'RECHAZADO', 'ANULADO');
+
 CREATE TYPE tipo_jornada AS ENUM
     ('TURNO_NORMAL', 'GUARDIA_ACTIVA', 'GUARDIA_PASIVA',
      'FRANCO', 'FRANCO_COMPENSATORIO', 'LICENCIA');
@@ -375,6 +378,31 @@ CREATE TABLE Empleado_Novedad (
     FOREIGN KEY (empleadoID) REFERENCES Empleado(id),
     FOREIGN KEY (novedadID) REFERENCES Novedad(id)
 );
+
+
+/* ----------------------------------------------------------------------------
+ * Feriados
+ *
+ * Alimentan la diagramación (día no laborable para todos). Carga anual
+ * directa de OP; cambios posteriores como propuesta que autoriza la
+ * Dirección (ALTA_PENDIENTE -> VIGENTE/RECHAZADO; BAJA_PENDIENTE ->
+ * ANULADO/VIGENTE). Un feriado con baja pendiente sigue vigente.
+ * -------------------------------------------------------------------------- */
+CREATE TABLE Feriado (
+    id UUID PRIMARY KEY,
+    fecha DATE NOT NULL,
+    descripcion VARCHAR(255) NOT NULL,
+    estado estado_feriado NOT NULL DEFAULT 'VIGENTE',
+    creadoPorID UUID NOT NULL,
+    resueltoPorID UUID NULL,
+    fechaResolucion TIMESTAMP NULL,
+    createdAt TIMESTAMP NOT NULL DEFAULT now(),
+    FOREIGN KEY (creadoPorID) REFERENCES Usuario(id),
+    FOREIGN KEY (resueltoPorID) REFERENCES Usuario(id)
+);
+
+CREATE UNIQUE INDEX idx_feriado_fecha_activo ON Feriado(fecha)
+    WHERE estado IN ('VIGENTE', 'ALTA_PENDIENTE', 'BAJA_PENDIENTE');
 
 
 /* ----------------------------------------------------------------------------

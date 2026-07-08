@@ -9,6 +9,7 @@ import ar.com.hmu.model.JornadaLaboral;
 import ar.com.hmu.model.Servicio;
 import ar.com.hmu.model.Usuario;
 import ar.com.hmu.repository.DiagramaRepository;
+import ar.com.hmu.repository.FeriadoRepository;
 import ar.com.hmu.repository.HorarioRepository;
 import ar.com.hmu.repository.ServicioRepository;
 import ar.com.hmu.repository.UsuarioRepository;
@@ -64,17 +65,20 @@ public class DiagramaService {
     private final HorarioRepository horarioRepository;
     private final ServicioRepository servicioRepository;
     private final UsuarioRepository usuarioRepository;
+    private final FeriadoRepository feriadoRepository;
     private final NotificationService notificationService;
 
     public DiagramaService(DiagramaRepository diagramaRepository,
                            HorarioRepository horarioRepository,
                            ServicioRepository servicioRepository,
                            UsuarioRepository usuarioRepository,
+                           FeriadoRepository feriadoRepository,
                            NotificationService notificationService) {
         this.diagramaRepository = diagramaRepository;
         this.horarioRepository = horarioRepository;
         this.servicioRepository = servicioRepository;
         this.usuarioRepository = usuarioRepository;
+        this.feriadoRepository = feriadoRepository;
         this.notificationService = notificationService;
     }
 
@@ -112,7 +116,10 @@ public class DiagramaService {
             DiagramaDeServicio diagrama = new DiagramaDeServicio(UUID.randomUUID(), servicioId,
                     EstadoDiagrama.BORRADOR, desde, hasta, creador.getId());
 
-            ContextoDiagramacion ctx = ContextoDiagramacion.sinFeriados();
+            // Los feriados vigentes del rango cuentan como día no laborable
+            // para los generadores de patrón semanal.
+            ContextoDiagramacion ctx = new ContextoDiagramacion(
+                    feriadoRepository.findFechasVigentesEnRango(desde, hasta));
             for (Usuario empleado : usuarioRepository.findUsuariosByServicio(servicioId)) {
                 HorarioBase horario = horarioRepository.findHorarioActualDeEmpleado(empleado.getId());
                 List<JornadaLaboral> jornadas = (horario != null)
